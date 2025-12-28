@@ -34,7 +34,6 @@ var CONFIG = {
 
   PASSING_GRADE: 3.0,
 
-  // CURRENT BATCH CONFIG FOR NIM GENERATION
   CURRENT_BATCH: "07",
 
   WEIGHTS: {
@@ -138,53 +137,34 @@ function formatDateForFile() {
   return day + '-' + month + '-' + year;
 }
 
-/**
- * GENERATE CUSTOM NIM
- * Pattern: DI.AA.BB.CC.DDD.EEEE
- * AA: IN (Laki) / AT (Wanita)
- * BB: Tahun (e.g. 25)
- * CC: Angkatan (e.g. 07)
- * DDD: Status (RGR)
- * EEEE: Sequence (0001)
- */
 function generateStudentNIM(genderCode, statusCode) {
   var prefix = "DI";
-  var gender = genderCode || "IN"; // Default IN if missing
-  var year = new Date().getFullYear().toString().slice(-2); // 25
-  var batch = CONFIG.CURRENT_BATCH; // 07
-  var status = statusCode || "RGR"; // Default Reguler
+  var gender = genderCode || "IN";
+  var year = new Date().getFullYear().toString().slice(-2);
+  var batch = CONFIG.CURRENT_BATCH;
+  var status = statusCode || "RGR";
 
-  // Base pattern without sequence
   var idBase = prefix + "." + gender + "." + year + "." + batch + "." + status + ".";
 
-  // Get last sequence from DB
   var users = getData(CONFIG.SHEET_NAMES.USERS);
-
-  // Filter users with same base ID pattern
   var existingIds = users
     .map(function(u) { return u.user_id; })
     .filter(function(id) { return id && id.indexOf(idBase) === 0; });
 
   var nextSeq = 1;
   if (existingIds.length > 0) {
-    // Find max sequence
     var maxSeq = 0;
     existingIds.forEach(function(id) {
       var parts = id.split('.');
       if (parts.length > 0) {
-        var seqStr = parts[parts.length - 1];
-        var seqVal = parseInt(seqStr, 10);
-        if (!isNaN(seqVal) && seqVal > maxSeq) {
-          maxSeq = seqVal;
-        }
+        var seqVal = parseInt(parts[parts.length - 1], 10);
+        if (!isNaN(seqVal) && seqVal > maxSeq) maxSeq = seqVal;
       }
     });
     nextSeq = maxSeq + 1;
   }
 
-  var sequenceStr = ("0000" + nextSeq).slice(-4);
-
-  return idBase + sequenceStr;
+  return idBase + ("0000" + nextSeq).slice(-4);
 }
 
 // ==========================================
@@ -212,7 +192,6 @@ function saveFileToDrive(base64Data, mimeType, fileName, folderId) {
 
 function login(identifier, password) {
   var users = getData(CONFIG.SHEET_NAMES.USERS);
-  // Identifier can be Email, Phone, or User ID (NIM)
   var user = users.find(function(u) {
     return u.email == identifier || u.phone == identifier || u.user_id == identifier;
   });
@@ -238,7 +217,6 @@ function registerStudent(email, fullName, phone, gender, status) {
     return { success: false, message: "User exists" };
   }
 
-  // Use Custom NIM Generator
   var genderCode = (gender === 'Wanita' || gender === 'Perempuan' || gender === 'AT') ? 'AT' : 'IN';
   var statusCode = status || 'RGR';
   var newNIM = generateStudentNIM(genderCode, statusCode);
@@ -254,7 +232,7 @@ function registerStudent(email, fullName, phone, gender, status) {
   };
   insertData(CONFIG.SHEET_NAMES.USERS, newUser);
 
-  return { success: true, message: "Registered successfully. Your NIM is: " + newNIM, nim: newNIM };
+  return { success: true, message: "Registered successfully", nim: newNIM };
 }
 
 function generateToken(user) {
@@ -269,7 +247,7 @@ function validateToken(token) {
     var parts = decoded.split(":");
     if (parts.length !== 3) return null;
     var now = new Date().getTime();
-    if (now - parseInt(parts[1]) > 24 * 60 * 60 * 1000) return null; // 24h Expiry
+    if (now - parseInt(parts[1]) > 24 * 60 * 60 * 1000) return null;
     return { user_id: parts[0], role: parts[2] };
   } catch (e) { return null; }
 }
@@ -321,23 +299,17 @@ function handleGetStudentDashboardData(userId) {
   if (!user) return { success: false, message: "User not found" };
 
   var ipk = calculateIPK(userId);
-
   var payments = getData(CONFIG.SHEET_NAMES.PAYMENTS).filter(function(p) {
     return p.student_id == userId && (p.status === 'PENDING' || p.status === 'TAGIHAN');
   });
-  var billText = payments.length > 0 ? "Ada " + payments.length + " Tagihan" : "Lunas";
 
   return {
     success: true,
     data: {
       status_text: user.status || "Aktif",
       ipk: ipk,
-      bill_text: billText,
-      profile: {
-        email: user.email,
-        phone: user.phone,
-        name: user.full_name
-      }
+      bill_text: payments.length > 0 ? "Ada Tagihan" : "Lunas",
+      profile: { email: user.email, phone: user.phone, name: user.full_name }
     }
   };
 }
@@ -362,7 +334,9 @@ function handleGetSchedules(userId) {
       time_end: "10:00",
       course_id: course.course_id,
       course_name: course.name,
-      teacher_name: lecturer ? lecturer.full_name : "Ustadz Pengampu"
+      teacher_name: lecturer ? lecturer.full_name : "Ustadz Pengampu",
+      level: course.level || 1, // Added Level
+      zoom_link: "https://zoom.us/j/1234567890" // Dummy Zoom
     };
   }).filter(function(s) { return s != null; });
 
@@ -575,10 +549,7 @@ function doPost(e) {
     var result = { success: false };
 
     if (action == "login") result = login(data.emailOrPhone, data.password);
-    else if (action == "register") {
-        // Register now accepts gender and status
-        result = registerStudent(data.email, data.full_name, data.phone, data.gender, data.status);
-    }
+    else if (action == "register") result = registerStudent(data.email, data.full_name, data.phone, data.gender, data.status);
     else {
       var user = validateToken(data.token);
       if (!user) result = { success: false, message: "Unauthorized" };
