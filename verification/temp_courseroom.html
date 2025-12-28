@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script>
+    const courseId = "MK201"; // Passed from template
+
+    function loadCourseRoom() {
+      const email = localStorage.getItem('user_email');
+      if (!email) {
+        window.location.href = '<?= getScriptUrl() ?>?page=login_student';
+        return;
+      }
+
+      // We need to parse URL params to get course_id if not injected
+      const urlParams = new URLSearchParams(window.location.search);
+      const cId = urlParams.get('course_id') || courseId;
+
+      google.script.run
+        .withSuccessHandler(renderRoom)
+        .withFailureHandler(err => alert('Error: ' + err))
+        .getCourseRoomData(cId, email);
+    }
+
+    function renderRoom(data) {
+      document.getElementById('course-title').innerText = data.course_name;
+
+      const listHtml = data.sessions.map(s => {
+        let statusBadge = '';
+        let actionBtn = '';
+
+        if (s.status === 'HADIR') {
+          statusBadge = '<span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">HADIR (100)</span>';
+          actionBtn = `<a href="${s.recording_url}" target="_blank" class="text-blue-600 hover:underline">Lihat Ulang</a>`;
+        } else if (s.status === 'REKAMAN') {
+          statusBadge = '<span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">REKAMAN (80)</span>';
+          actionBtn = `<a href="${s.recording_url}" target="_blank" class="text-blue-600 hover:underline">Lihat Ulang</a>`;
+        } else {
+           // Absent or Not yet taken
+           statusBadge = '<span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded">BELUM (0)</span>';
+           // Button triggers validation
+           actionBtn = `<button onclick="watchRecording('${s.date}', '${s.recording_url}')" class="bg-blue-600 text-white text-sm px-3 py-1 rounded hover:bg-blue-700">
+             <i class="fas fa-play-circle mr-1"></i> Tonton Rekaman
+           </button>`;
+        }
+
+        return `
+          <div class="flex items-center justify-between bg-white p-4 rounded shadow mb-3">
+             <div>
+               <h4 class="font-bold text-gray-800">${s.title}</h4>
+               <p class="text-xs text-gray-500">${s.date}</p>
+             </div>
+             <div class="flex items-center space-x-4">
+               ${statusBadge}
+               ${actionBtn}
+             </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('session-list').innerHTML = listHtml;
+    }
+
+    function watchRecording(date, url) {
+       const email = localStorage.getItem('user_email');
+       // Open link immediately
+       window.open(url, '_blank');
+
+       // Record attendance in background
+       const urlParams = new URLSearchParams(window.location.search);
+       const cId = urlParams.get('course_id') || courseId;
+
+       google.script.run
+         .withSuccessHandler((res) => {
+            if (res.success) {
+              // Reload to update status
+              loadCourseRoom();
+            }
+         })
+         .submitAttendanceRecording(cId, date, email);
+    }
+
+    window.onload = loadCourseRoom;
+  </script>
+
+    <script>
+      const mockEmail = "student@example.com";
+
+      const mockRoomData = {
+        course_name: 'Aqidah Lanjutan',
+        sessions: [
+          { id: 1, title: 'Pertemuan 1', date: '2024-02-05', status: 'HADIR', points: 100, recording_url: '#' },
+          { id: 2, title: 'Pertemuan 2', date: '2024-02-12', status: 'ABSENT', points: 0, recording_url: '#' }
+        ]
+      };
+
+      const serverFunctions = {
+         getCourseRoomData: function(cId, email) {
+            console.log('Mock: getCourseRoomData called');
+            console.log('Mock: Data Status S2: ' + mockRoomData.sessions[1].status);
+            // Must check if callback exists (it should)
+            if (this._successHandler) setTimeout(() => this._successHandler(mockRoomData), 100);
+         },
+         submitAttendanceRecording: function(cId, date, email) {
+            console.log('Mock: Submitting attendance for ' + date);
+            mockRoomData.sessions[1].status = 'REKAMAN';
+            mockRoomData.sessions[1].points = 80;
+            if (this._successHandler) setTimeout(() => this._successHandler({ success: true }), 100);
+         }
+      };
+
+      google = {
+        script: {
+          run: {
+            withSuccessHandler: function(callback) {
+              const runner = Object.create(serverFunctions);
+              runner._successHandler = callback;
+              runner.withFailureHandler = function(failCallback) {
+                 this._failureHandler = failCallback;
+                 return this;
+              };
+              return runner;
+            },
+            withFailureHandler: function(failCallback) {
+              const runner = Object.create(serverFunctions);
+              runner._failureHandler = failCallback;
+              runner.withSuccessHandler = function(callback) {
+                 this._successHandler = callback;
+                 return this;
+              };
+              return runner;
+            },
+            ...serverFunctions // Allow direct calling if no handlers
+          }
+        }
+      };
+
+      localStorage.setItem('user_email', mockEmail);
+      function getScriptUrl() { return '#'; }
+      window.open = function(url) { console.log('Mock: Opening ' + url); };
+    </script>
+    </head>
+<body class="bg-gray-50 min-h-screen">
+
+  <nav class="bg-blue-900 text-white shadow-lg mb-6">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center">
+      <a href="<?= getScriptUrl() ?>?page=dashboard_student" class="mr-4 text-gray-300 hover:text-white">
+        <i class="fas fa-arrow-left"></i> Dashboard
+      </a>
+      <div class="font-bold text-xl" id="course-title">Loading...</div>
+    </div>
+  </nav>
+
+  <div class="max-w-4xl mx-auto px-4">
+    <div class="bg-blue-50 border-l-4 border-blue-600 p-4 mb-6">
+      <p class="text-sm text-blue-800">
+        <i class="fas fa-info-circle mr-2"></i>
+        Klik "Tonton Rekaman" untuk otomatis mencatat kehadiran (Nilai 80).
+      </p>
+    </div>
+
+    <div id="session-list">
+      <!-- Dynamic -->
+    </div>
+  </div>
+
+</body>
+</html>
