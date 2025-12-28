@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script>
+    // Global State
+    let dashboardData = null;
+
+    function loadDashboard() {
+      const email = localStorage.getItem('user_email'); // Assumes set during Login
+      if (!email) {
+        window.location.href = '<?= getScriptUrl() ?>?page=login_student';
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(renderDashboard)
+        .withFailureHandler(err => alert('Error loading dashboard: ' + err))
+        .getStudentDashboardData(email);
+    }
+
+    function renderDashboard(data) {
+      dashboardData = data;
+      const p = data.profile;
+
+      // Profile Widget
+      document.getElementById('profile-name').innerText = p.name;
+      document.getElementById('profile-id').innerText = p.student_id;
+      document.getElementById('profile-level').innerText = 'Mustawa ' + p.current_mustawa;
+      document.getElementById('profile-status').innerText = p.status;
+
+      // Academic History
+      const historyHtml = data.academic_history.map(h => `
+        <div class="flex items-center justify-between p-3 mb-2 bg-gray-50 rounded">
+          <span class="font-medium text-gray-700">Mustawa ${h.level}</span>
+          <span class="px-2 py-1 text-xs rounded ${getStatusColor(h.status)}">${h.status}</span>
+        </div>
+      `).join('');
+      document.getElementById('academic-history-list').innerHTML = historyHtml;
+
+      // Active Courses
+      if (data.active_courses.length === 0) {
+        document.getElementById('active-courses-list').innerHTML = '<p class="text-gray-500 italic">Tidak ada mata kuliah aktif.</p>';
+      } else {
+        const activeHtml = data.active_courses.map(c => `
+          <div class="bg-white border rounded-lg shadow-sm p-4 hover:shadow-md transition">
+            <h3 class="font-bold text-lg text-blue-900">${c.name}</h3>
+            <p class="text-sm text-gray-600 mb-4">${c.semester_period} | ${c.sks} SKS</p>
+            <a href="<?= getScriptUrl() ?>?page=course_room&course_id=${c.course_id}"
+               class="block text-center bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+               Masuk Kelas
+            </a>
+          </div>
+        `).join('');
+        document.getElementById('active-courses-list').innerHTML = activeHtml;
+      }
+
+      // Available Courses (Enrollment)
+      if (data.available_courses.length === 0) {
+        document.getElementById('available-courses-section').classList.add('hidden');
+      } else {
+        const availHtml = data.available_courses.map(c => `
+           <div class="flex justify-between items-center p-3 border-b">
+             <div>
+               <div class="font-semibold">${c.name}</div>
+               <div class="text-xs text-gray-500">${c.sks} SKS</div>
+             </div>
+             <button onclick="enroll('${c.course_id}')" class="bg-green-600 text-white px-3 py-1 rounded text-sm">Ambil</button>
+           </div>
+        `).join('');
+        document.getElementById('available-courses-list').innerHTML = availHtml;
+      }
+
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('main-content').classList.remove('hidden');
+    }
+
+    function getStatusColor(status) {
+      if (status === 'PASSED') return 'bg-green-100 text-green-800';
+      if (status === 'ACTIVE') return 'bg-blue-100 text-blue-800';
+      if (status === 'FAILED') return 'bg-red-100 text-red-800';
+      return 'bg-gray-100 text-gray-600'; // Locked
+    }
+
+    function enroll(courseId) {
+      if(confirm('Ambil mata kuliah ini?')) {
+        // Implementation for enrollment would go here
+        alert('Fitur pendaftaran akan segera hadir.');
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('user_email');
+      window.location.href = '<?= getScriptUrl() ?>?page=login_student';
+    }
+
+    window.onload = loadDashboard;
+  </script>
+
+    <script>
+      // Mock google.script.run
+      const mockData = {
+        profile: {
+          name: 'Ahmad Siswa',
+          student_id: 'ST001',
+          current_mustawa: 2,
+          status: 'ACTIVE'
+        },
+        academic_history: [
+          { level: 1, status: 'PASSED', passed_count: 2, total_count: 2 },
+          { level: 2, status: 'ACTIVE', passed_count: 0, total_count: 2 },
+          { level: 3, status: 'LOCKED', passed_count: 0, total_count: 0 }
+        ],
+        active_courses: [
+          { course_id: 'MK201', name: 'Aqidah Lanjutan', semester_period: '2024-GENAP', sks: 2 }
+        ],
+        available_courses: [
+          { course_id: 'MK202', name: 'Fiqih Muamalah', sks: 2 }
+        ]
+      };
+
+      // Override the real function for testing
+      google = {
+        script: {
+          run: {
+            withSuccessHandler: function(callback) {
+              return {
+                withFailureHandler: function(failCallback) {
+                  return {
+                     getStudentDashboardData: function(email) {
+                        console.log('Fetching mock data for ' + email);
+                        setTimeout(() => callback(mockData), 500);
+                     }
+                  }
+                }
+              }
+            }
+          }
+        }
+      };
+
+      // Mock local storage to simulate logged in state
+      localStorage.setItem('user_email', 'student@example.com');
+
+      // Mock getScriptUrl
+      function getScriptUrl() { return '#'; }
+    </script>
+    </head>
+<body class="bg-gray-100 min-h-screen">
+
+  <!-- Loading -->
+  <div id="loading" class="flex items-center justify-center h-screen">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900"></div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="bg-blue-900 text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="font-bold text-xl">Diploma Ilmi LMS</div>
+      <button onclick="logout()" class="text-sm hover:text-gray-300"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div id="main-content" class="max-w-7xl mx-auto px-4 py-8 hidden">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <!-- Left Sidebar: Profile & History -->
+      <div class="md:col-span-1 space-y-6">
+        <!-- Profile Widget -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="text-center mb-4">
+            <div class="bg-blue-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-2 text-blue-900 text-2xl font-bold">
+              <i class="fas fa-user"></i>
+            </div>
+            <h2 id="profile-name" class="text-xl font-bold text-gray-800">...</h2>
+            <p id="profile-id" class="text-sm text-gray-500">...</p>
+          </div>
+          <div class="border-t pt-4">
+            <div class="flex justify-between mb-2">
+              <span class="text-gray-600">Status</span>
+              <span id="profile-status" class="font-semibold text-green-600">...</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Level Saat Ini</span>
+              <span id="profile-level" class="font-semibold text-blue-600">...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Academic History Widget -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">Riwayat Akademik</h3>
+          <div id="academic-history-list">
+            <!-- Dynamic Content -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Active Courses -->
+      <div class="md:col-span-2 space-y-6">
+
+        <!-- Active Courses -->
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800 mb-4">Kelas Saya (Aktif)</h2>
+          <div id="active-courses-list" class="grid grid-cols-1 gap-4">
+            <!-- Dynamic Cards -->
+          </div>
+        </div>
+
+        <!-- Available Courses (Next Semester) -->
+        <div id="available-courses-section" class="bg-white rounded-lg shadow p-6">
+          <h3 class="font-bold text-gray-800 mb-4">Tersedia untuk Diambil</h3>
+          <div id="available-courses-list" class="divide-y">
+            <!-- List -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
