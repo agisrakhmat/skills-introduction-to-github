@@ -44,12 +44,14 @@ Anda perlu membuat 7 file script (`.gs`) di editor GAS dan menyalin kode dari fo
    - Buat file baru bernama `Code.gs` (biasanya sudah ada default, timpa saja isinya).
    - Copy isi dari `src/Code.gs`.
 
+**PENTING**: Pastikan semua file di atas sudah **disimpan (Save)** sebelum menjalankan langkah selanjutnya.
+
 ### 4. Setup Database Otomatis
 1. Di editor GAS, pastikan file `Setup.gs` tersimpan.
 2. Di toolbar atas, pilih fungsi `setupDatabase` dari menu dropdown fungsi.
 3. Klik tombol **Run** (Jalankan).
 4. Berikan izin (Authorization) jika diminta.
-5. Script akan membuat Tab/Sheet yang diperlukan (USERS, COURSES, dll) beserta kolom-kolomnya secara otomatis.
+5. Script akan membuat Tab/Sheet yang diperlukan (USERS, COURSES, ENROLLMENTS, ..., CERTIFICATES) beserta kolom-kolomnya secara otomatis.
 
 ### 5. Deploy sebagai Web App
 Untuk menghubungkan backend ini dengan Frontend (Elementor):

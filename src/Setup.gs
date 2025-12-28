@@ -35,6 +35,10 @@ function setupDatabase() {
     {
       name: CONFIG.SHEET_NAMES.PAYMENTS,
       headers: ["payment_id", "student_id", "amount", "proof_url", "status"]
+    },
+    {
+      name: CONFIG.SHEET_NAMES.CERTIFICATES,
+      headers: ["certificate_id", "student_id", "course_id", "enrollment_id", "certificate_number", "issue_date", "download_url"]
     }
   ];
 
