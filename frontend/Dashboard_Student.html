@@ -1,5 +1,5 @@
 <!--
-  DASHBOARD MAHASISWA DIPLOMA ILMI (FINAL FIX - ELEMENTOR SAFE)
+  DASHBOARD MAHASISWA DIPLOMA ILMI (FINAL FIX - LOGOUT REDIRECT)
 -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -138,7 +138,7 @@
                     <div class="bg-gray-50 p-3 rounded-lg"><label class="text-xs text-gray-400 uppercase font-bold block mb-1">Email</label><p class="text-sm font-medium text-gray-800" id="prof-email">-</p></div>
                     <div class="bg-gray-50 p-3 rounded-lg"><label class="text-xs text-gray-400 uppercase font-bold block mb-1">Phone</label><p class="text-sm font-medium text-gray-800" id="prof-wa">-</p></div>
                 </div>
-                <button onclick="logoutUser()" class="w-full mt-6 bg-red-50 text-red-600 font-bold py-2.5 rounded-xl hover:bg-red-100 flex items-center justify-center gap-2"><i class="fa-solid fa-power-off"></i> Keluar</button>
+                <button onclick="logoutUser()" class="w-full mt-6 bg-red-50 text-red-600 font-bold py-2.5 rounded-xl hover:bg-red-100 flex items-center justify-center gap-2"><i class="fa-solid fa-power-off"></i> Keluar Aplikasi</button>
             </div>
         </div>
     </main>
@@ -339,7 +339,13 @@
     function showToast(msg){ const t=document.getElementById('toast'); document.getElementById('toast-message').innerText=msg; t.classList.remove('-translate-y-20','opacity-0'); setTimeout(()=>t.classList.add('-translate-y-20','opacity-0'),2500); }
     function lockFeatures() { ['beranda','akademik','tugas'].forEach(t=>{ const b=document.getElementById('side-'+t); if(b) b.classList.add('disabled-tab'); }); }
     function switchTab(t){ document.querySelectorAll('.tab-content').forEach(e=>e.classList.add('hidden')); document.getElementById('tab-'+t).classList.remove('hidden'); if(window.innerWidth<1024) document.getElementById('sidebar').classList.add('-translate-x-full'); const u=JSON.parse(localStorage.getItem('lms_user')||'{}'); if(t==='tugas') loadAssignments(u.user_id); if(t==='akademik') { loadSchedules(u.user_id); loadStudentGrades(u.user_id); } }
-    function logoutUser() { if(confirm('Logout?')) { localStorage.clear(); window.location.href = '/login'; } }
+    function logoutUser() {
+        if(confirm('Yakin ingin logout?')) {
+            localStorage.removeItem('lms_user');
+            localStorage.removeItem('lms_token');
+            window.location.href = '/';
+        }
+    }
 
     // Task Timer Logic (Required)
     let taskTimerInterval; window.currentTask = {};
