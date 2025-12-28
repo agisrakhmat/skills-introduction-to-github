@@ -1,5 +1,5 @@
 <!--
-  DASHBOARD MAHASISWA DIPLOMA ILMI (SCHEDULE ENHANCED)
+  DASHBOARD MAHASISWA DIPLOMA ILMI (FINAL FIX - ELEMENTOR SAFE)
 -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -70,7 +70,7 @@
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-8">
                 <div class="flex justify-between items-center mb-3"><h3 class="font-bold text-gray-800 text-lg">Dokumen Akademik</h3><button onclick="refreshDocs()" class="text-xs bg-gray-50 px-3 py-1 rounded border">Refresh</button></div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div class="p-4 border rounded-xl flex justify-between items-center"><div><p class="text-xs text-gray-500">Sertifikat</p><p id="doc-cert-status" class="text-sm font-bold">Memuat...</p></div><button id="btn-download-cert" onclick="downloadMyCertificate()" class="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-full font-bold disabled:opacity-50">Unduh</button></div>
+                    <div class="p-4 border rounded-xl flex justify-between items-center"><div><p class="text-xs text-gray-500">Sertifikat</p><p id="doc-cert-status" class="text-sm font-bold">Memuat...</p></div><button id="btn-download-cert" onclick="downloadMyCertificate()" class="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-full font-bold disabled:opacity-50 disabled:bg-gray-300">Unduh</button></div>
                     <div class="p-4 border rounded-xl flex justify-between items-center"><div><p class="text-xs text-gray-500">Transkrip</p><p id="doc-ipk-status" class="text-sm font-bold">Memuat...</p></div><button id="btn-download-ipk" onclick="downloadMyTranscript()" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-full font-bold">Unduh</button></div>
                 </div>
             </div>
@@ -214,8 +214,15 @@
     }
 
     (function() {
+        // SAFETY CHECK FOR ELEMENTOR EDITOR
+        if (window.location.href.includes('elementor') || window.parent !== window) {
+            console.log("Elementor Editor detected. Auth check disabled.");
+            return; // Stop here if inside editor
+        }
+
         const userJson = localStorage.getItem('lms_user');
-        if (!userJson) { window.location.href = '/login'; return; }
+        if (!userJson) { window.location.href = '/login-mahasiswa'; return; } // ADJUST LOGIN URL HERE
+
         try {
             const user = JSON.parse(userJson);
             if (user.status !== 'ACTIVE' && user.status !== 'Aktif') {
