@@ -34,6 +34,9 @@ var CONFIG = {
 
   PASSING_GRADE: 3.0,
 
+  // CURRENT BATCH CONFIG FOR NIM GENERATION
+  CURRENT_BATCH: "07",
+
   WEIGHTS: {
     ATTENDANCE: 0.20,
     ASSIGNMENT: 0.15,
@@ -132,7 +135,56 @@ function formatDateForFile() {
   var day = ('0' + d.getDate()).slice(-2);
   var month = ('0' + (d.getMonth() + 1)).slice(-2);
   var year = d.getFullYear();
-  return day + '-' + month + '-' + year; // Using dash instead of slash for filename
+  return day + '-' + month + '-' + year;
+}
+
+/**
+ * GENERATE CUSTOM NIM
+ * Pattern: DI.AA.BB.CC.DDD.EEEE
+ * AA: IN (Laki) / AT (Wanita)
+ * BB: Tahun (e.g. 25)
+ * CC: Angkatan (e.g. 07)
+ * DDD: Status (RGR)
+ * EEEE: Sequence (0001)
+ */
+function generateStudentNIM(genderCode, statusCode) {
+  var prefix = "DI";
+  var gender = genderCode || "IN"; // Default IN if missing
+  var year = new Date().getFullYear().toString().slice(-2); // 25
+  var batch = CONFIG.CURRENT_BATCH; // 07
+  var status = statusCode || "RGR"; // Default Reguler
+
+  // Base pattern without sequence
+  var idBase = prefix + "." + gender + "." + year + "." + batch + "." + status + ".";
+
+  // Get last sequence from DB
+  var users = getData(CONFIG.SHEET_NAMES.USERS);
+
+  // Filter users with same base ID pattern
+  var existingIds = users
+    .map(function(u) { return u.user_id; })
+    .filter(function(id) { return id && id.indexOf(idBase) === 0; });
+
+  var nextSeq = 1;
+  if (existingIds.length > 0) {
+    // Find max sequence
+    var maxSeq = 0;
+    existingIds.forEach(function(id) {
+      var parts = id.split('.');
+      if (parts.length > 0) {
+        var seqStr = parts[parts.length - 1];
+        var seqVal = parseInt(seqStr, 10);
+        if (!isNaN(seqVal) && seqVal > maxSeq) {
+          maxSeq = seqVal;
+        }
+      }
+    });
+    nextSeq = maxSeq + 1;
+  }
+
+  var sequenceStr = ("0000" + nextSeq).slice(-4);
+
+  return idBase + sequenceStr;
 }
 
 // ==========================================
@@ -167,10 +219,6 @@ function login(identifier, password) {
 
   if (!user) return { success: false, message: "User not found" };
 
-  // Note: Allow Inactive users to login to see "Contact Admin" message?
-  // Requirement says: "Jika status peserta NONAKTIF maka semua fitur akan terlock...".
-  // This implies they CAN login.
-
   if (user.password_hash == password) {
      return {
        success: true,
@@ -182,7 +230,7 @@ function login(identifier, password) {
   }
 }
 
-function registerStudent(email, fullName, phone) {
+function registerStudent(email, fullName, phone, gender, status) {
   var users = getData(CONFIG.SHEET_NAMES.USERS);
   var formattedPhone = formatPhoneNumber(phone);
 
@@ -190,14 +238,13 @@ function registerStudent(email, fullName, phone) {
     return { success: false, message: "User exists" };
   }
 
-  // Generate NIM based on format? For now using UUID or Simple ID as per request context
-  // Requirement: "ID ditulis berdasarkan aturan NIM...".
-  // Auto-generation logic for DI.AA.BB... is complex without inputs like Gender, Year.
-  // Assuming registration provides simple data first or ID is generated elsewhere.
-  // For now, generate a placeholder ID or use UUID.
+  // Use Custom NIM Generator
+  var genderCode = (gender === 'Wanita' || gender === 'Perempuan' || gender === 'AT') ? 'AT' : 'IN';
+  var statusCode = status || 'RGR';
+  var newNIM = generateStudentNIM(genderCode, statusCode);
 
   var newUser = {
-    user_id: generateId(),
+    user_id: newNIM,
     email: email,
     full_name: fullName,
     phone: formattedPhone,
@@ -206,7 +253,8 @@ function registerStudent(email, fullName, phone) {
     password_hash: formattedPhone.slice(-4)
   };
   insertData(CONFIG.SHEET_NAMES.USERS, newUser);
-  return { success: true, message: "Registered successfully" };
+
+  return { success: true, message: "Registered successfully. Your NIM is: " + newNIM, nim: newNIM };
 }
 
 function generateToken(user) {
@@ -274,7 +322,6 @@ function handleGetStudentDashboardData(userId) {
 
   var ipk = calculateIPK(userId);
 
-  // Bill Logic: Get pending payments
   var payments = getData(CONFIG.SHEET_NAMES.PAYMENTS).filter(function(p) {
     return p.student_id == userId && (p.status === 'PENDING' || p.status === 'TAGIHAN');
   });
@@ -298,16 +345,13 @@ function handleGetStudentDashboardData(userId) {
 function handleGetSchedules(userId) {
   var enrollments = getData(CONFIG.SHEET_NAMES.ENROLLMENTS).filter(function(e) { return e.student_id == userId; });
   var courses = getData(CONFIG.SHEET_NAMES.COURSES);
-
-  // Join Course to get Lecturer Name
-  var users = getData(CONFIG.SHEET_NAMES.USERS); // To get Lecturer Name
+  var users = getData(CONFIG.SHEET_NAMES.USERS);
 
   var schedules = enrollments.map(function(enr) {
     var course = courses.find(function(c) { return c.course_id == enr.course_id; });
     if (!course) return null;
 
     var lecturer = users.find(function(u) { return u.user_id == course.lecturer_id; });
-
     var days = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Ahad"];
     var dayIndex = (course.course_id.length) % 7;
 
@@ -345,12 +389,12 @@ function handleGetAssignments(userId) {
       assignment_id: a.assignment_id,
       title: "Tugas " + (c ? c.name : ""),
       description: a.description || "Silahkan kerjakan tugas berikut dengan seksama.",
-      type: a.type || "ESSAY", // ESSAY, PG, RESUME
+      type: a.type || "ESSAY",
       category: "Wajib",
       deadline: "2025-12-31",
       course_name: c ? c.name : "Mapel",
       lecturer_name: lecturer ? lecturer.full_name : "Dosen",
-      duration_minutes: 60 // Default duration
+      duration_minutes: 60
     };
   });
 
@@ -363,8 +407,6 @@ function handleGetPayments(userId) {
 }
 
 function handleGetPendingBills(userId) {
-  // Fetch items that are 'TAGIHAN' or 'PENDING' without proof_url
-  // Assuming finance creates rows with status 'TAGIHAN' or 'PENDING' and empty proof
   var payments = getData(CONFIG.SHEET_NAMES.PAYMENTS).filter(function(p) {
     return p.student_id == userId && (p.status === 'TAGIHAN' || p.status === 'PENDING') && !p.proof_url;
   });
@@ -398,15 +440,10 @@ function handleGetCertificates(userId) {
 }
 
 function handleSubmitTask(data) {
-  // data: user_id, user_name, task_name, assignment_id, file_base64, file_name
-
-  // Format Filename: ID_Keterangan_Tanggal
-  // Keterangan: Clean Task Name or Feature Name
   var cleanTaskName = (data.task_name || "Tugas").replace(/[^a-zA-Z0-9]/g, "_");
   var dateStr = formatDateForFile();
-  var newFileName = data.user_id + "_" + cleanTaskName + "_" + dateStr + ".pdf"; // Assuming PDF or detect ext
+  var newFileName = data.user_id + "_" + cleanTaskName + "_" + dateStr + ".pdf";
 
-  // Detect extension if possible
   if (data.file_name && data.file_name.indexOf('.') > -1) {
      var ext = data.file_name.split('.').pop();
      newFileName = data.user_id + "_" + cleanTaskName + "_" + dateStr + "." + ext;
@@ -415,19 +452,15 @@ function handleSubmitTask(data) {
   var folderId = CONFIG.DRIVE_FOLDERS.ASSIGNMENTS;
   var url = saveFileToDrive(data.file_base64, "application/pdf", newFileName, folderId);
 
-  // Check if submission exists
   var submissions = getData(CONFIG.SHEET_NAMES.SUBMISSIONS);
   var existing = submissions.find(function(s) {
     return s.assignment_id == data.assignment_id && s.student_id == data.user_id;
   });
 
   if (existing) {
-    // Update existing (Simple update workaround, ideally updateData)
-    // For now, we assume one submission per assignment per student
     updateData(CONFIG.SHEET_NAMES.SUBMISSIONS, "submission_id", existing.submission_id, {
-        score: existing.score // Keep score, maybe update url if we had a url column
+        score: existing.score
     });
-    // In real app, we might want to store the URL in SUBMISSIONS table too.
   } else {
     insertData(CONFIG.SHEET_NAMES.SUBMISSIONS, {
       submission_id: generateId(),
@@ -441,8 +474,6 @@ function handleSubmitTask(data) {
 }
 
 function handleSubmitPaymentProof(data) {
-  // data: user_id, payment_id (optional if new), amount, month/description, file_base64, file_name
-
   var cleanDesc = (data.description || "Pembayaran").replace(/[^a-zA-Z0-9]/g, "_");
   var dateStr = formatDateForFile();
   var newFileName = data.user_id + "_" + cleanDesc + "_" + dateStr + ".jpg";
@@ -454,7 +485,6 @@ function handleSubmitPaymentProof(data) {
 
   var url = saveFileToDrive(data.file_base64, "image/jpeg", newFileName, CONFIG.DRIVE_FOLDERS.PAYMENT_PROOFS);
 
-  // If payment_id provided, update. Else insert.
   if (data.payment_id) {
      updateData(CONFIG.SHEET_NAMES.PAYMENTS, "payment_id", data.payment_id, {
        proof_url: url,
@@ -477,7 +507,6 @@ function handleSubmitPaymentProof(data) {
 }
 
 function handleSubmitAttendance(data) {
-  // data: user_id, course_id, status
   insertData(CONFIG.SHEET_NAMES.ATTENDANCE, {
     attendance_id: generateId(),
     course_id: data.course_id,
@@ -519,9 +548,7 @@ function doGet(e) {
 
   var token = e.parameter.token;
   var user = validateToken(token);
-  if (!user && action !== "get_student_dashboard_data") {
-     // Strict token check for API
-  }
+  if (!user && action !== "get_student_dashboard_data") { }
 
   var result = { success: false, message: "Unknown action" };
   var userId = e.parameter.user_id || (user ? user.user_id : null);
@@ -548,7 +575,10 @@ function doPost(e) {
     var result = { success: false };
 
     if (action == "login") result = login(data.emailOrPhone, data.password);
-    else if (action == "register") result = registerStudent(data.email, data.full_name, data.phone);
+    else if (action == "register") {
+        // Register now accepts gender and status
+        result = registerStudent(data.email, data.full_name, data.phone, data.gender, data.status);
+    }
     else {
       var user = validateToken(data.token);
       if (!user) result = { success: false, message: "Unauthorized" };
@@ -556,10 +586,7 @@ function doPost(e) {
         if (action == "submit_task_file") result = handleSubmitTask(data);
         else if (action == "submit_payment_proof") result = handleSubmitPaymentProof(data);
         else if (action == "submit_attendance") result = handleSubmitAttendance(data);
-        else if (action == "submit_pg_answer") {
-           // Mock logic for PG
-           result = { success: true, message: "Jawaban tersimpan" };
-        }
+        else if (action == "submit_pg_answer") result = { success: true, message: "Jawaban tersimpan" };
         else if (action == "generate_certificate") {
            insertData(CONFIG.SHEET_NAMES.CERTIFICATES, {
              certificate_id: generateId(),
@@ -591,7 +618,7 @@ function setupDatabase() {
     { name: CONFIG.SHEET_NAMES.COURSES, headers: ["course_id", "name", "lecturer_id", "level", "sks", "semester_period"] },
     { name: CONFIG.SHEET_NAMES.ENROLLMENTS, headers: ["enrollment_id", "student_id", "course_id", "final_grade", "final_point", "status"] },
     { name: CONFIG.SHEET_NAMES.ATTENDANCE, headers: ["attendance_id", "course_id", "student_id", "session_date", "status", "points"] },
-    { name: CONFIG.SHEET_NAMES.ASSIGNMENTS, headers: ["assignment_id", "course_id", "type", "description", "max_score"] }, // Added description
+    { name: CONFIG.SHEET_NAMES.ASSIGNMENTS, headers: ["assignment_id", "course_id", "type", "description", "max_score"] },
     { name: CONFIG.SHEET_NAMES.SUBMISSIONS, headers: ["submission_id", "assignment_id", "student_id", "score"] },
     { name: CONFIG.SHEET_NAMES.PAYMENTS, headers: ["payment_id", "student_id", "amount", "proof_url", "status", "date", "description"] },
     { name: CONFIG.SHEET_NAMES.CERTIFICATES, headers: ["certificate_id", "student_id", "course_id", "enrollment_id", "certificate_number", "issue_date", "download_url"] }
