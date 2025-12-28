@@ -90,6 +90,21 @@ function doPost(e) {
           } else {
              result = calculateGrade(data.enrollment_id);
           }
+        } else if (action == "uploadFile") {
+          // Generic File Upload Handler
+          // Params: type (string), fileData (base64), mimeType (string), fileName (string)
+          var folderId = "";
+
+          if (data.type === "PAYMENT_PROOF") folderId = CONFIG.DRIVE_FOLDERS.PAYMENT_PROOFS;
+          else if (data.type === "ASSIGNMENT") folderId = CONFIG.DRIVE_FOLDERS.ASSIGNMENTS;
+          else if (data.type === "REGISTRATION") folderId = CONFIG.DRIVE_FOLDERS.REGISTRATION_ATTACHMENTS;
+          else {
+             // Default or error?
+             return createJSONOutput({ success: false, message: "Invalid file type" });
+          }
+
+          var url = saveFileToDrive(data.fileData, data.mimeType, data.fileName, folderId);
+          result = { success: true, url: url };
         }
       }
     }

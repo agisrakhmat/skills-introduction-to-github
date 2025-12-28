@@ -5,23 +5,20 @@ Ini adalah kode backend untuk sistem LMS Diploma Ilmi. Kode ini ditulis dalam Go
 ## Cara Instalasi
 
 ### 1. Persiapan Google Sheets
-1. Buat Spreadsheet baru di Google Drive.
-2. Salin **ID Spreadsheet** dari URL.
-   - Contoh URL: `https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjGMUUqPTvl/edit`
-   - ID adalah bagian acak antara `/d/` dan `/edit`.
-3. Simpan ID ini.
+1. Buka Spreadsheet yang telah anda tentukan: `https://docs.google.com/spreadsheets/d/1Z9KWRPIox8hAyDEQ7LjKoaQklzH8Ni1JFxGEe8s7aFA` (ID: `1Z9KWRPIox8hAyDEQ7LjKoaQklzH8Ni1JFxGEe8s7aFA`).
+2. Pastikan anda memiliki akses edit.
 
 ### 2. Persiapan Google Apps Script
-1. Di Spreadsheet yang baru dibuat, klik menu **Extensions** > **Apps Script**.
+1. Di Spreadsheet tersebut, klik menu **Extensions** > **Apps Script**.
 2. Editor GAS akan terbuka.
 
 ### 3. Menyalin Kode
-Anda perlu membuat 6 file script (`.gs`) di editor GAS dan menyalin kode dari folder `src/` repository ini ke dalamnya.
+Anda perlu membuat 7 file script (`.gs`) di editor GAS dan menyalin kode dari folder `src/` repository ini ke dalamnya.
 
 1. **Config.gs**:
    - Buat file baru bernama `Config.gs`.
    - Copy isi dari `src/Config.gs`.
-   - **PENTING**: Ganti `REPLACE_WITH_YOUR_SPREADSHEET_ID` dengan ID Spreadsheet anda.
+   - *Catatan: ID Spreadsheet dan Folder Google Drive sudah disesuaikan.*
 
 2. **Setup.gs**:
    - Buat file baru bernama `Setup.gs`.
@@ -39,7 +36,11 @@ Anda perlu membuat 6 file script (`.gs`) di editor GAS dan menyalin kode dari fo
    - Buat file baru bernama `BusinessLogic.gs`.
    - Copy isi dari `src/BusinessLogic.gs`.
 
-6. **Code.gs**:
+6. **DriveService.gs**:
+   - Buat file baru bernama `DriveService.gs`.
+   - Copy isi dari `src/DriveService.gs`.
+
+7. **Code.gs**:
    - Buat file baru bernama `Code.gs` (biasanya sudah ada default, timpa saja isinya).
    - Copy isi dari `src/Code.gs`.
 
@@ -93,13 +94,19 @@ Format body JSON:
    - Action: `calculateGrade`
    - Params: `enrollment_id`
 
+5. **Upload File** (Butuh Token)
+   - Action: `uploadFile`
+   - Params: `type` ("PAYMENT_PROOF", "ASSIGNMENT", "REGISTRATION"), `fileData` (base64 string), `mimeType` (e.g., "image/jpeg"), `fileName` (e.g., "bukti.jpg")
+   - **Response**: `{ success: true, url: "https://drive.google.com/..." }`
+   - Gunakan URL ini untuk dikirim ke endpoint lain (misal simpan bukti bayar).
+
 ### GET Requests
 - `?action=getCourses`: Mendapatkan daftar mata kuliah.
 - `?action=getProfile&student_id=XXX&token=USER_TOKEN`: Mendapatkan profil user (Butuh Token).
 
 ## Aturan Bisnis & Keamanan (Sudah Terimplementasi)
 - **Password**: Default 4 digit terakhir No WA.
-- **Keamanan**: Menggunakan Token untuk validasi login. Akses dikontrol berdasarkan Role (misal: Mahasiswa tidak bisa melihat profil orang lain).
+- **Keamanan**: Menggunakan Token untuk validasi login. Akses dikontrol berdasarkan Role.
 - **Nilai**:
   - Absensi 20% (Hadir 100, Rekaman 80, Izin 50, Alpa 0).
   - Tugas 15%.
@@ -110,4 +117,4 @@ Format body JSON:
   - Jika gagal, status FAILED.
 - **Mustawa**:
   - Single Level Policy: Tidak bisa ambil mata kuliah beda level sekaligus.
-  - Sequential Progression: Harus lulus semua MK level N sebelum ambil level N+1. (Support Mengulang/Retake).
+  - Sequential Progression: Harus lulus semua MK level N sebelum ambil level N+1.

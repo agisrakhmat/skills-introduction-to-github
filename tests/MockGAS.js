@@ -10,9 +10,11 @@ global.Utilities = {
   getUuid: function() { return 'uuid-' + Math.random().toString(36).substr(2, 9); },
   base64Encode: function(str) { return Buffer.from(str).toString('base64'); },
   base64Decode: function(str) { return Buffer.from(str, 'base64').toString('utf8'); },
-  newBlob: function(data) {
+  newBlob: function(data, mime, name) {
     return {
-      getDataAsString: function() { return data; }
+      getDataAsString: function() { return data; },
+      getName: function() { return name; },
+      getContentType: function() { return mime; }
     };
   }
 };
@@ -102,6 +104,22 @@ var DB = new MockSpreadsheet("MOCK_ID");
 global.SpreadsheetApp = {
   openById: function(id) {
     return DB;
+  }
+};
+
+// Mock DriveApp
+global.DriveApp = {
+  Access: { ANYONE_WITH_LINK: "ANYONE_WITH_LINK" },
+  Permission: { VIEW: "VIEW" },
+  getFolderById: function(id) {
+    return {
+      createFile: function(blob) {
+        return {
+          getUrl: function() { return "https://drive.google.com/file/d/mock-file-id/view"; },
+          setSharing: function(access, permission) {}
+        };
+      }
+    };
   }
 };
 

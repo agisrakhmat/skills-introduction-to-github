@@ -5,9 +5,8 @@
  */
 
 var CONFIG = {
-  // Replace this with the ID of your Google Sheet
-  // Open your Google Sheet -> Copy the ID from the URL: https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/edit
-  SPREADSHEET_ID: "REPLACE_WITH_YOUR_SPREADSHEET_ID",
+  // Spreadsheet ID provided by user
+  SPREADSHEET_ID: "1Z9KWRPIox8hAyDEQ7LjKoaQklzH8Ni1JFxGEe8s7aFA",
 
   SHEET_NAMES: {
     USERS: "USERS",
@@ -46,5 +45,14 @@ var CONFIG = {
     REKAMAN: 80,
     IZIN: 50,
     ALPA: 0
+  },
+
+  DRIVE_FOLDERS: {
+    CERTIFICATES: "1XAgam8EcNiaAiKKi4c5aksgTG2y5_OEk",
+    ASSIGNMENTS: "1J8tS_z-vxmrRM6H9ajDXGdbDs7kFxYNS",
+    PAYMENT_PROOFS: "1f290UerP4m7hZ4orznTzpD26GLGPM0kg",
+    PAYMENT_RECEIPTS: "1T5LmOfnHnt4TeFzfFrl8zLKocGeg0s57",
+    TRANSCRIPTS: "1dXdoJrVwJ7AXCVzF76-fQkhyo8fL8I7C",
+    REGISTRATION_ATTACHMENTS: "1fb3tirvtPD-M0HvYI_Rdb0dT7A9eX_yq"
   }
 };
