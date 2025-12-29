@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    /* Reuse similar styles for consistency */
+    .lms-reg-container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    .lms-form-group { margin-bottom: 15px; }
+    .lms-form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+    .lms-form-group input, .lms-form-group select { width: 100%; padding: 8px; }
+    .lms-btn { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
+    .lms-note { font-size: 0.9em; color: #666; margin-top: 5px; }
+  </style>
+</head>
+<body>
+
+<div class="lms-reg-container">
+  <h2 style="text-align:center;">Pendaftaran Mahasiswa Baru</h2>
+
+  <form id="regForm" onsubmit="handleRegister(event)">
+    <div class="lms-form-group">
+      <label>Nama Lengkap</label>
+      <input type="text" id="fullName" required>
+    </div>
+
+    <div class="lms-form-group">
+      <label>Email</label>
+      <input type="email" id="email" required>
+    </div>
+
+    <div class="lms-form-group">
+      <label>No. WhatsApp</label>
+      <input type="text" id="phone" placeholder="628xxxxxxxx" required>
+      <div class="lms-note">*Password akun Anda adalah 4 digit terakhir nomor ini.</div>
+    </div>
+
+    <div class="lms-form-group">
+      <label>Jenis Kelamin</label>
+      <select id="gender">
+        <option value="MALE">Ikhwan (Laki-laki)</option>
+        <option value="FEMALE">Akhwat (Perempuan)</option>
+      </select>
+    </div>
+
+    <div class="lms-form-group">
+      <label>Bukti Pembayaran (Full Payment)</label>
+      <!-- File input logic is complex without direct GAS form, simulate base64 logic -->
+      <input type="file" id="proofFile" accept="image/*,.pdf" disabled>
+      <div class="lms-note">*Fitur upload aktif di versi Live.</div>
+    </div>
+
+    <button type="submit" id="btnReg" class="lms-btn">Daftar Sekarang</button>
+  </form>
+</div>
+
+<script>
+  function handleRegister(e) {
+    e.preventDefault();
+
+    var btn = document.getElementById('btnReg');
+    btn.innerText = 'Mendaftar...';
+    btn.disabled = true;
+
+    var data = {
+      action: 'register',
+      fullName: document.getElementById('fullName').value,
+      email: document.getElementById('email').value,
+      phone: document.getElementById('phone').value,
+      gender: document.getElementById('gender').value
+    };
+
+    console.log('Sending Registration:', data);
+
+    // Simulation
+    setTimeout(function() {
+      alert('Simulasi: Pendaftaran Berhasil!\nSilakan login dengan No WA dan Password (4 digit terakhir).');
+      btn.innerText = 'Daftar Sekarang';
+      btn.disabled = false;
+      document.getElementById('regForm').reset();
+    }, 1500);
+
+    // Implementation note for GAS:
+    // Convert file to Base64 using FileReader before sending to google.script.run
+  }
+</script>
+
+</body>
+</html>
