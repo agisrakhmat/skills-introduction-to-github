@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <title>Dashboard Mahasiswa</title>
+  <style>
+      /* Basic styles */
+      body { font-family: sans-serif; padding: 20px; }
+      .card { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+      th { background-color: #f2f2f2; }
+      button { padding: 5px 10px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Student Dashboard</h1>
+  <div id="profile-section" class="card">Loading Profile...</div>
+
+  <div id="courses-section" class="card">
+    <h3>Active Courses</h3>
+    <div id="courses-list">Loading...</div>
+  </div>
+
+  <div id="enrollment-section" class="card">
+      <h3>Enroll in New Course</h3>
+      <input type="text" id="course-id-input" placeholder="Course ID (e.g. MK.L2.01)">
+      <button onclick="enroll()">Enroll</button>
+  </div>
+
+  <div id="transcript-section" class="card">
+    <h3>Transcript</h3>
+    <div id="transcript-list">Loading...</div>
+  </div>
+
+  <script>
+    var user;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var userStr = localStorage.getItem('lms_user');
+        if (!userStr) {
+            alert('Please login first');
+            return;
+        }
+        user = JSON.parse(userStr);
+        loadDashboard(user.user_id);
+    });
+
+    function loadDashboard(userId) {
+        if (typeof google !== 'undefined' && google.script) {
+            google.script.run
+            .withSuccessHandler(renderDashboard)
+            .apiHandler({
+                action: 'get_dashboard_data',
+                user_id: userId
+            });
+        }
+    }
+
+    function enroll() {
+        var courseId = document.getElementById('course-id-input').value;
+        if(!courseId) return;
+
+        if (typeof google !== 'undefined' && google.script) {
+            google.script.run
+            .withSuccessHandler(function(res) {
+                if(res.status === 'success') {
+                    alert('Enrolled!');
+                    loadDashboard(user.user_id);
+                } else {
+                    alert('Error: ' + res.message);
+                }
+            })
+            .apiHandler({
+                action: 'enroll_course',
+                student_id: user.user_id,
+                course_id: courseId
+            });
+        }
+    }
+
+    function renderDashboard(res) {
+        if (res.status !== 'success') {
+            alert('Error: ' + res.message);
+            return;
+        }
+        var data = res.data;
+
+        // Profile
+        document.getElementById('profile-section').innerHTML =
+            '<b>Name:</b> ' + data.student.full_name + '<br>' +
+            '<b>ID:</b> ' + data.student.id + '<br>' +
+            '<b>Status:</b> ' + data.student.status;
+
+        // Courses
+        var coursesHtml = '<table><tr><th>Course</th><th>Level</th><th>Status</th></tr>';
+        data.active_courses.forEach(function(c) {
+            coursesHtml += '<tr><td>' + c.name + '</td><td>' + c.level + '</td><td>' + c.status + '</td></tr>';
+        });
+        coursesHtml += '</table>';
+        document.getElementById('courses-list').innerHTML = coursesHtml;
+
+        // Transcript (Simplified)
+        var transHtml = '';
+        for (var level in data.transcript) {
+            transHtml += '<h4>Level ' + level + '</h4><ul>';
+            data.transcript[level].forEach(function(c) {
+                transHtml += '<li>' + c.name + ': ' + (c.final_grade || '-') + ' (' + (c.status) + ')</li>';
+            });
+            transHtml += '</ul>';
+        }
+        document.getElementById('transcript-list').innerHTML = transHtml;
+    }
+  </script>
+</body>
+</html>

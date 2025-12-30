@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <title>Login - Diploma Ilmi LMS</title>
+  <style>
+    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f4f4; }
+    .login-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 300px; }
+    input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; box-sizing: border-box; }
+    button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .error { color: red; font-size: 0.9em; display: none; }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Login Mahasiswa</h2>
+    <input type="text" id="identifier" placeholder="Email / Phone / NIM">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Masuk</button>
+    <p class="error" id="errorMsg"></p>
+  </div>
+
+  <script>
+    function login() {
+      var id = document.getElementById('identifier').value;
+      var pass = document.getElementById('password').value;
+      var btn = document.querySelector('button');
+      var errorMsg = document.getElementById('errorMsg');
+
+      btn.disabled = true;
+      btn.innerText = 'Loading...';
+      errorMsg.style.display = 'none';
+
+      var payload = {
+        action: 'login',
+        identifier: id,
+        password: pass
+      };
+
+      if (typeof google !== 'undefined' && google.script) {
+         google.script.run
+           .withSuccessHandler(handleResponse)
+           .withFailureHandler(function(err) {
+              showError(err.message);
+           })
+           .apiHandler(payload);
+      } else {
+        // Fallback for local testing
+        console.log("Mock sending:", payload);
+        alert('This runs on Google Apps Script only. Check console for mock payload.');
+      }
+    }
+
+    function handleResponse(res) {
+       // res is now a native JS object
+       var btn = document.querySelector('button');
+       btn.disabled = false;
+       btn.innerText = 'Masuk';
+
+       if (res.status === 'success') {
+          // Save token
+          localStorage.setItem('lms_token', res.data.token);
+          localStorage.setItem('lms_user', JSON.stringify(res.data.user));
+          alert('Login Berhasil!');
+          // Redirect to Dashboard (reload with ?page=dashboard)
+          window.top.location.href = '<?= ScriptApp.getService().getUrl() ?>?page=dashboard';
+          // Note: In local HTML context, ScriptApp is not defined.
+          // Real deployment would parse the URL or use client-side logic.
+          // For simplicity in a template:
+          // window.top.location.href = window.location.href.split('?')[0] + '?page=dashboard';
+       } else {
+          showError(res.message);
+       }
+    }
+
+    function showError(msg) {
+       var errorMsg = document.getElementById('errorMsg');
+       errorMsg.innerText = msg;
+       errorMsg.style.display = 'block';
+       var btn = document.querySelector('button');
+       btn.disabled = false;
+       btn.innerText = 'Masuk';
+    }
+  </script>
+</body>
+</html>
