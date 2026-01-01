@@ -1,0 +1,49 @@
+// Configuration file for Diploma Ilmi LMS
+
+var Config = {
+    SPREADSHEET_ID: '1Z9KWRPIox8hAyDEQ7LjKoaQklzH8Ni1JFxGEe8s7aFA',
+
+    // Sheet Names
+    SHEET_USERS: 'USERS',
+    SHEET_COURSES: 'COURSES',
+    SHEET_ENROLLMENTS: 'ENROLLMENTS',
+    SHEET_ATTENDANCE: 'ATTENDANCE',
+    SHEET_ASSIGNMENTS: 'ASSIGNMENTS',
+    SHEET_SUBMISSIONS: 'SUBMISSIONS',
+    SHEET_PAYMENTS: 'PAYMENTS',
+    SHEET_CERTIFICATES: 'CERTIFICATES',
+
+    // Roles
+    ROLE_STUDENT: 'STUDENT',
+    ROLE_LECTURER: 'LECTURER',
+    ROLE_FINANCE: 'FINANCE',
+    ROLE_ADMIN: 'ADMIN',
+    ROLE_ACADEMIC: 'ACADEMIC',
+
+    // Statuses
+    STATUS_ACTIVE: 'ACTIVE',
+    STATUS_INACTIVE: 'INACTIVE',
+
+    STATUS_ENROLLED: 'ENROLLED',
+    STATUS_PASSED: 'PASSED',
+    STATUS_FAILED: 'FAILED',
+
+    ATTENDANCE_HADIR: 'HADIR',
+    ATTENDANCE_REKAMAN: 'REKAMAN',
+    ATTENDANCE_IZIN: 'IZIN',
+    ATTENDANCE_ALPA: 'ALPA',
+
+    // Grading Weights
+    WEIGHT_ATTENDANCE: 0.20,
+    WEIGHT_ASSIGNMENT: 0.15,
+    WEIGHT_UTS: 0.30,
+    WEIGHT_UAS: 0.35,
+
+    // Passing Grade
+    MIN_POINT: 3.0
+};
+
+// Export for Node.js testing
+if (typeof module !== 'undefined') {
+    module.exports = Config;
+}
