@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <title>Login Mahasiswa - Diploma Ilmi</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .login-container { max-width: 400px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; border-radius: 5px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        .error { color: red; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <h2>Login Mahasiswa</h2>
+    <div id="error-msg" class="error"></div>
+    <form id="login-form">
+        <label for="identifier">Email atau No. WA:</label>
+        <input type="text" id="identifier" name="identifier" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+
+        <button type="submit">Masuk</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var identifier = document.getElementById('identifier').value;
+        var password = document.getElementById('password').value;
+        var errorMsg = document.getElementById('error-msg');
+
+        // Disable button
+        var btn = document.querySelector('button');
+        btn.disabled = true;
+        btn.textContent = 'Memuat...';
+
+        var payload = {
+            action: 'login',
+            identifier: identifier,
+            password: password
+        };
+
+        // This URL will be the Web App URL from GAS deployment
+        // For development, we can't really call it without deployment.
+        // Assuming we have the script url injected or configured.
+        var scriptUrl = 'YOUR_GAS_SCRIPT_URL_HERE';
+
+        fetch(scriptUrl, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Store token
+                localStorage.setItem('lms_token', data.token);
+                localStorage.setItem('lms_user', JSON.stringify(data.user));
+
+                // Redirect to dashboard
+                // In Elementor, this would likely be another page URL
+                window.location.href = 'dashboard-student';
+            } else {
+                errorMsg.textContent = data.message;
+                errorMsg.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Masuk';
+            }
+        })
+        .catch(error => {
+            errorMsg.textContent = 'Terjadi kesalahan jaringan.';
+            errorMsg.style.display = 'block';
+            console.error('Error:', error);
+            btn.disabled = false;
+            btn.textContent = 'Masuk';
+        });
+    });
+</script>
+
+</body>
+</html>
