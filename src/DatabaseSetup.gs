@@ -133,24 +133,30 @@ var COURSES_DATA = [
 function seedDummyData() {
   var ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
 
-  // 1. Seed Courses & Schedules
+  // 1. Seed Courses, Schedules & Lessons
   var courseSheet = ss.getSheetByName(CONFIG.SHEET_NAMES.COURSES);
   var scheduleSheet = ss.getSheetByName(CONFIG.SHEET_NAMES.SCHEDULES);
+  var lessonSheet = ss.getSheetByName(CONFIG.SHEET_NAMES.LESSONS);
+  var attendanceTeacherSheet = ss.getSheetByName(CONFIG.SHEET_NAMES.ATTENDANCE_TEACHER);
+
   var coursesMap = {}; // Map Course Name -> Course ID
+  var scheduleIds = []; // Simpan schedule ID untuk absensi dosen
 
   COURSES_DATA.forEach(function(c, index) {
     var cId = "C-" + (index + 1).toString().padStart(3, '0');
     coursesMap[c.name] = cId;
 
-    // Simpan Course jika belum ada (sederhana: append saja untuk dummy)
+    // Simpan Course
     courseSheet.appendRow([
       cId, c.name, c.code, "Deskripsi mata kuliah " + c.name, 2, "2025-1", new Date()
     ]);
 
     // Simpan Schedule
     c.schedules.forEach(function(s, sIdx) {
+      var schId = "SCH-" + cId + "-" + sIdx;
+      scheduleIds.push({id: schId, lecturer: s.lecturer});
       scheduleSheet.appendRow([
-        "SCH-" + cId + "-" + sIdx,
+        schId,
         cId,
         s.day,
         s.start,
@@ -160,10 +166,36 @@ function seedDummyData() {
         "2025-1"
       ]);
     });
+
+    // Simpan Lessons (2 pertemuan dummy)
+    for (var l = 1; l <= 2; l++) {
+      lessonSheet.appendRow([
+        "LSN-" + cId + "-" + l,
+        cId,
+        "Materi Pertemuan " + l + " - " + c.name,
+        l,
+        "https://drive.google.com/file/d/dummy-lesson-file",
+        new Date()
+      ]);
+    }
+  });
+
+  // 1b. Seed Attendance Teacher
+  scheduleIds.forEach(function(sch) {
+    for (var w = 1; w <= 12; w++) {
+      attendanceTeacherSheet.appendRow([
+        "ATT-T-" + sch.id + "-" + w,
+        sch.id,
+        sch.lecturer, // Pakai Nama Dosen sebagai ID sementara
+        "HADIR",
+        new Date()
+      ]);
+    }
   });
 
   // 2. Seed Users (10 Mahasiswa)
   var userSheet = ss.getSheetByName(CONFIG.SHEET_NAMES.USERS);
+  var paymentSheet = ss.getSheetByName(CONFIG.SHEET_NAMES.PAYMENTS);
   var students = [];
 
   for (var i = 1; i <= 10; i++) {
@@ -199,6 +231,20 @@ function seedDummyData() {
       CONFIG.CURRENT_BATCH,
       "BCA 123456" + i,
       "SYSTEM",
+      new Date()
+    ]);
+
+    // Simpan Payment (SPP)
+    paymentSheet.appendRow([
+      "PAY-" + userId + "-01",
+      userId,
+      "SPP",
+      "Bulan 1",
+      300000,
+      "https://drive.google.com/file/d/dummy-proof",
+      "Pembayaran SPP Bulan 1",
+      "VERIFIED", // Langsung verified untuk dummy
+      "ADMIN-FINANCE",
       new Date()
     ]);
   }
@@ -324,6 +370,49 @@ function seedDummyData() {
       ]);
     });
   });
+
+  // 4. Seed Remaining Tables (Costs, Payroll, Certificates, etc.)
+  var costSheet = ss.getSheetByName(CONFIG.SHEET_NAMES.COSTS);
+  costSheet.appendRow(["COST-001", "IT", "Biaya Server Tahunan", 1500000, new Date(), "ADMIN-KEUANGAN", "APPROVED"]);
+  costSheet.appendRow(["COST-002", "Software", "Langganan Zoom Pro", 300000, new Date(), "ADMIN-KEUANGAN", "APPROVED"]);
+
+  var payrollSheet = ss.getSheetByName(CONFIG.SHEET_NAMES.PAYROLL);
+  // Dummy payroll untuk setiap dosen di jadwal
+  var uniqueLecturers = [...new Set(COURSES_DATA.flatMap(c => c.schedules.map(s => s.lecturer)))];
+  uniqueLecturers.forEach(function(lec, idx) {
+    payrollSheet.appendRow([
+      "PAYROLL-" + idx,
+      lec,
+      "Januari",
+      "2025",
+      2000000,
+      500000,
+      0,
+      "PAID",
+      new Date()
+    ]);
+  });
+
+  var certTemplateSheet = ss.getSheetByName(CONFIG.SHEET_NAMES.CERTIFICATE_TEMPLATES);
+  certTemplateSheet.appendRow([
+    "TMPL-001", "Sertifikat Kelulusan Mustawa 1", "Certificate", "Mustawa 1",
+    "1XAgam8EcNiaAiKKi4c5aksgTG2y5_OEk", "Google Slides", true, "ADMIN", new Date()
+  ]);
+
+  var certIssuedSheet = ss.getSheetByName(CONFIG.SHEET_NAMES.CERTIFICATES_ISSUED);
+  // Issue 1 certificate untuk student pertama
+  var s1 = students[0];
+  certIssuedSheet.appendRow([
+    "CERT-001/DI/2025", s1.userId, s1.name, "Mustawa 1", 3.85, "Mumtaz", "ISSUED",
+    "https://drive.google.com/file/d/dummy-cert", new Date(), "TMPL-001", "SYSTEM"
+  ]);
+
+  var countersSheet = ss.getSheetByName(CONFIG.SHEET_NAMES.COUNTERS);
+  countersSheet.appendRow(["NIM_SEQUENCE", 10, new Date()]);
+  countersSheet.appendRow(["PAYMENT_ID", 10, new Date()]);
+
+  var perfLogsSheet = ss.getSheetByName(CONFIG.SHEET_NAMES.PERF_LOGS);
+  perfLogsSheet.appendRow(["seedDummyData", 1500, new Date(), "Initial Seeding"]);
 }
 
 // Export module for Node.js testing environment

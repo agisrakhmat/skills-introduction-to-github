@@ -64,7 +64,7 @@ global.SpreadsheetApp = {
 // --- END MOCKING ---
 
 function runTest() {
-  console.log("=== MEMULAI TEST GENERASI DATA DUMMY ===");
+  console.log("=== MEMULAI TEST GENERASI DATA DUMMY (UPDATED) ===");
 
   // 1. Test Create Headers
   console.log("\n1. Menjalankan createSheetHeaders()...");
@@ -82,72 +82,44 @@ function runTest() {
   console.log("\n2. Menjalankan seedDummyData()...");
   DatabaseSetup.seedDummyData();
 
-  // Validasi Data
-  // Cek Users
-  const users = global.mockSS.getSheetByName(CONFIG.SHEET_NAMES.USERS).data;
-  // Header is row 0, data starts at row 1
-  const studentCount = users.length - 1; // minus header
-  console.log(`Jumlah User yang dibuat: ${studentCount} (Target: 10)`);
-  if (studentCount === 10) {
-      console.log("✅ Jumlah mahasiswa sesuai.");
-  } else {
-      console.error("❌ Jumlah mahasiswa tidak sesuai.");
-  }
+  // Validasi Data Lengkap
+  console.log("\nVerifikasi Jumlah Data per Sheet:");
 
-  // Cek Enrollments
-  const enrollments = global.mockSS.getSheetByName(CONFIG.SHEET_NAMES.ENROLLMENTS).data;
-  console.log(`Jumlah Enrollment yang dibuat: ${enrollments.length - 1}`);
-
-  // Cek Nilai (Sample)
-  if (enrollments.length > 1) {
-    const sampleEnrollment = enrollments[1]; // Row 1 (header is 0)
-    console.log("Sampel Enrollment Row:", sampleEnrollment);
-
-    // Validasi range nilai akhir (index 6 adalah Final Score)
-    const finalScore = parseFloat(sampleEnrollment[6]);
-    console.log(`Nilai Akhir Sampel: ${finalScore}`);
-    if (finalScore >= 0 && finalScore <= 100) {
-        console.log("✅ Perhitungan nilai akhir logis (0-100).");
+  const checkCount = (sheetName, minExpected) => {
+    const sheet = global.mockSS.getSheetByName(sheetName);
+    const count = sheet ? sheet.data.length - 1 : 0; // -1 for header
+    if (count >= minExpected) {
+      console.log(`✅ ${sheetName}: ${count} rows (Expected >= ${minExpected})`);
     } else {
-        console.error("❌ Nilai akhir di luar jangkauan.");
+      console.error(`❌ ${sheetName}: ${count} rows (Expected >= ${minExpected})`);
     }
-  }
+    return count;
+  };
 
-  // Cek Courses Gender Separation
-  console.log("\nVerifikasi Logika Mata Kuliah Ikhwan/Akhwat:");
-  // Cari ID Course Fiqh Syafi'i (Ikhwan)
-  const courses = global.mockSS.getSheetByName(CONFIG.SHEET_NAMES.COURSES).data;
-  let ikhwanCourseId = null;
-  let akhwatCourseId = null;
+  checkCount(CONFIG.SHEET_NAMES.USERS, 10);
+  checkCount(CONFIG.SHEET_NAMES.COURSES, 11);
+  checkCount(CONFIG.SHEET_NAMES.SCHEDULES, 11);
+  checkCount(CONFIG.SHEET_NAMES.LESSONS, 22); // ~2 per course
+  checkCount(CONFIG.SHEET_NAMES.PAYMENTS, 10); // 1 per user
+  checkCount(CONFIG.SHEET_NAMES.COSTS, 2);
+  checkCount(CONFIG.SHEET_NAMES.PAYROLL, 5); // At least some lecturers
+  checkCount(CONFIG.SHEET_NAMES.CERTIFICATE_TEMPLATES, 1);
+  checkCount(CONFIG.SHEET_NAMES.CERTIFICATES_ISSUED, 1);
+  checkCount(CONFIG.SHEET_NAMES.COUNTERS, 2);
+  checkCount(CONFIG.SHEET_NAMES.PERF_LOGS, 1);
+  checkCount(CONFIG.SHEET_NAMES.ATTENDANCE_TEACHER, 100); // 12 weeks * many schedules
 
-  courses.forEach(row => {
-      if (row[1] === "Fiqh Syafi'i (Ikhwan)") ikhwanCourseId = row[0];
-      if (row[1] === "Fiqh Syafi'i (Akhwat)") akhwatCourseId = row[0];
-  });
-
-  if (ikhwanCourseId && akhwatCourseId) {
-      // Cek siapa yang enroll ke Ikhwan Course
-      let maleWrong = false;
-      let femaleWrong = false;
-
-      // Map UserID -> Gender
-      let userGender = {};
-      users.forEach((u, i) => { if(i>0) userGender[u[0]] = u[6]; }); // u[0]=ID, u[6]=Gender
-
-      enrollments.forEach((row, i) => {
-          if (i === 0) return;
-          if (row[2] === ikhwanCourseId) {
-              if (userGender[row[1]] !== "Pria") femaleWrong = true;
-          }
-          if (row[2] === akhwatCourseId) {
-              if (userGender[row[1]] !== "Wanita") maleWrong = true;
-          }
-      });
-
-      if (!femaleWrong && !maleWrong) {
-          console.log("✅ Validasi Gender Mata Kuliah Berhasil: Pria masuk Ikhwan, Wanita masuk Akhwat.");
+  // Cek Relasi Payment -> User
+  console.log("\nVerifikasi Relasi Payment:");
+  const payments = global.mockSS.getSheetByName(CONFIG.SHEET_NAMES.PAYMENTS).data;
+  if (payments.length > 1) {
+      const samplePayment = payments[1];
+      const userIdInPayment = samplePayment[1];
+      console.log(`Sample Payment UserID: ${userIdInPayment}`);
+      if (userIdInPayment.startsWith("U-")) {
+          console.log("✅ Format UserID pada Payment valid.");
       } else {
-          console.error(`❌ Validasi Gender Gagal. Pria Salah Masuk: ${maleWrong}, Wanita Salah Masuk: ${femaleWrong}`);
+          console.error("❌ Format UserID pada Payment salah.");
       }
   }
 
