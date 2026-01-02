@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <title>Student Login</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .container { max-width: 400px; margin: auto; }
+    input { width: 100%; margin-bottom: 10px; padding: 8px; }
+    button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    #message { margin-top: 10px; color: red; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Student Login</h2>
+  <input type="text" id="identifier" placeholder="Email or Phone">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <div id="message"></div>
+</div>
+
+<script>
+  // DEPLOYMENT_URL should be replaced with the actual web app URL after deployment
+  var DEPLOYMENT_URL = 'YOUR_GAS_WEB_APP_URL';
+
+  function login() {
+    var identifier = document.getElementById('identifier').value;
+    var password = document.getElementById('password').value;
+    var message = document.getElementById('message');
+
+    message.innerText = 'Logging in...';
+
+    var payload = {
+      action: 'login',
+      identifier: identifier,
+      password: password
+    };
+
+    // Using fetch to call GAS doPost
+    fetch(DEPLOYMENT_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        message.style.color = 'green';
+        message.innerText = 'Login Successful!';
+        // Save token
+        localStorage.setItem('lms_token', data.data.token);
+        localStorage.setItem('lms_user', JSON.stringify(data.data.user));
+        // Redirect
+        // window.location.href = 'Dashboard_Student.html';
+        alert('Redirecting to Dashboard...');
+      } else {
+        message.style.color = 'red';
+        message.innerText = data.message;
+      }
+    })
+    .catch(error => {
+      message.style.color = 'red';
+      message.innerText = 'Error: ' + error;
+    });
+  }
+</script>
+
+</body>
+</html>

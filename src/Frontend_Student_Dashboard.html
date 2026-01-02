@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <title>Student Dashboard</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .container { max-width: 800px; margin: auto; }
+    .card { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    button { padding: 5px 10px; background: #28a745; color: white; border: none; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Student Dashboard</h2>
+  <div id="profile" class="card">
+    <h3>Profile</h3>
+    <p>Loading...</p>
+  </div>
+
+  <div id="courses" class="card">
+    <h3>Enrolled Courses</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Course</th>
+          <th>Level</th>
+          <th>Lecturer</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="course-list">
+        <!-- Courses will be loaded here -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  var DEPLOYMENT_URL = 'YOUR_GAS_WEB_APP_URL';
+  var token = localStorage.getItem('lms_token');
+
+  if (!token) {
+    alert('Not logged in!');
+    // window.location.href = 'Login_Student.html';
+  }
+
+  function loadDashboard() {
+    fetch(DEPLOYMENT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'student_dashboard',
+        token: token
+      })
+    })
+    .then(response => response.json())
+    .then(res => {
+      if (res.success) {
+        var user = res.data.user;
+        document.querySelector('#profile').innerHTML = `
+          <h3>Profile</h3>
+          <p><strong>Name:</strong> ${user.full_name}</p>
+          <p><strong>ID:</strong> ${user.user_id}</p>
+          <p><strong>Mustawa:</strong> ${res.data.current_mustawa}</p>
+          <p><strong>Status:</strong> ${user.status}</p>
+        `;
+      } else {
+        alert(res.message);
+      }
+    });
+  }
+
+  function loadCourses() {
+    fetch(DEPLOYMENT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'student_courses',
+        token: token
+      })
+    })
+    .then(response => response.json())
+    .then(res => {
+      if (res.success) {
+        var tbody = document.getElementById('course-list');
+        tbody.innerHTML = '';
+        res.data.forEach(c => {
+          var tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${c.name}</td>
+            <td>${c.level}</td>
+            <td>${c.lecturer}</td>
+            <td>${c.status}</td>
+            <td><button onclick="markAttendance('${c.course_id}')">Attendance</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+    });
+  }
+
+  function markAttendance(courseId) {
+    var today = new Date().toISOString().split('T')[0];
+    fetch(DEPLOYMENT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+            action: 'student_attendance_submit',
+            token: token,
+            course_id: courseId,
+            session_date: today,
+            status: 'HADIR'
+        })
+    })
+    .then(response => response.json())
+    .then(res => {
+        alert(res.message);
+    });
+  }
+
+  // Init
+  loadDashboard();
+  loadCourses();
+</script>
+
+</body>
+</html>
