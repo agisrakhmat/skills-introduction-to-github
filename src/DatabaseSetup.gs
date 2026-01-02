@@ -249,6 +249,35 @@ function seedDummyData() {
     ]);
   }
 
+  // 2b. Seed STAFF Users (Admin, Finance, Lecturer) - PENTING UNTUK TEST LOGIN STAFF
+  var staffData = [
+    { id: "ADM-001", email: "admin@diplomailmi.com", role: CONFIG.ROLES.ADMIN, name: "Super Admin" },
+    { id: "FIN-001", email: "finance@diplomailmi.com", role: CONFIG.ROLES.FINANCE, name: "Staff Keuangan" },
+    { id: "LEC-001", email: "lecturer@diplomailmi.com", role: CONFIG.ROLES.LECTURER, name: "Ustadz Saiful Awal, Lc" }
+  ];
+
+  staffData.forEach(function(staff) {
+    userSheet.appendRow([
+      staff.id,
+      staff.id, // NIM/NIP sama dengan ID untuk staff
+      staff.email,
+      "HASH1234", // Password dummy
+      staff.name,
+      "Jakarta, 01-01-1980",
+      "Pria",
+      "Jl. Staff Kampus",
+      "62899999999",
+      "-",
+      "-",
+      staff.role,
+      CONFIG.STATUS.ACTIVE,
+      "-",
+      "BSI 1234",
+      "SYSTEM",
+      new Date()
+    ]);
+  });
+
   // 3. Seed Enrollments, Attendance, Assignments, Grades
   var enrollmentSheet = ss.getSheetByName(CONFIG.SHEET_NAMES.ENROLLMENTS);
   var attendanceSheet = ss.getSheetByName(CONFIG.SHEET_NAMES.ATTENDANCE_STUDENT);

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Login - Diploma Ilmi</title>
+
+    <!-- Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }, // Font Inter untuk kesan lebih formal
+                    colors: {
+                        staff: { primary: '#1e40af', dark: '#1e3a8a', light: '#dbeafe' } // Blue Corporate Theme
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        .glass-panel { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); }
+        .bg-pattern { background-color: #f1f5f9; background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; }
+    </style>
+</head>
+<body class="font-sans text-slate-800 bg-slate-50 h-screen flex items-center justify-center bg-pattern">
+
+    <div class="w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row h-full md:h-[600px] m-4">
+
+        <!-- KOLOM KIRI: BRANDING & INFO -->
+        <div class="w-full md:w-1/2 bg-gradient-to-br from-slate-800 to-slate-900 p-10 flex flex-col justify-between text-white relative overflow-hidden">
+            <!-- Decorative Circle -->
+            <div class="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-blue-500 opacity-10 blur-3xl"></div>
+            <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-60 h-60 rounded-full bg-purple-500 opacity-10 blur-3xl"></div>
+
+            <!-- Content -->
+            <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-8">
+                    <img src="https://diplomailmi.my.id/wp-content/uploads/2025/09/Logo-Iploma-Ilmi-Polos.png" style="height: 50px; width: auto;">
+                    <div class="border-l border-slate-600 pl-3">
+                        <h1 class="text-lg font-bold leading-none text-white">DIPLOMA ILMI</h1>
+                        <p class="text-[10px] text-slate-400 tracking-wider">STAFF PORTAL</p>
+                    </div>
+                </div>
+
+                <h2 class="text-3xl font-bold mb-4 text-white">Sistem Informasi<br>Manajemen Terpadu</h2>
+                <p class="text-slate-300 text-sm leading-relaxed mb-8">
+                    Portal khusus untuk Dosen dan Tenaga Kependidikan dalam mengelola aktivitas akademik, keuangan, dan operasional kampus.
+                </p>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-3 bg-white/5 rounded-lg border border-white/10 backdrop-blur-sm">
+                        <i class="fa-solid fa-server text-blue-400 mb-2"></i>
+                        <h4 class="font-bold text-sm">Terintegrasi</h4>
+                        <p class="text-[10px] text-slate-400">Data real-time antar divisi.</p>
+                    </div>
+                    <div class="p-3 bg-white/5 rounded-lg border border-white/10 backdrop-blur-sm">
+                        <i class="fa-solid fa-shield-halved text-green-400 mb-2"></i>
+                        <h4 class="font-bold text-sm">Aman</h4>
+                        <p class="text-[10px] text-slate-400">Enkripsi data tingkat tinggi.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative z-10 text-xs text-slate-500 mt-8">
+                &copy; 2025 Yayasan Madinah Salam. All Rights Reserved.
+            </div>
+        </div>
+
+        <!-- KOLOM KANAN: FORM LOGIN -->
+        <div class="w-full md:w-1/2 p-10 flex flex-col justify-center bg-white relative">
+
+            <div class="mb-8">
+                <h3 class="text-2xl font-bold text-slate-800">Login Pegawai</h3>
+                <p class="text-sm text-slate-500">Silakan masuk menggunakan akun staff/dosen Anda.</p>
+            </div>
+
+            <!-- Alert Error -->
+            <div id="login-error" class="hidden mb-4 bg-red-50 border-l-4 border-red-500 p-3 rounded-r text-sm text-red-700 flex items-center gap-2">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span id="error-text">Kredensial tidak valid.</span>
+            </div>
+
+            <form onsubmit="handleStaffLogin(event)" class="space-y-6">
+                <!-- Input Email / ID -->
+                <div class="group">
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-2">ID Pegawai / Email</label>
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-slate-50 text-staff-primary rounded-xl border border-slate-200 shadow-sm">
+                            <i class="fa-solid fa-user-tie text-lg"></i>
+                        </div>
+                        <input type="text" id="staff-id" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-staff-primary focus:ring-2 focus:ring-blue-100 outline-none transition-all duration-200 text-slate-700 placeholder-gray-400 text-sm shadow-sm" placeholder="NIP atau Email Resmi">
+                    </div>
+                </div>
+
+                <!-- Input Password -->
+                <div class="group">
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Kata Sandi</label>
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-slate-50 text-staff-primary rounded-xl border border-slate-200 shadow-sm">
+                            <i class="fa-solid fa-lock text-lg"></i>
+                        </div>
+                        <input type="password" id="staff-pass" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-staff-primary focus:ring-2 focus:ring-blue-100 outline-none transition-all duration-200 text-slate-700 placeholder-gray-400 text-sm shadow-sm" placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-sm pt-2">
+                    <label class="flex items-center gap-2 text-slate-600 cursor-pointer">
+                        <input type="checkbox" class="rounded text-blue-600 focus:ring-blue-500"> Ingat Saya
+                    </label>
+                    <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">Lupa Sandi?</a>
+                </div>
+
+                <button type="submit" id="btn-login" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-200 transition transform active:scale-95 flex justify-center items-center gap-2 mt-2">
+                    <span id="btn-text">Masuk Dashboard</span>
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                </button>
+            </form>
+
+            <div class="mt-8 pt-6 border-t border-slate-100 text-center">
+                <p class="text-xs text-slate-400">Mengalami kendala akses?</p>
+                <a href="https://wa.me/6281234567890" class="inline-flex items-center gap-1 text-sm font-bold text-slate-600 hover:text-blue-600 mt-1 transition">
+                    <i class="fa-solid fa-headset"></i> Hubungi IT Support
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- LOGIC JS -->
+    <script>
+        // CONFIGURATION: URL Backend GAS
+        // GANTI DENGAN URL WEB APP ANDA YANG BARU
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwZGJ2ixcz6KN4XRNLGn68MxGFA7sC3DMqeorSQLhgrbvkpeDyw_g5wDomUkq7pImkP/exec';
+
+        // PAGE REDIRECT MAP
+        const REDIRECT_MAP = {
+            'student': '/dashboard-mahasiswa',
+            'ADMIN': '/dashboard-superadmin',
+            'LECTURER': '/dashboard-dosen',
+            'FINANCE': '/dashboard-keuangan',
+            'ACADEMIC': '/dashboard-akademik'
+        };
+
+        function handleStaffLogin(e) {
+            e.preventDefault();
+
+            const id = document.getElementById('staff-id').value;
+            const pass = document.getElementById('staff-pass').value;
+            const btn = document.getElementById('btn-login');
+            const btnText = document.getElementById('btn-text');
+            const errorBox = document.getElementById('login-error');
+            const errorText = document.getElementById('error-text');
+
+            // Reset UI
+            errorBox.classList.add('hidden');
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btnText.innerText = 'Memverifikasi...';
+
+            const payload = {
+                action: 'login',
+                emailOrPhone: id, // Disesuaikan dengan Backend (sebelumnya 'email')
+                password: pass
+            };
+
+            // Fetch ke Backend
+            fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            })
+            .then(r => r.json())
+            .then(result => {
+                // Backend return: { success: true, user: {...} }
+                if (result.success === true) {
+                    const user = result.user;
+
+                    // BLOCK STUDENT LOGIN HERE
+                    if (user.role === 'STUDENT') {
+                        errorBox.classList.remove('hidden');
+                        errorText.innerText = "Akun Mahasiswa tidak diizinkan di portal ini. Harap gunakan portal mahasiswa.";
+                        resetBtn();
+                        return;
+                    }
+
+                    // Save Session
+                    localStorage.setItem('lms_token', result.token);
+                    localStorage.setItem('lms_user', JSON.stringify(user));
+
+                    // Redirect
+                    const targetUrl = REDIRECT_MAP[user.role] || '/';
+                    console.log("Login Staff Sukses, Redirect ke:", targetUrl);
+                    window.location.href = targetUrl;
+                } else {
+                    // Login Gagal
+                    errorBox.classList.remove('hidden');
+                    errorText.innerText = result.message || "ID atau Password salah.";
+                    resetBtn();
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                errorBox.classList.remove('hidden');
+                errorText.innerText = "Gagal menghubungi server.";
+                resetBtn();
+            });
+
+            function resetBtn() {
+                btn.disabled = false;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                btnText.innerText = 'Masuk Dashboard';
+            }
+        }
+    </script>
+
+    <div class="mt-12 mb-8 flex flex-wrap justify-center items-center gap-x-2 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+        <span>© 2025</span>
+        <a href="https://www.instagram.com/ar.gumelar/" target="_blank" class="credit-link text-slate-600">ar.gumelar</a>
+        <span class="text-slate-200">&</span>
+        <a href="https://www.instagram.com/sentiliun" target="_blank" class="credit-link text-slate-600">Sentiliun</a>
+        <span class="text-slate-200 mx-1">|</span>
+        <span class="font-medium text-slate-400">Licensed for exclusive use by</span>
+        <span class="text-slate-900 font-black">Diploma Ilmi</span>
+    </div>
+</body>
+</html>
