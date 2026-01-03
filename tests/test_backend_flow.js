@@ -110,10 +110,12 @@ function runTests() {
     let res2 = Code.doGet({ parameter: { nim: 'DI.AT.TEST.08', phone: '08123456789' } });
     let json2 = JSON.parse(res2);
     // User 2 has 50 in all subjects. Avg 50. < 60.
-    if (json2.data.status_kelulusan === false && json2.data.sertifikat_url === '') {
-        console.log('PASS: Not Graduated and No Cert URL.');
+    // Requirement: "jika peserta tidak lolos dapat mengakses pop up nilai, namun tidak dapat mengakses button sertifikat saja"
+    // This means: status must be 'success' (to show popup), but status_kelulusan must be false (to lock button).
+    if (json2.status === 'success' && json2.data.status_kelulusan === false && json2.data.sertifikat_url === '') {
+        console.log('PASS: Not Graduated. Status is SUCCESS (Popup opens), but Cert URL is empty (Button locked).');
     } else {
-        console.error('FAIL:', json2.data);
+        console.error('FAIL: Status:', json2.status, 'Kelulusan:', json2.data.status_kelulusan);
     }
 
     // 4. Test User Not Found

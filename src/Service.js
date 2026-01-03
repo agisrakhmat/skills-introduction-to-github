@@ -55,9 +55,15 @@ var Service = {
     }
 
     var average = (courseCount > 0) ? (totalScore / courseCount) : 0;
-    // Check graduation: Average >= 60 AND (optional: no subjects < X? User only specified Average).
+
+    // Check graduation: Average >= 60.
     // Prompt: "syarat lulusnya hasil pembagian nilai tersebut tidak boleh kurang dari 60."
     var isGraduated = (average >= Config.MIN_PASS_AVERAGE);
+
+    // LOGIC CHECK:
+    // If !isGraduated, we still return "status: success" below so the user can see their grades (Popup opens).
+    // However, isGraduated=false ensures the certificate logic is skipped and certUrl remains empty,
+    // which effectively locks the certificate button in the frontend.
 
     // Format TTL
     var ttlStr = (user.tempat_lahir || '') + ', ' + this._formatDate(user.tanggal_lahir);
