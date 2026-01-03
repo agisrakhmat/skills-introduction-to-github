@@ -1,10 +1,8 @@
-// src/Config.js
-
 /**
  * Configuration constants for the Diploma Ilmi LMS Backend.
  */
 var Config = {
-  // IDs
+  // IDs provided by the user
   SPREADSHEET_ID: '18_VYfJHfwK3hDSaFT6bkQYSzQS1MScEbLuUd0wPuAEE',
   DRIVE_FOLDER_ID: '1nGtD-YdPVZzBtJaS35xXuYUmcDfScMZ4',
   SLIDE_TEMPLATE_ID: '1ujtPU4XqFV8n5CKiHcFtz9-wm3w-GYkhe7SDWdZdGbQ',
@@ -14,7 +12,11 @@ var Config = {
   SHEET_CERTIFICATE: 'sertifikat',
   SHEET_COURSES: ['Aqidah', 'Dakwah', "Fiqih Syafi'i", 'Fiqih Waris', 'Nahwu'],
 
-  // Grading Thresholds
+  // Certificate Configuration
+  CERT_STATIC_CODE: '07', // "Diplim-MSTW-01-07-XXXX"
+
+  // Grading Thresholds (Predikat)
+  // >= 95 Mumtaz, >= 85 Jayyid Jiddan Murtafi, >= 80 Jayyid Jiddan, >= 75 Jayyid Murtafi', >= 60 Jayyid
   GRADE_THRESHOLDS: [
     { min: 95, predicate: 'Mumtaz' },
     { min: 85, predicate: 'Jayyid Jiddan Murtafi' },
