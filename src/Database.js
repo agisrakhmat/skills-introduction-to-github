@@ -36,23 +36,21 @@ var Database = {
     // Start from row 1 (skip header)
     for (var i = 1; i < data.length; i++) {
       var row = data[i];
-      // Col A: NIM, Col F: Phone
-      var dbNim = row[0] ? String(row[0]).trim() : '';
-      var dbPhone = row[5] ? String(row[5]).trim() : '';
+      // Use Configured Indexes
+      var dbNim = row[Config.COL_INDEX_NIM] ? String(row[Config.COL_INDEX_NIM]).trim() : '';
+      var dbPhone = row[Config.COL_INDEX_PHONE] ? String(row[Config.COL_INDEX_PHONE]).trim() : '';
 
-      // Debugging note: In real GAS, we can't see console unless checking Executions.
-      // But the logic is robust: lowercase comparison + phone normalization.
       if (dbNim.toLowerCase() === nim.toLowerCase() && this._cleanPhone(dbPhone) === this._cleanPhone(phone)) {
         return {
           nim: dbNim,
-          nama: row[1], // Col B
-          jenis_kelamin: row[2], // Col C
-          alamat: row[3], // Col D
-          program: row[4], // Col E
+          nama: row[Config.COL_INDEX_NAME],
+          jenis_kelamin: row[Config.COL_INDEX_SEX],
+          alamat: row[Config.COL_INDEX_ADDRESS],
+          program: row[Config.COL_INDEX_PROGRAM],
           phone: dbPhone,
-          angkatan: row[6], // Col G
-          tempat_lahir: row[7], // Col H
-          tanggal_lahir: row[8] // Col I
+          angkatan: row[Config.COL_INDEX_BATCH],
+          tempat_lahir: row[Config.COL_INDEX_BIRTHPLACE],
+          tanggal_lahir: row[Config.COL_INDEX_BIRTHDATE]
         };
       }
     }
@@ -83,21 +81,17 @@ var Database = {
   getCourseGrade: function(sheetName, nim) {
     if (typeof SpreadsheetApp === 'undefined') return this._mockGetGrade(sheetName, nim);
 
-    // If sheet doesn't exist, we might not want to crash the whole flow, just return 0?
-    // User said sheet names are fixed. If missing, better to error out or return 0.
-    // Given the task, let's try to get the sheet. If it fails (typo in config vs sheet), it throws.
-    // This is good for debugging.
     var sheet = this._getSheet(sheetName);
     var data = sheet.getDataRange().getValues();
 
     // Start from row 1
     for (var i = 1; i < data.length; i++) {
       var row = data[i];
-      var dbNim = row[0] ? String(row[0]).trim() : '';
+      // Use Configured Indexes
+      var dbNim = row[Config.COL_INDEX_GRADE_NIM] ? String(row[Config.COL_INDEX_GRADE_NIM]).trim() : '';
 
       if (dbNim.toLowerCase() === nim.toLowerCase()) {
-        // Column K is index 10 (0-based: A=0, K=10)
-        var score = row[10];
+        var score = row[Config.COL_INDEX_GRADE_FINAL];
         // Handle empty or string scores
         if (score === '' || score === null) return 0;
         return Number(score) || 0;
@@ -117,16 +111,14 @@ var Database = {
     try {
       var sheet = this._getSheet(Config.SHEET_CERTIFICATE);
     } catch (e) {
-      // If certificate sheet missing, create it? Or return null (feature disabled).
-      // Prompt implies it exists.
       throw e;
     }
 
     var data = sheet.getDataRange().getValues();
-    // Col B is NIM (Index 1)
+    // Col B is NIM (Index 1). This is internal schema, can stay hardcoded or also moved to Config if super generic.
+    // For now, keeping cert log schema simple/fixed is fine.
     for (var i = 1; i < data.length; i++) {
       var row = data[i];
-      // Check if row has data
       if (row.length > 1 && String(row[1]).toLowerCase() === nim.toLowerCase()) {
         return {
           nomor: row[0],
@@ -142,16 +134,11 @@ var Database = {
 
   /**
    * Gets the next sequence number for certificates.
-   * Sequence is based on total existing certificates + 1.
-   * Format: Diplim-MSTW-01-07-[XXXX]
    */
   getNextCertificateSequence: function() {
     if (typeof SpreadsheetApp === 'undefined') return 1;
 
     var sheet = this._getSheet(Config.SHEET_CERTIFICATE);
-    // getLastRow returns the last row with content.
-    // If only header (row 1), lastRow is 1. count is 0. Next is 1.
-    // If header + 1 cert, lastRow is 2. count is 1. Next is 2.
     var lastRow = sheet.getLastRow();
     var count = lastRow - 1; // Minus header
     if (count < 0) count = 0;
@@ -171,7 +158,6 @@ var Database = {
 
     var sheet = this._getSheet(Config.SHEET_CERTIFICATE);
     var timestamp = new Date();
-    // Append [Nomor, NIM, Nama, Timestamp, URL]
     sheet.appendRow([nomor, nim, nama, timestamp, url]);
   },
 

@@ -12,8 +12,25 @@ var Config = {
   SHEET_CERTIFICATE: 'sertifikat',
   SHEET_COURSES: ['Aqidah', 'Dakwah', "Fiqih Syafi'i", 'Fiqih Waris', 'Nahwu'],
 
+  // Column Indexes (0-based)
+  // Data User Sheet
+  COL_INDEX_NIM: 0,        // Column A
+  COL_INDEX_NAME: 1,       // Column B
+  COL_INDEX_SEX: 2,        // Column C
+  COL_INDEX_ADDRESS: 3,    // Column D
+  COL_INDEX_PROGRAM: 4,    // Column E
+  COL_INDEX_PHONE: 5,      // Column F
+  COL_INDEX_BATCH: 6,      // Column G (Angkatan)
+  COL_INDEX_BIRTHPLACE: 7, // Column H
+  COL_INDEX_BIRTHDATE: 8,  // Column I
+
+  // Course Sheets
+  COL_INDEX_GRADE_NIM: 0,  // Column A
+  COL_INDEX_GRADE_FINAL: 10, // Column K
+
   // Certificate Configuration
-  CERT_STATIC_CODE: '07', // "Diplim-MSTW-01-07-XXXX"
+  CERT_PREFIX: 'Diplim-MSTW-01-',
+  CERT_STATIC_CODE: '07', // Used as part of the number: Prefix + StaticCode + Sequence
 
   // Grading Thresholds (Predikat)
   // >= 95 Mumtaz, >= 85 Jayyid Jiddan Murtafi, >= 80 Jayyid Jiddan, >= 75 Jayyid Murtafi', >= 60 Jayyid

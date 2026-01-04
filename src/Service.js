@@ -38,9 +38,6 @@ var Service = {
 
       var predicate = this.getPredicate(score);
       // Status Passed if score >= 60 (Config.MIN_PASS_AVERAGE logic applied per subject?
-      // User prompt says "Syarat lulusnya hasil pembagian nilai...".
-      // But typically subjects also have pass/fail.
-      // I'll assume standard >= 60 is Lulus (LL), else Belum Lulus (BL).
       var status = (score >= 60) ? 'LL' : 'BL';
 
       gradeResults.push({
@@ -57,7 +54,6 @@ var Service = {
     var average = (courseCount > 0) ? (totalScore / courseCount) : 0;
 
     // Check graduation: Average >= 60.
-    // Prompt: "syarat lulusnya hasil pembagian nilai tersebut tidak boleh kurang dari 60."
     var isGraduated = (average >= Config.MIN_PASS_AVERAGE);
 
     // LOGIC CHECK:
@@ -86,10 +82,7 @@ var Service = {
           }
         }
       } catch (e) {
-        // If certificate generation fails, don't block the grade display.
-        // Log it (console) and maybe add a warning?
         console.error('Cert Gen Error: ' + e.toString());
-        // We leave certUrl empty. Frontend will disable the button + show warning.
       }
     }
 
@@ -119,10 +112,13 @@ var Service = {
     // 1. Determine Predicate based on Average
     var predicate = this.getPredicate(averageScore);
 
-    // 2. Generate Number: Diplim-MSTW-01-07-[XXXX]
+    // 2. Generate Number: Use Configured Prefix
+    // Format: [PREFIX][STATIC_CODE]-[SEQ]
+    // Example: Diplim-MSTW-01-07-XXXX
     var seq = Database.getNextCertificateSequence();
     var seqStr = ('0000' + seq).slice(-4); // Pad to 4 digits
-    var certNo = 'Diplim-MSTW-01-' + Config.CERT_STATIC_CODE + '-' + seqStr;
+
+    var certNo = Config.CERT_PREFIX + Config.CERT_STATIC_CODE + '-' + seqStr;
 
     // 3. Copy Template
     var templateFile = DriveApp.getFileById(Config.SLIDE_TEMPLATE_ID);

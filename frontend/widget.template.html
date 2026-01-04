@@ -1,0 +1,98 @@
+<!-- WIDGET TEMPLATE: Rename to generic usage -->
+<!-- REPLACE ALL [PLACEHOLDERS] WITH YOUR BRANDING -->
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Widget Cek Nilai</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <style>
+        /* --- BRANDING COLORS --- */
+        :root {
+            --brand-green: #316E35; /* CHANGE PRIMARY COLOR */
+            --brand-dark: #1a1a1a;
+            --text-light: #F5F5F5;
+            --glass-bg: rgba(26, 26, 26, 0.65);
+            --navbar-height: 80px;
+        }
+        /* ... (Keep CSS logic) ... */
+        .di-footer {
+            /* CHANGE FOOTER BACKGROUND URL */
+            background-image: url('[YOUR_FOOTER_IMAGE_URL]');
+            background-color: var(--brand-green);
+        }
+        /* ... */
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="custom-navbar">
+        <div class="nav-logo">
+            <a href="#">
+                <!-- CHANGE LOGO URL -->
+                <img src="[YOUR_LOGO_URL]" alt="Logo">
+            </a>
+        </div>
+    </nav>
+
+    <!-- WIDGET FORM -->
+    <div id="sp-widget-wrapper">
+        <div class="sp-header">
+            <h3>Portal Akademik</h3>
+            <p>Masukkan data untuk melihat nilai & sertifikat</p>
+        </div>
+
+        <form id="sp-form" onsubmit="handleSearch(event)">
+            <div class="sp-form-group">
+                <label class="sp-label" for="nim">NIM</label>
+                <input type="text" id="nim" class="sp-input" placeholder="Contoh: 12345" required>
+            </div>
+            <div class="sp-form-group">
+                <label class="sp-label" for="phone">Nomor Telepon</label>
+                <input type="tel" id="phone" class="sp-input" placeholder="Contoh: 628123456789" required>
+            </div>
+            <button type="submit" class="sp-btn" id="sp-submit-btn">Cek Data</button>
+        </form>
+        <!-- ... -->
+    </div>
+
+    <!-- ... (MODALS) ... -->
+
+    <!-- FOOTER -->
+    <footer class="di-footer">
+        <div class="di-footer-container">
+            <div class="di-col-brand">
+                <img src="[YOUR_LOGO_URL_WHITE]" alt="Logo" class="di-footer-logo">
+                <p class="di-tagline">[YOUR_TAGLINE_HERE]</p>
+                <div class="di-yayasan-box">
+                    <small>Program Pendidikan Di Bawah Naungan:</small>
+                    <strong>[YOUR_ORGANIZATION_NAME]</strong>
+                </div>
+            </div>
+            <!-- ... Links ... -->
+            <div class="di-col-contact">
+                <h4 class="di-footer-title">Hubungi Kami</h4>
+                <div class="di-contact-item"><span class="material-symbols-outlined">location_on</span><span>[YOUR_ADDRESS]</span></div>
+                <div class="di-contact-item"><span class="material-symbols-outlined">chat</span><span>[YOUR_PHONE_NUMBER]</span></div>
+                <div class="di-contact-item"><span class="material-symbols-outlined">mail</span><span>[YOUR_EMAIL]</span></div>
+                <a href="[YOUR_SOCIAL_LINK]" target="_blank" class="di-social-btn">
+                    Follow Us
+                </a>
+            </div>
+        </div>
+        <div class="di-copyright">&copy; 2025 [YOUR_COPYRIGHT_NAME]. All Rights Reserved.</div>
+    </footer>
+
+    <script>
+        // --- CONFIGURATION ---
+        const GOOGLE_SCRIPT_URL = 'PASTE_YOUR_NEW_GAS_WEB_APP_URL_HERE';
+
+        // ... (Keep JS logic) ...
+        // ...
+    </script>
+</body>
+</html>
