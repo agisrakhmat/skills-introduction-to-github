@@ -109,13 +109,14 @@
                                 <div class="col-span-1 md:col-span-2">
                                     <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Mendaftar di Mustawa</label>
                                     <div class="relative">
+                                        <!-- UPDATED VALUES TO CODES (01-06) -->
                                         <select id="input-program" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-kampus-primary outline-none transition bg-white text-gray-700 text-sm">
-                                            <option value="Mustawa 1 (Pemula)">Mustawa 1 (Pemula)</option>
-                                            <option value="Mustawa 2">Mustawa 2</option>
-                                            <option value="Mustawa 3">Mustawa 3</option>
-                                            <option value="Mustawa 4">Mustawa 4</option>
-                                            <option value="Mustawa 5">Mustawa 5</option>
-                                            <option value="Mustawa 6">Mustawa 6</option>
+                                            <option value="01">Mustawa 1 (Pemula)</option>
+                                            <option value="02">Mustawa 2</option>
+                                            <option value="03">Mustawa 3</option>
+                                            <option value="04">Mustawa 4</option>
+                                            <option value="05">Mustawa 5</option>
+                                            <option value="06">Mustawa 6</option>
                                         </select>
                                         <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500"><i class="fa-solid fa-chevron-down text-xs"></i></div>
                                     </div>
@@ -144,13 +145,14 @@
                                     <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Jenis Kelamin</label>
                                     <select id="input-gender" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-kampus-primary outline-none transition bg-white text-sm" required>
                                         <option value="">Pilih...</option>
-                                        <option value="L">Laki-laki</option>
-                                        <option value="P">Perempuan</option>
+                                        <option value="IN">Laki-laki</option>
+                                        <option value="AT">Perempuan</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">No. WhatsApp</label>
-                                    <input type="tel" id="input-wa" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-kampus-primary outline-none transition text-sm" placeholder="0812..." required>
+                                    <input type="tel" id="input-wa" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-kampus-primary outline-none transition text-sm" placeholder="0812..." required pattern="[0-9]+">
+                                    <small class="text-[10px] text-gray-500">Password default: 4 digit terakhir nomor ini.</small>
                                 </div>
 
                                 <div class="col-span-1 md:col-span-2">
@@ -516,8 +518,17 @@
             // Collect Form Data
             const nama = document.getElementById('namaPeserta').value;
             const email = document.getElementById('input-email').value;
-            const wa = document.getElementById('input-wa').value;
-            const program = document.getElementById('input-program').value;
+            const waRaw = document.getElementById('input-wa').value;
+            const wa = waRaw.replace(/\D/g, ''); // SANITIZE: ONLY NUMBERS
+            const programCode = document.getElementById('input-program').value; // NOW SENDS 01, 02...
+
+            // MAP CODE TO NAME FOR PDF PROOF
+            const programNameMap = {
+                "01": "Mustawa 1 (Pemula)", "02": "Mustawa 2", "03": "Mustawa 3",
+                "04": "Mustawa 4", "05": "Mustawa 5", "06": "Mustawa 6"
+            };
+            const programName = programNameMap[programCode] || programCode;
+
             const tempatLahir = document.getElementById('input-tempat-lahir').value;
             const tglLahir = document.getElementById('input-tgl-lahir').value;
             const gender = document.getElementById('input-gender').value;
@@ -536,35 +547,37 @@
             const file = fileInput.files[0];
             const base64Data = await getFileBase64(file);
 
+            // LOGIC: GENERATE PASSWORD (LAST 4 DIGITS)
+            const generatedPassword = wa.slice(-4);
+
             // Payload Register
             const regPayload = {
                 action: 'register',
                 nama_ktp: nama,
                 email: email,
                 no_hp: wa,
-                password: wa, // Password = WA
+                password: generatedPassword, // STRICTLY 4 DIGITS
                 tgl_lahir: tempatLahir + ', ' + tglLahir,
                 jenis_kelamin: gender,
                 alamat: alamat,
                 status_s1: statusS1,
                 nim_lama: nimLama,
-                angkatan: '01',
-                kode_status: 'RGR'
+                angkatan: '07', // Default from Prompt
+                kode_status: 'RGR' // Default Reguler
             };
 
             // 1. REGISTER CALL
             const regResult = await secureFetch(GAS_WEB_APP_URL, 'POST', regPayload);
 
-            if (regResult.status !== 'success' && regResult.message !== 'Email already registered') {
+            if (!regResult.success && regResult.message !== 'Email already registered') {
                 throw new Error(regResult.message);
             }
 
-            // If duplicate, we try to proceed to enroll if it's the same user (in real app we check auth, here we assume flow)
-            // But for simple flow, let's assume success or handle duplicates gracefully.
-            // If duplicate email, regResult.data might be null. We need User ID.
-            // CAUTION: If duplicate, we can't get UserID safely without login.
-            // FOR THIS MVP: If duplicate, we stop and ask to login, OR (since no login UI flow here) we assume it failed.
-            if (regResult.status === 'error') throw new Error(regResult.message);
+            if (!regResult.success && regResult.message === 'Email already registered') {
+                 // Handle duplicate gracefully if needed, or throw error
+                 // For now let's proceed if data exists (assuming it returns ID)
+                 if(!regResult.data || !regResult.data.user_id) throw new Error("Email sudah terdaftar. Silakan login.");
+            }
 
             const userId = regResult.data.user_id;
             const nim = regResult.data.nim;
@@ -573,7 +586,7 @@
             const enrollPayload = {
                 action: 'enroll',
                 user_id: userId,
-                mustawa: program,
+                mustawa: programCode, // Sends '01'
                 nominal_spp: spp,
                 nominal_infaq: infaq,
                 komitmen: 'Bulanan', // Simplified
@@ -584,7 +597,7 @@
             // 2. ENROLL CALL
             const enrollResult = await secureFetch(GAS_WEB_APP_URL, 'POST', enrollPayload);
 
-            if (enrollResult.status !== 'success') {
+            if (!enrollResult.success) {
                 throw new Error("Gagal Enroll: " + enrollResult.message);
             }
 
@@ -596,7 +609,7 @@
             if(document.getElementById('proof-name')) document.getElementById('proof-name').textContent = nama;
             if(document.getElementById('proof-email')) document.getElementById('proof-email').textContent = email;
             if(document.getElementById('proof-wa')) document.getElementById('proof-wa').textContent = wa;
-            if(document.getElementById('proof-program')) document.getElementById('proof-program').textContent = program;
+            if(document.getElementById('proof-program')) document.getElementById('proof-program').textContent = programName;
             if(document.getElementById('proof-total')) document.getElementById('proof-total').textContent = totalStr;
             if(document.getElementById('proof-reg-number')) document.getElementById('proof-reg-number').textContent = nim; // Use NIM as RegNum
             if(document.getElementById('proof-date')) document.getElementById('proof-date').textContent = today;
