@@ -1,0 +1,123 @@
+<!--
+  WIDGET LOGIN DIPLOMA ILMI
+  Cara Pasang di Elementor:
+  1. Drag widget "HTML" ke halaman.
+  2. Paste kode ini.
+  3. GANTI 'YOUR_GAS_WEB_APP_URL' dengan URL Google Apps Script Anda (setelah deploy).
+-->
+
+<div class="lms-login-container">
+  <h3>Login LMS Diploma Ilmi</h3>
+  <form id="loginForm">
+    <div class="form-group">
+      <label>Email atau NIM</label>
+      <input type="text" id="identifier" placeholder="Contoh: ahmad@gmail.com" required>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Default: 4 digit terakhir WA" required>
+    </div>
+    <div class="form-group">
+      <label>Login Sebagai</label>
+      <select id="role">
+        <option value="Mahasiswa">Mahasiswa</option>
+        <option value="Dosen">Dosen</option>
+        <option value="Staff Akademik">Staff Akademik</option>
+        <option value="Staff Keuangan">Staff Keuangan</option>
+        <option value="Staff Kesiswaan">Staff Kesiswaan</option>
+        <option value="Super Admin">Super Admin</option>
+      </select>
+    </div>
+    <button type="submit" id="btnLogin">Masuk</button>
+  </form>
+  <div id="loginMessage" style="margin-top:10px;"></div>
+</div>
+
+<style>
+  .lms-login-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    font-family: sans-serif;
+  }
+  .form-group { margin-bottom: 15px; }
+  .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+  .form-group input, .form-group select {
+    width: 100%; padding: 8px; box-sizing: border-box;
+  }
+  button {
+    width: 100%; padding: 10px; background: #28a745; color: white; border: none; cursor: pointer;
+  }
+  button:hover { background: #218838; }
+  .loading { opacity: 0.5; pointer-events: none; }
+</style>
+
+<script>
+  // === KONFIGURASI ===
+  const GAS_URL = "YOUR_GAS_WEB_APP_URL"; // Ganti dengan URL Deploy GAS Anda
+
+  document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const btn = document.getElementById('btnLogin');
+    const msg = document.getElementById('loginMessage');
+
+    // UI Loading
+    btn.innerText = "Memproses...";
+    btn.classList.add('loading');
+    msg.innerText = "";
+    msg.style.color = "black";
+
+    // Data
+    const payload = {
+      action: "login",
+      identifier: document.getElementById('identifier').value,
+      password: document.getElementById('password').value,
+      role: document.getElementById('role').value
+    };
+
+    // Kirim ke GAS (menggunakan no-cors karena keterbatasan browser jika beda domain,
+    // tapi GAS return JSONP atau kita gunakan standard fetch dengan redirect follow)
+    // NOTE: GAS Web App defaultnya redirect 302. fetch kadang issue dengan CORS.
+    // Solusi terbaik untuk form Elementor sederhana adalah menggunakan `application/x-www-form-urlencoded`
+    // atau JSON text via text/plain agar tidak trigger preflight OPTIONS yang sering gagal di GAS.
+
+    fetch(GAS_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+      // Tidak pakai header Content-Type: application/json agar tidak preflight
+    })
+    .then(response => response.json())
+    .then(data => {
+      btn.innerText = "Masuk";
+      btn.classList.remove('loading');
+
+      if (data.success) {
+        msg.innerText = "Login Berhasil! Mengalihkan...";
+        msg.style.color = "green";
+
+        // Simpan sesi (sederhana)
+        localStorage.setItem("lms_user", JSON.stringify(data.user));
+
+        // Redirect ke Dashboard sesuai Role (Anda perlu buat page ini di WP)
+        if(payload.role === "Mahasiswa") window.location.href = "/dashboard-mahasiswa";
+        else if(payload.role === "Dosen") window.location.href = "/dashboard-dosen";
+        else window.location.href = "/dashboard-staff";
+
+      } else {
+        msg.innerText = "Gagal: " + data.message;
+        msg.style.color = "red";
+      }
+    })
+    .catch(error => {
+      console.error(error);
+      btn.innerText = "Masuk";
+      btn.classList.remove('loading');
+      msg.innerText = "Terjadi kesalahan koneksi.";
+      msg.style.color = "red";
+    });
+  });
+</script>
