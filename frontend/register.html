@@ -1,34 +1,24 @@
 <!-- WIDGET PENDAFTARAN LENGKAP (ELEMENTOR + TAILWIND + FETCH + PDF) -->
-<!-- 1. Load Library -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<!-- Library PDF & Screenshot -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-<!-- 2. Config Tailwind -->
 <script>
   tailwind.config = {
     theme: {
       extend: {
         colors: {
-          kampus: {
-            primary: '#10b981', // Emerald 500
-            dark: '#059669',    // Emerald 600
-            light: '#d1fae5',   // Emerald 100
-          }
+          kampus: { primary: '#10b981', dark: '#059669', light: '#d1fae5' }
         }
       }
     }
   }
 </script>
 
-<!-- 3. Global CSS -->
 <style>
   .fade-in { animation: fadeIn 0.3s ease-in-out; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-  /* Print helper - Sembunyikan elemen lain saat print/pdf generate jika perlu */
   @media print {
     body * { visibility: hidden; }
     #printable-area, #printable-area * { visibility: visible; }
@@ -36,28 +26,22 @@
   }
 </style>
 
-<!-- HTML #2: Navbar -->
+<!-- Navbar -->
 <div class="bg-gray-50 font-sans antialiased text-gray-800">
     <nav class="custom-navbar">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex items-center justify-between h-full">
-            <!-- KIRI: Tombol Back, Logo & Judul -->
             <div class="flex items-center gap-3">
-                <a href="/" class="mr-1 w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-500 hover:text-white hover:bg-kampus-primary transition shadow-sm" title="Kembali ke Beranda">
+                <a href="/" class="mr-1 w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-500 hover:text-white hover:bg-kampus-primary transition shadow-sm">
                     <i class="fa-solid fa-arrow-left text-sm"></i>
                 </a>
-
                 <a href="#">
-                    <img src="https://diplomailmi.my.id/wp-content/uploads/2025/09/Logo-Diploma-Ilmi-Logo-Only-scaled.png"
-                         alt="Logo"
-                         style="height: 40px;">
+                    <img src="https://diplomailmi.my.id/wp-content/uploads/2025/09/Logo-Diploma-Ilmi-Logo-Only-scaled.png" alt="Logo" style="height: 40px;">
                 </a>
                 <div class="hidden sm:flex border-l border-gray-300 pl-3 ml-1 h-8 flex-col justify-center">
                     <h1 class="text-sm font-bold text-gray-800 leading-none mb-0.5">Pendaftaran Baru</h1>
                     <p class="text-[10px] text-gray-500 font-medium">Diploma Ilmi Madinah Salam</p>
                 </div>
             </div>
-
-            <!-- KANAN: Tombol Bantuan -->
             <div class="flex items-center">
                 <a href="https://wa.me/6285282832038" target="_blank" class="cta-bantuan flex items-center gap-2 bg-green-50 text-kampus-primary px-4 py-2 rounded-full border border-green-200 hover:bg-kampus-primary hover:text-white transition decoration-none">
                     <i class="fa-brands fa-whatsapp text-lg"></i>
@@ -67,49 +51,30 @@
         </div>
     </nav>
 </div>
-
 <style>
-    .custom-navbar {
-        height: 70px;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        position: sticky;
-        top: 0;
-        z-index: 50;
-        border-bottom: 1px solid #eee;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    }
+    .custom-navbar { height: 70px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 50; border-bottom: 1px solid #eee; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
 </style>
 
-<!-- HTML #3: FORMULIR -->
+<!-- FORMULIR -->
 <div class="bg-gray-50 font-sans antialiased text-gray-800 pb-20">
     <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- KOLOM KIRI: FORMULIR -->
             <div class="lg:col-span-2 order-2 lg:order-1">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-8">
-                    <!-- Mobile Header -->
                     <div class="md:hidden text-center mb-5 border-b border-gray-100 pb-4">
-                        <img src="https://diplomailmi.my.id/wp-content/uploads/2025/09/Logo-Diploma-Ilmi-Logo-Only-scaled.png"
-                             alt="Logo"
-                             class="h-8 w-14 object-contain mx-auto mb-2">
                         <h1 class="text-base font-bold text-kampus-primary">Formulir Pendaftaran</h1>
-                        <p class="text-[10px] text-gray-500">Silakan isi data diri Anda dengan lengkap</p>
                     </div>
 
                     <form id="registrationForm" onsubmit="handleFormSubmit(event)">
                         <!-- SECTION 1: DATA DIRI -->
                         <div class="mb-8 sm:mb-10">
                             <h3 class="flex items-center gap-2 text-base sm:text-lg font-bold text-gray-800 mb-6 border-b pb-2">
-                                <span class="bg-kampus-primary text-white w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-xs sm:text-sm">1</span>
-                                Data Diri
+                                <span class="bg-kampus-primary text-white w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-xs sm:text-sm">1</span> Data Diri
                             </h3>
-
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                                 <div class="col-span-1 md:col-span-2">
                                     <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Mendaftar di Mustawa</label>
                                     <div class="relative">
-                                        <!-- UPDATED VALUES TO CODES (01-06) -->
                                         <select id="input-program" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-kampus-primary outline-none transition bg-white text-gray-700 text-sm">
                                             <option value="01">Mustawa 1 (Pemula)</option>
                                             <option value="02">Mustawa 2</option>
@@ -160,21 +125,25 @@
                                     <textarea id="input-alamat" rows="2" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-kampus-primary outline-none transition text-sm" placeholder="Jalan, RT/RW, Kelurahan..." required></textarea>
                                 </div>
 
-                                <div>
-                                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">NIM Lama (Jika Ada)</label>
-                                    <input type="text" id="input-nim-lama" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-kampus-primary outline-none transition text-sm" placeholder="Kosongkan jika baru">
+                                <!-- KLASIFIKASI STATUS -->
+                                <div class="col-span-1 md:col-span-2">
+                                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Klasifikasi Status</label>
+                                    <select id="input-klasifikasi" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-kampus-primary outline-none transition bg-white text-sm" onchange="toggleAffiliation()" required>
+                                        <option value="RGR">Reguler / Umum</option>
+                                        <option value="FAA">Beasiswa</option>
+                                        <option value="RPL">Afiliasi (S1)</option>
+                                    </select>
+                                </div>
+
+                                <!-- FIELD TAMBAHAN AFILIASI (HIDDEN BY DEFAULT) -->
+                                <div id="div-afiliasi" class="col-span-1 md:col-span-2 hidden fade-in">
+                                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Nama Kampus Afiliasi</label>
+                                    <input type="text" id="input-kampus-asal" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-kampus-primary outline-none transition text-sm" placeholder="Contoh: Thawalib / Kediri">
                                 </div>
 
                                 <div>
-                                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Status Mahasiswa S1</label>
-                                    <select id="input-status-s1" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-kampus-primary outline-none transition bg-white text-sm" required>
-                                        <option value="Bukan">Bukan (Umum)</option>
-                                        <option value="Thawalib">Thawalib</option>
-                                        <option value="Pemalang">Pemalang</option>
-                                        <option value="Bagus">Bagus</option>
-                                        <option value="Kediri">Kediri</option>
-                                        <option value="Bandung">Bandung</option>
-                                    </select>
+                                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">NIM Lama (Jika Ada)</label>
+                                    <input type="text" id="input-nim-lama" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-kampus-primary outline-none transition text-sm" placeholder="Kosongkan jika baru">
                                 </div>
                             </div>
                         </div>
@@ -182,10 +151,8 @@
                         <!-- SECTION 2: PEMBAYARAN -->
                         <div class="mb-8 sm:mb-10">
                             <h3 class="flex items-center gap-2 text-base sm:text-lg font-bold text-gray-800 mb-6 border-b pb-2">
-                                <span class="bg-kampus-primary text-white w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-xs sm:text-sm">2</span>
-                                Pembayaran
+                                <span class="bg-kampus-primary text-white w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-xs sm:text-sm">2</span> Pembayaran
                             </h3>
-
                             <div class="space-y-6">
                                 <div>
                                     <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-3">Pilih Nominal SPP</label>
@@ -214,7 +181,6 @@
                                         <input type="number" id="customSPP" class="mt-2 w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:border-kampus-primary outline-none" placeholder="Masukkan angka..." oninput="updateTotal()">
                                     </div>
                                 </div>
-
                                 <div>
                                     <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Infaq Pembangunan (Opsional)</label>
                                     <input type="number" id="infaqInput" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-kampus-primary outline-none transition text-sm" placeholder="Nominal" oninput="updateTotal()">
@@ -222,26 +188,18 @@
                             </div>
                         </div>
 
-                        <!-- INFO REKENING & TOTAL (MOBILE) -->
+                        <!-- MOBILE INFO -->
                         <div class="lg:hidden mb-10 bg-green-50 rounded-xl p-5 border border-green-200">
-                            <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
-                                <i class="fa-solid fa-wallet text-kampus-primary"></i> Rincian & Transfer
-                            </h4>
+                            <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-wallet text-kampus-primary"></i> Rincian & Transfer</h4>
                             <div class="space-y-2 text-sm text-gray-600 mb-4">
                                 <div class="flex justify-between"><span>Pendaftaran</span><span class="font-medium">Rp 25.000</span></div>
                                 <div class="flex justify-between"><span>SPP</span><span class="font-medium" id="mob_spp">Rp 189.000</span></div>
                                 <div id="mob_infaq_row" class="flex justify-between text-kampus-primary hidden"><span>Infaq</span><span class="font-medium" id="mob_infaq">Rp 0</span></div>
-                                <div class="border-t border-green-200 pt-2 flex justify-between items-center text-gray-900 font-bold">
-                                    <span>Total Transfer</span>
-                                    <span class="text-lg" id="mob_total">Rp 214.000</span>
-                                </div>
+                                <div class="border-t border-green-200 pt-2 flex justify-between items-center text-gray-900 font-bold"><span>Total Transfer</span><span class="text-lg" id="mob_total">Rp 214.000</span></div>
                             </div>
                             <div class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
                                 <div class="flex justify-between items-center">
-                                    <div>
-                                        <p class="text-xs text-gray-500">Bank Syariah Indonesia (BSI)</p>
-                                        <p class="font-mono font-bold text-gray-800 text-lg tracking-wider">7844774774</p>
-                                    </div>
+                                    <div><p class="text-xs text-gray-500">Bank Syariah Indonesia (BSI)</p><p class="font-mono font-bold text-gray-800 text-lg tracking-wider">7844774774</p></div>
                                     <button type="button" onclick="copyText('7844774774', this)" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded font-bold text-gray-600 border border-gray-300">SALIN</button>
                                 </div>
                                 <p class="text-[10px] text-gray-400 mt-1">a.n. Yayasan Madinah Salam</p>
@@ -251,15 +209,13 @@
                         <!-- SECTION 3: UPLOAD -->
                         <div class="mb-10">
                             <h3 class="flex items-center gap-2 text-base sm:text-lg font-bold text-gray-800 mb-6 border-b pb-2">
-                                <span class="bg-kampus-primary text-white w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-xs sm:text-sm">3</span>
-                                Upload Bukti
+                                <span class="bg-kampus-primary text-white w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-xs sm:text-sm">3</span> Upload Bukti
                             </h3>
                             <div class="mb-6">
                                 <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Bukti Transfer (Wajib)</label>
                                 <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-kampus-primary transition cursor-pointer relative bg-gray-50" onclick="document.getElementById('file-upload-input').click()">
                                     <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
                                     <p class="text-sm text-gray-500">Klik untuk upload bukti</p>
-                                    <!-- STOP PROPAGATION pada input agar tidak memicu click parent div lagi -->
                                     <input type="file" id="file-upload-input" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" required onchange="previewFile(event)" onclick="event.stopPropagation()">
                                     <p id="file-name-preview" class="text-xs text-kampus-primary mt-2 font-bold hidden"></p>
                                 </div>
@@ -282,12 +238,10 @@
                 </div>
             </div>
 
-            <!-- KOLOM KANAN: INFO PEMBAYARAN (DESKTOP) -->
+            <!-- Side Info (Desktop) -->
             <div class="hidden lg:block lg:col-span-1 order-1 lg:order-2">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-24">
-                    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-receipt text-kampus-primary"></i> Ringkasan
-                    </h3>
+                    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-receipt text-kampus-primary"></i> Ringkasan</h3>
                     <div class="space-y-3 text-sm text-gray-600 mb-6">
                         <div class="flex justify-between border-b border-gray-100 pb-2"><span>Pendaftaran</span><span class="font-medium">Rp 25.000</span></div>
                         <div class="flex justify-between border-b border-gray-100 pb-2"><span>Pilihan SPP</span><span class="font-medium" id="desk_spp">Rp 189.000</span></div>
@@ -311,7 +265,7 @@
     </main>
 </div>
 
-<!-- BAGIAN B: MODAL SUKSES -->
+<!-- SUCCESS MODAL -->
 <div id="successModal" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4">
     <div class="absolute inset-0 bg-black/60 transition-opacity" onclick="closeModal()"></div>
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm relative z-10 overflow-hidden transform transition-all p-6 fade-in">
@@ -330,56 +284,35 @@
             <button id="btnCetakPDF" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold py-3 rounded-lg flex justify-center items-center gap-2 transition">
                 <i class="fa-solid fa-file-pdf text-red-500"></i> Download PDF
             </button>
-            <a id="waLink" href="#" target="_blank" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg flex justify-center items-center gap-2 shadow-md transition">
-                <i class="fa-brands fa-whatsapp text-lg"></i> KONFIRMASI KE ADMIN
-            </a>
+            <a id="waLink" href="#" target="_blank" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg flex justify-center items-center gap-2 shadow-md transition"><i class="fa-brands fa-whatsapp text-lg"></i> KONFIRMASI KE ADMIN</a>
             <button onclick="closeModal()" class="w-full text-gray-500 text-sm hover:text-gray-700">Tutup</button>
         </div>
     </div>
 </div>
 
-<!-- BAGIAN C: POPUP BUKTI (Untuk Print/PDF) -->
+<!-- PDF POPUP -->
 <div id="proof-overlay" class="fixed inset-0 bg-black/70 z-[60] hidden flex items-center justify-center p-4 overflow-y-auto backdrop-blur-sm">
   <div class="relative w-full max-w-2xl mx-auto my-8 fade-in">
-    <button onclick="closeProofPopup()" class="absolute -top-10 right-0 md:-right-8 text-white hover:text-gray-300 transition no-print focus:outline-none">
-      <i class="fa-solid fa-xmark text-2xl"></i>
-    </button>
+    <button onclick="closeProofPopup()" class="absolute -top-10 right-0 md:-right-8 text-white hover:text-gray-300 transition no-print focus:outline-none"><i class="fa-solid fa-xmark text-2xl"></i></button>
     <div id="printable-area" class="bg-white shadow-2xl rounded-xl overflow-hidden border border-gray-200 font-sans text-gray-800 relative">
-      <!-- Header -->
       <div class="bg-emerald-50 p-8 text-center border-b border-emerald-100">
-        <div class="flex flex-col items-center justify-center space-y-3">
-          <!-- Logo Header -->
-          <div class="p-2">
-            <img src="https://diplomailmi.my.id/wp-content/uploads/2025/09/Logo-Diploma-Ilmi-Logo-Only-scaled.png"
-                 alt="Logo Diploma Ilmi"
-                 class="h-20 w-auto object-contain mx-auto">
-          </div>
-          <div class="mt-2">
-            <h2 class="text-emerald-900 font-semibold text-lg uppercase tracking-wider">Bukti Pendaftaran</h2>
-            <p class="text-emerald-600 text-sm">Harap simpan bukti ini sebagai referensi.</p>
-          </div>
-          <div class="mt-4 bg-emerald-600 text-white px-6 py-2 rounded-lg shadow-md print:border print:border-emerald-600 print:text-emerald-800 print:bg-transparent">
+        <img src="https://diplomailmi.my.id/wp-content/uploads/2025/09/Logo-Diploma-Ilmi-Logo-Only-scaled.png" class="h-20 w-auto object-contain mx-auto mb-2">
+        <h2 class="text-emerald-900 font-semibold text-lg uppercase tracking-wider">Bukti Pendaftaran</h2>
+        <div class="mt-4 bg-emerald-600 text-white px-6 py-2 rounded-lg shadow-md print:border print:border-emerald-600 print:text-emerald-800 print:bg-transparent">
             <p class="text-xs uppercase font-medium opacity-90">Nomor Registrasi</p>
             <p class="text-2xl font-mono font-bold tracking-widest" id="proof-reg-number">REG-...</p>
-          </div>
         </div>
       </div>
-      <!-- Isi Data -->
       <div class="p-8 space-y-6">
-        <div class="flex items-center justify-center space-x-2 text-emerald-600 bg-emerald-50 py-2 rounded-md border border-emerald-100 no-print">
-          <i class="fa-solid fa-check-circle"></i>
-          <span class="font-medium">Pendaftaran Berhasil Dikirim</span>
-        </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
           <div class="space-y-4">
-            <div><label class="flex items-center text-gray-500 mb-1"><i class="fa-regular fa-user w-4 h-4 mr-2"></i> Nama Lengkap</label><p class="font-semibold text-gray-800 text-lg border-b border-gray-100 pb-1" id="proof-name">-</p></div>
-            <div><label class="flex items-center text-gray-500 mb-1"><i class="fa-brands fa-whatsapp w-4 h-4 mr-2"></i> No. WhatsApp</label><p class="font-semibold text-gray-800 text-lg border-b border-gray-100 pb-1" id="proof-wa">-</p></div>
-            <div><label class="flex items-center text-gray-500 mb-1"><i class="fa-regular fa-envelope w-4 h-4 mr-2"></i> Email</label><p class="font-semibold text-gray-800 text-lg border-b border-gray-100 pb-1" id="proof-email">-</p></div>
+            <div><label class="flex items-center text-gray-500 mb-1">Nama Lengkap</label><p class="font-semibold text-gray-800 text-lg border-b border-gray-100 pb-1" id="proof-name">-</p></div>
+            <div><label class="flex items-center text-gray-500 mb-1">No. WhatsApp</label><p class="font-semibold text-gray-800 text-lg border-b border-gray-100 pb-1" id="proof-wa">-</p></div>
+            <div><label class="flex items-center text-gray-500 mb-1">Email</label><p class="font-semibold text-gray-800 text-lg border-b border-gray-100 pb-1" id="proof-email">-</p></div>
           </div>
           <div class="space-y-4">
-            <div><label class="flex items-center text-gray-500 mb-1"><i class="fa-solid fa-graduation-cap w-4 h-4 mr-2"></i> Program Pilihan</label><p class="font-semibold text-emerald-700 text-lg border-b border-gray-100 pb-1" id="proof-program">-</p></div>
-            <div><label class="flex items-center text-gray-500 mb-1"><i class="fa-regular fa-calendar w-4 h-4 mr-2"></i> Tanggal Daftar</label><p class="font-semibold text-gray-800 text-lg border-b border-gray-100 pb-1" id="proof-date">-</p></div>
-            <div><label class="flex items-center text-gray-500 mb-1"><i class="fa-solid fa-money-bill-wave w-4 h-4 mr-2"></i> Total Transfer</label><p class="font-semibold text-gray-800 text-lg border-b border-gray-100 pb-1" id="proof-total">-</p></div>
+            <div><label class="flex items-center text-gray-500 mb-1">Program</label><p class="font-semibold text-emerald-700 text-lg border-b border-gray-100 pb-1" id="proof-program">-</p></div>
+            <div><label class="flex items-center text-gray-500 mb-1">Total Transfer</label><p class="font-semibold text-gray-800 text-lg border-b border-gray-100 pb-1" id="proof-total">-</p></div>
           </div>
         </div>
         <div class="mt-8 pt-6 border-t border-dashed border-gray-300">
@@ -390,40 +323,36 @@
           </div>
         </div>
       </div>
-      <!-- Tombol Aksi -->
-      <div class="bg-gray-50 p-6 border-t border-gray-200 no-print">
-        <div class="flex flex-col md:flex-row gap-3">
-          <button onclick="window.print()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-lg shadow transition-all flex items-center justify-center gap-2 cursor-pointer">
-            <i class="fa-solid fa-print"></i> Cetak / Simpan PDF
-          </button>
-          <button onclick="closeProofPopup()" class="flex-1 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 rounded-lg border border-gray-300 shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer">Tutup</button>
-        </div>
+      <div class="bg-gray-50 p-6 border-t border-gray-200 no-print flex gap-3">
+          <button onclick="window.print()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-lg shadow">Cetak / Simpan PDF</button>
+          <button onclick="closeProofPopup()" class="flex-1 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 rounded-lg border border-gray-300 shadow-sm">Tutup</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- SCRIPTS: Logic Combined -->
 <script>
-    // CONFIGURATION
     const GAS_WEB_APP_URL = 'YOUR_GAS_WEB_APP_URL';
 
-    // Helper: Secure fetch with session data for authorization
     function secureFetch(url, method, payload) {
       const user = JSON.parse(localStorage.getItem('lms_user') || '{}');
-      if (method === 'POST' && payload) {
-        payload.session_user_id = user.user_id || '';
-        payload.session_user_role = user.role || 'student';
-      }
+      if (method === 'POST' && payload) { payload.session_user_id = user.user_id || ''; payload.session_user_role = user.role || 'student'; }
       const options = { method: method, body: method === 'POST' ? JSON.stringify(payload) : undefined };
-      if (method === 'GET' && payload) {
-        const params = new URLSearchParams(payload);
-        url += '?' + params.toString();
-      }
+      if (method === 'GET' && payload) { url += '?' + new URLSearchParams(payload).toString(); }
       return fetch(url, options).then(r => r.json());
     }
 
-    // 1. Kalkulasi Total
+    function toggleAffiliation() {
+        const klasifikasi = document.getElementById('input-klasifikasi').value;
+        const divAfiliasi = document.getElementById('div-afiliasi');
+        if (klasifikasi === 'RPL') {
+            divAfiliasi.classList.remove('hidden');
+        } else {
+            divAfiliasi.classList.add('hidden');
+            document.getElementById('input-kampus-asal').value = ''; // Reset if hidden
+        }
+    }
+
     window.updateTotal = function() {
         const regFee = 25000;
         let spp = 0;
@@ -431,8 +360,7 @@
         const customInput = document.getElementById('customSPP');
         for (const radio of radios) {
             if (radio.checked) {
-                if (radio.value === 'other') spp = parseInt(customInput.value.replace(/\D/g,'')) || 0;
-                else spp = parseInt(radio.value);
+                spp = (radio.value === 'other') ? (parseInt(customInput.value.replace(/\D/g,'')) || 0) : parseInt(radio.value);
                 break;
             }
         }
@@ -440,7 +368,6 @@
         const total = regFee + spp + infaq;
         const fmt = (n) => 'Rp ' + n.toLocaleString('id-ID');
 
-        // UI Updates
         if(document.getElementById('desk_spp')) document.getElementById('desk_spp').innerText = fmt(spp);
         if(document.getElementById('desk_infaq')) document.getElementById('desk_infaq').innerText = fmt(infaq);
         if(document.getElementById('desk_total')) document.getElementById('desk_total').innerText = fmt(total);
@@ -449,31 +376,19 @@
         if(document.getElementById('mob_total')) document.getElementById('mob_total').innerText = fmt(total);
 
         const infaqEls = [document.getElementById('desk_infaq_row'), document.getElementById('mob_infaq_row')];
-        infaqEls.forEach(el => {
-            if(el) {
-                if(infaq > 0) { el.classList.remove('hidden'); el.classList.add('flex'); }
-                else { el.classList.add('hidden'); el.classList.remove('flex'); }
-            }
-        });
+        infaqEls.forEach(el => { if(el) { if(infaq > 0) { el.classList.remove('hidden'); el.classList.add('flex'); } else { el.classList.add('hidden'); el.classList.remove('flex'); } } });
         return fmt(total);
     }
 
-    // 2. Preview File & Base64 Converter
     window.previewFile = function(e) {
-        // Stop propagation just in case
         if(e) e.stopPropagation();
-
         const input = document.getElementById('file-upload-input');
         if(input.files[0]) {
             const display = document.getElementById('file-name-preview');
-            if(display) {
-                display.innerText = "File terpilih: " + input.files[0].name;
-                display.classList.remove('hidden');
-            }
+            if(display) { display.innerText = "File: " + input.files[0].name; display.classList.remove('hidden'); }
         }
     }
 
-    // Optimized: Compress Image before Base64 conversion
     function getFileBase64(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -483,19 +398,14 @@
                 img.src = event.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 1024; // Resize to reasonable max width
+                    const MAX_WIDTH = 1024;
                     const scaleSize = MAX_WIDTH / img.width;
                     const width = (img.width > MAX_WIDTH) ? MAX_WIDTH : img.width;
                     const height = (img.width > MAX_WIDTH) ? (img.height * scaleSize) : img.height;
-
-                    canvas.width = width;
-                    canvas.height = height;
+                    canvas.width = width; canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-
-                    // Compress to JPEG with 0.7 quality
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                    resolve(dataUrl);
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
                 };
                 img.onerror = (err) => reject(err);
             };
@@ -503,7 +413,6 @@
         });
     }
 
-    // 3. Handle Submit (Fetch Logic)
     window.handleFormSubmit = async function(e) {
         e.preventDefault();
         const btn = document.getElementById('btn-submit-main');
@@ -515,236 +424,115 @@
         if(errorMsg) errorMsg.classList.add('hidden');
 
         try {
-            // Collect Form Data
             const nama = document.getElementById('namaPeserta').value;
             const email = document.getElementById('input-email').value;
             const waRaw = document.getElementById('input-wa').value;
-            const wa = waRaw.replace(/\D/g, ''); // SANITIZE: ONLY NUMBERS
-            const programCode = document.getElementById('input-program').value; // NOW SENDS 01, 02...
-
-            // MAP CODE TO NAME FOR PDF PROOF
-            const programNameMap = {
-                "01": "Mustawa 1 (Pemula)", "02": "Mustawa 2", "03": "Mustawa 3",
-                "04": "Mustawa 4", "05": "Mustawa 5", "06": "Mustawa 6"
-            };
+            const wa = waRaw.replace(/\D/g, '');
+            const programCode = document.getElementById('input-program').value;
+            const programNameMap = { "01": "Mustawa 1 (Pemula)", "02": "Mustawa 2", "03": "Mustawa 3", "04": "Mustawa 4", "05": "Mustawa 5", "06": "Mustawa 6" };
             const programName = programNameMap[programCode] || programCode;
 
             const tempatLahir = document.getElementById('input-tempat-lahir').value;
             const tglLahir = document.getElementById('input-tgl-lahir').value;
             const gender = document.getElementById('input-gender').value;
             const alamat = document.getElementById('input-alamat').value;
-            const statusS1 = document.getElementById('input-status-s1').value;
-            const nimLama = document.getElementById('input-nim-lama').value;
 
+            // STATUS LOGIC
+            const klasifikasi = document.getElementById('input-klasifikasi').value;
+            let statusS1 = klasifikasi; // Default (RGR/FAA/RPL)
+            if (klasifikasi === 'RPL') {
+                const kampus = document.getElementById('input-kampus-asal').value;
+                statusS1 = kampus ? kampus : "Afiliasi S1 (Umum)";
+            } else if (klasifikasi === 'RGR') {
+                statusS1 = "Reguler";
+            } else if (klasifikasi === 'FAA') {
+                statusS1 = "Beasiswa";
+            }
+
+            const nimLama = document.getElementById('input-nim-lama').value;
             const infaq = parseInt(document.getElementById('infaqInput').value.replace(/\D/g,'')) || 0;
             const radios = document.getElementsByName('spp_choice');
             let spp = 0;
             for (const r of radios) { if(r.checked) spp = (r.value==='other') ? (parseInt(document.getElementById('customSPP').value)||0) : r.value; }
 
-            // File Handling
             const fileInput = document.getElementById('file-upload-input');
             if (!fileInput.files.length) throw new Error("Mohon upload bukti transfer.");
-            const file = fileInput.files[0];
-            const base64Data = await getFileBase64(file);
-
-            // LOGIC: GENERATE PASSWORD (LAST 4 DIGITS)
+            const base64Data = await getFileBase64(fileInput.files[0]);
             const generatedPassword = wa.slice(-4);
 
-            // Payload Register
             const regPayload = {
                 action: 'register',
-                nama_ktp: nama,
-                email: email,
-                no_hp: wa,
-                password: generatedPassword, // STRICTLY 4 DIGITS
-                tgl_lahir: tempatLahir + ', ' + tglLahir,
-                jenis_kelamin: gender,
-                alamat: alamat,
-                status_s1: statusS1,
-                nim_lama: nimLama,
-                angkatan: '07', // Default from Prompt
-                kode_status: 'RGR' // Default Reguler
+                nama_ktp: nama, email: email, no_hp: wa, password: generatedPassword,
+                tgl_lahir: tempatLahir + ', ' + tglLahir, jenis_kelamin: gender, alamat: alamat,
+                status_s1: statusS1, // Sends "Thawalib" or "Reguler" for record
+                kode_status: klasifikasi, // Sends RGR/FAA/RPL for NIM
+                nim_lama: nimLama, angkatan: '07'
             };
 
-            // 1. REGISTER CALL
             const regResult = await secureFetch(GAS_WEB_APP_URL, 'POST', regPayload);
-
-            if (!regResult.success && regResult.message !== 'Email already registered') {
-                throw new Error(regResult.message);
-            }
-
+            if (!regResult.success && regResult.message !== 'Email already registered') throw new Error(regResult.message);
             if (!regResult.success && regResult.message === 'Email already registered') {
-                 // Handle duplicate gracefully if needed, or throw error
-                 // For now let's proceed if data exists (assuming it returns ID)
                  if(!regResult.data || !regResult.data.user_id) throw new Error("Email sudah terdaftar. Silakan login.");
             }
 
-            const userId = regResult.data.user_id;
-            const nim = regResult.data.nim;
-
-            // Payload Enroll
             const enrollPayload = {
-                action: 'enroll',
-                user_id: userId,
-                mustawa: programCode, // Sends '01'
-                nominal_spp: spp,
-                nominal_infaq: infaq,
-                komitmen: 'Bulanan', // Simplified
-                file_base64: base64Data, // Send File
-                file_name: file.name
+                action: 'enroll', user_id: regResult.data.user_id, mustawa: programCode,
+                nominal_spp: spp, nominal_infaq: infaq, komitmen: 'Bulanan',
+                file_base64: base64Data, file_name: fileInput.files[0].name
             };
 
-            // 2. ENROLL CALL
             const enrollResult = await secureFetch(GAS_WEB_APP_URL, 'POST', enrollPayload);
+            if (!enrollResult.success) throw new Error("Gagal Enroll: " + enrollResult.message);
 
-            if (!enrollResult.success) {
-                throw new Error("Gagal Enroll: " + enrollResult.message);
-            }
-
-            // SUCCESS! Update UI for Proof
+            // Update Proof
             const totalStr = document.getElementById('desk_total') ? document.getElementById('desk_total').innerText : '-';
             const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
-            // Inject to Proof
-            if(document.getElementById('proof-name')) document.getElementById('proof-name').textContent = nama;
-            if(document.getElementById('proof-email')) document.getElementById('proof-email').textContent = email;
-            if(document.getElementById('proof-wa')) document.getElementById('proof-wa').textContent = wa;
-            if(document.getElementById('proof-program')) document.getElementById('proof-program').textContent = programName;
-            if(document.getElementById('proof-total')) document.getElementById('proof-total').textContent = totalStr;
-            if(document.getElementById('proof-reg-number')) document.getElementById('proof-reg-number').textContent = nim; // Use NIM as RegNum
-            if(document.getElementById('proof-date')) document.getElementById('proof-date').textContent = today;
-            if(document.getElementById('modalRegNum')) document.getElementById('modalRegNum').innerText = nim;
+            ['proof-name','proof-email','proof-wa','proof-program','proof-total','proof-date'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.textContent = eval(id.replace('proof-','').replace('program','programName').replace('total','totalStr').replace('date','today').replace('name','nama').replace('wa','wa').replace('email','email'));
+            });
+            document.getElementById('proof-reg-number').textContent = regResult.data.nim;
+            document.getElementById('modalRegNum').innerText = regResult.data.nim;
 
-            // Show Image in Proof
             const proofImg = document.getElementById('proof-img');
-            const proofPlaceholder = document.getElementById('proof-img-placeholder');
-            if(proofImg) {
-                proofImg.src = base64Data;
-                proofImg.classList.remove('hidden');
-                if(proofPlaceholder) proofPlaceholder.classList.add('hidden');
-            }
+            if(proofImg) { proofImg.src = base64Data; proofImg.classList.remove('hidden'); document.getElementById('proof-img-placeholder').classList.add('hidden'); }
 
-            // Update WA Link
-        const waUrl = `https://wa.me/6285282832038?text=Assalamu'alaikum%20Admin,%20saya%20${encodeURIComponent(nama)}%20sudah%20daftar%20${nim}`;
-            const waLink = document.getElementById('waLink');
-            if(waLink) waLink.href = waUrl;
+            document.getElementById('waLink').href = `https://wa.me/6285282832038?text=Assalamu'alaikum%20Admin,%20saya%20${encodeURIComponent(nama)}%20sudah%20daftar%20${regResult.data.nim}`;
+            document.getElementById('successModal').classList.remove('hidden');
+            document.getElementById('successModal').classList.add('flex');
 
-            // Show Modal
-            const modal = document.getElementById('successModal');
-            if(modal) {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-            }
-
-            // Reset Button
-            btn.innerHTML = originalContent;
-            btn.disabled = false;
+            btn.innerHTML = originalContent; btn.disabled = false;
             document.getElementById('registrationForm').reset();
             updateTotal();
 
         } catch (err) {
             console.error(err);
-            if(errorMsg) {
-                errorMsg.innerText = 'Error: ' + err.message;
-                errorMsg.classList.remove('hidden');
-            }
-            btn.innerHTML = originalContent;
-            btn.disabled = false;
+            if(errorMsg) { errorMsg.innerText = 'Error: ' + err.message; errorMsg.classList.remove('hidden'); }
+            btn.innerHTML = originalContent; btn.disabled = false;
         }
-    }
-
-    // 4. PDF Generation
-    function downloadPDF(e) {
-        e.preventDefault();
-        const element = document.getElementById('printable-area');
-        if (!element) { alert('Error: Template bukti tidak ditemukan.'); return; }
-
-        const regNum = document.getElementById('proof-reg-number') ? document.getElementById('proof-reg-number').innerText : 'Bukti';
-        const btn = document.getElementById('btnCetakPDF');
-        const originalContent = btn.innerHTML;
-
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses PDF...';
-        btn.disabled = true;
-
-        const opt = {
-            margin: 0,
-            filename: `Bukti-${regNum}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        // Trick: Ensure element is visible before capture if it's hidden in overlay
-        // html2pdf can capture hidden elements if we clone or manage visibility.
-        // For now, since it's in a hidden overlay, the user usually clicks "Download PDF" from the Success Modal.
-        // We might need to briefly show the overlay content off-screen or rely on 'printable-area' being part of the DOM.
-        // Since 'proof-overlay' is hidden, 'printable-area' is not rendered.
-        // Workaround: Temporarily show overlay with opacity 0
-        const overlay = document.getElementById('proof-overlay');
-        const wasHidden = overlay.classList.contains('hidden');
-        if(wasHidden) {
-            overlay.classList.remove('hidden');
-            overlay.style.opacity = '0';
-        }
-
-        html2pdf().set(opt).from(element).save().then(function() {
-            btn.innerHTML = originalContent;
-            btn.disabled = false;
-            if(wasHidden) {
-                overlay.classList.add('hidden');
-                overlay.style.opacity = '1';
-            }
-        }).catch(function(err) {
-            console.error('PDF Error:', err);
-            alert("Gagal download PDF.");
-            btn.innerHTML = originalContent;
-            btn.disabled = false;
-            if(wasHidden) {
-                overlay.classList.add('hidden');
-                overlay.style.opacity = '1';
-            }
-        });
     }
 
     document.addEventListener("DOMContentLoaded", function() {
         const pdfBtn = document.getElementById('btnCetakPDF');
-        if (pdfBtn) pdfBtn.addEventListener('click', downloadPDF);
+        if (pdfBtn) pdfBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const element = document.getElementById('printable-area');
+            const overlay = document.getElementById('proof-overlay');
+            const wasHidden = overlay.classList.contains('hidden');
+            if(wasHidden) { overlay.classList.remove('hidden'); overlay.style.opacity = '0'; }
+
+            html2pdf().set({ margin:0, filename: 'Bukti.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2}, jsPDF:{unit:'mm',format:'a4'} })
+            .from(element).save().then(() => { if(wasHidden) overlay.classList.add('hidden'); overlay.style.opacity='1'; });
+        });
         updateTotal();
-        const customInput = document.getElementById('customSPP');
-        const customRadio = document.querySelector('input[value="other"]');
-        if(customInput && customRadio) {
-            customInput.addEventListener('focus', function() {
-                customRadio.checked = true;
-                updateTotal();
-            });
-        }
+        document.getElementById('customSPP').addEventListener('focus', () => { document.querySelector('input[value="other"]').checked=true; updateTotal(); });
     });
 
-    // Helper functions for Modal
-    window.closeModal = function() {
-        const modal = document.getElementById('successModal');
-        if(modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
-    }
-    window.showProofPopup = function() {
-        window.closeModal();
-        const overlay = document.getElementById('proof-overlay');
-        if(overlay) { overlay.classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
-    }
-    window.closeProofPopup = function() {
-        const overlay = document.getElementById('proof-overlay');
-        if(overlay) { overlay.classList.add('hidden'); document.body.style.overflow = 'auto'; }
-    }
-    window.copyText = function(text, btn) {
-        navigator.clipboard.writeText(text).then(() => {
-            const originalText = btn.innerHTML;
-            btn.innerHTML = "TERSALIN";
-            setTimeout(() => { btn.innerHTML = originalText; }, 2000);
-        });
-    }
-    window.copyTotal = function() {
-        const total = document.getElementById('desk_total') ? document.getElementById('desk_total').innerText.replace(/[^0-9]/g, '') : '';
-        navigator.clipboard.writeText(total).then(() => alert('Nominal tersalin!'));
-    }
+    window.closeModal = function() { document.getElementById('successModal').classList.add('hidden'); }
+    window.closeProofPopup = function() { document.getElementById('proof-overlay').classList.add('hidden'); document.body.style.overflow='auto'; }
+    window.copyText = function(t,b) { navigator.clipboard.writeText(t); let o=b.innerHTML; b.innerHTML="OK"; setTimeout(()=>b.innerHTML=o,2000); }
+    window.copyTotal = function() { navigator.clipboard.writeText(document.getElementById('desk_total').innerText.replace(/\D/g,'')); alert('Salin sukses'); }
 </script>
 
 <div class="mt-12 mb-8 flex flex-wrap justify-center items-center gap-x-2 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
@@ -756,6 +544,3 @@
     <span class="font-medium text-slate-400">Licensed for exclusive use by</span>
     <span class="text-slate-900 font-black">Diploma Ilmi</span>
 </div>
-
-</body>
-</html>
