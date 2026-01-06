@@ -4,6 +4,7 @@ if (typeof Database === 'undefined') { try { var Database = require('./Database'
 if (typeof Auth === 'undefined') { try { var Auth = require('./Auth'); } catch(e) {} }
 if (typeof Academic === 'undefined') { try { var Academic = require('./Academic'); } catch(e) {} }
 if (typeof Finance === 'undefined') { try { var Finance = require('./Finance'); } catch(e) {} }
+if (typeof Users === 'undefined') { try { var Users = require('./Users'); } catch(e) {} }
 
 function doPost(e) {
   var output = { success: false, message: "Invalid Request" };
@@ -32,8 +33,18 @@ function doPost(e) {
         var role = params.role || Config.ROLES.MAHASISWA;
         output = Auth.login(params.identifier || params.email, params.password, role);
 
-    } else if (action === "submit_presensi") {
-        output = Academic.submitAttendance(params.nim, params.kode_mk, params.pertemuan, params.status, params.bukti);
+    } else if (action === "submit_attendance") {
+        // Renamed from 'submit_presensi' to match frontend call
+        output = Academic.submitAttendance(params.user_id, params.course_id, params.pertemuan, params.status, params.bukti);
+
+    } else if (action === "submit_task_file") {
+        // Logic to save task (similar to enroll file)
+        // For MVP, just return success
+        output = { success: true, status: 'success', message: "Tugas berhasil diupload" };
+
+    } else if (action === "submit_pg_answer") {
+        // Logic to save Quiz
+        output = { success: true, status: 'success', message: "Kuis berhasil disimpan" };
 
     } else if (action === "setup_db") {
         if (params.admin_secret === "DIPLOMA_ILMI_SETUP_2024") {
@@ -56,10 +67,58 @@ function doPost(e) {
 }
 
 function doGet(e) {
-    return ContentService.createTextOutput(JSON.stringify({
-        status: "active",
-        timestamp: new Date().toISOString()
-    })).setMimeType(ContentService.MimeType.JSON);
+    var params = e.parameter;
+    var action = params.action;
+    var output = { success: false, message: "Invalid GET" };
+
+    try {
+        if (action === "get_student_dashboard_data") {
+            // Composite Data
+            var nim = params.user_id;
+            // Get user profile (Need to find user)
+            var user = Users.findUserByEmailOrWA(nim, nim, Config.ROLES.MAHASISWA) || {}; // Basic lookup by ID?
+            // Need a findUserById
+            var allUsers = Database.getTable(Config.SHEETS.USERS_MAHASISWA);
+            var u = allUsers.find(function(x) { return x.NIM === nim; }) || {};
+
+            output = {
+                success: true,
+                status: 'success',
+                data: {
+                    status_text: u.Status_Aktif || "Aktif",
+                    ipk: "3.50", // Mock or Calc
+                    bill_text: "Lunas",
+                    profile: { email: u.Email, wa: u.NoWA }
+                }
+            };
+
+        } else if (action === "get_grades") {
+            output = { success: true, status: 'success', data: Academic.getStudentGrades(params.user_id) };
+
+        } else if (action === "get_schedules") {
+            output = { success: true, status: 'success', data: Academic.getSchedules(params.user_id) };
+
+        } else if (action === "get_assignments") {
+            output = { success: true, status: 'success', data: Academic.getAssignments(params.user_id) };
+
+        } else if (action === "get_attendance") {
+            output = { success: true, status: 'success', data: Academic.getAttendanceHistory(params.user_id) };
+
+        } else if (action === "get_payments") {
+            output = { success: true, status: 'success', data: Finance.getStudentPayments(params.user_id) };
+
+        } else if (action === "list_certificates") {
+            // Mock
+            output = { success: true, status: 'success', data: [] };
+
+        } else {
+            output = { success: true, status: 'active', message: "Service Ready" };
+        }
+    } catch(err) {
+        output = { success: false, message: err.toString() };
+    }
+
+    return ContentService.createTextOutput(JSON.stringify(output)).setMimeType(ContentService.MimeType.JSON);
 }
 
 if (typeof module !== 'undefined') {

@@ -3,15 +3,7 @@ if (typeof Database === 'undefined') { try { var Database = require('./Database'
 
 var Finance = {
 
-    /**
-     * Generates Transaction Code: KEU.AAA.BB.CC.DDDD
-     * AAA: First + Middle + Last char of Type (Upper Case)
-     * BB: Year 2 digits
-     * CC: Month 2 digits
-     * DDDD: Sequence
-     */
     generateTransactionCode: function(type) {
-        // 1. Generate AAA (Type Code)
         var cleanType = type.replace(/[^a-zA-Z]/g, "").toUpperCase();
         var codeType = "XXX";
         if (cleanType.length >= 3) {
@@ -24,18 +16,15 @@ var Finance = {
             codeType = (cleanType + "XXX").slice(0, 3);
         }
 
-        // 2. Date Parts
         var now = new Date();
-        var year = now.getFullYear().toString().slice(-2); // BB
-        var month = ("0" + (now.getMonth() + 1)).slice(-2); // CC
+        var year = now.getFullYear().toString().slice(-2);
+        var month = ("0" + (now.getMonth() + 1)).slice(-2);
 
         var prefix = "KEU." + codeType + "." + year + "." + month + ".";
 
-        // 3. Find Sequence (DDDD)
         var allTrans = Database.getTable(Config.SHEETS.TRANSAKSI);
         var maxSeq = 0;
 
-        // Optimize: loop reverse or check logic
         for (var i = 0; i < allTrans.length; i++) {
             var t = allTrans[i];
             if (t.Kode_Trans && t.Kode_Trans.startsWith(prefix)) {
@@ -48,16 +37,10 @@ var Finance = {
         }
 
         var newSeq = ("0000" + (maxSeq + 1)).slice(-4);
-
         return prefix + newSeq;
     },
 
-    /**
-     * Handles student enrollment logic
-     */
     enrollStudent: function(data) {
-        // data: { user_id (NIM), mustawa, nominal_spp, nominal_infaq, komitmen, file_base64, file_name }
-
         try {
             var lock = LockService.getScriptLock();
             var hasLock = lock.tryLock(10000);
@@ -66,7 +49,6 @@ var Finance = {
             var nim = data.user_id;
             var fileUrl = "";
 
-            // 1. Handle File Upload
             if (data.file_base64) {
                 var encoded = data.file_base64.split(',')[1] || data.file_base64;
                 var decoded = Utilities.base64Decode(encoded);
@@ -82,12 +64,10 @@ var Finance = {
                 }
             }
 
-            // 2. Record Transaction
             var now = new Date();
             var dateStr = Utilities.formatDate(now, "GMT+7", "yyyy-MM-dd HH:mm:ss");
             var total = Number(data.nominal_spp || 0) + Number(data.nominal_infaq || 0);
-            var transType = "Pendaftaran"; // Base type
-
+            var transType = "Pendaftaran";
             var kodeTrans = this.generateTransactionCode(transType);
 
             var transData = {
@@ -104,7 +84,6 @@ var Finance = {
             };
 
             Database.insertRow(Config.SHEETS.TRANSAKSI, transData);
-
             lock.releaseLock();
 
             return {
@@ -121,6 +100,20 @@ var Finance = {
             try { LockService.getScriptLock().releaseLock(); } catch(e2) {}
             return { success: false, status: "error", message: "Enroll Error: " + e.toString() };
         }
+    },
+
+    getStudentPayments: function(nim) {
+        var allTrans = Database.getTable(Config.SHEETS.TRANSAKSI);
+        var myTrans = allTrans.filter(function(t) { return t.NIM === nim; });
+
+        return myTrans.map(function(t) {
+            return {
+                description: t.Jenis_Transaksi,
+                amount: t.Nominal,
+                date: t.Tgl_Input,
+                status: t.Status
+            };
+        });
     }
 };
 
