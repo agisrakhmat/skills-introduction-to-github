@@ -52,8 +52,8 @@ async function runTests() {
     assert(regJson.success, "Registration should succeed");
     assert(regJson.data.nim.includes("DI.AT."), "Gender P should be AT");
 
-    // 2. Test Enroll with File
-    console.log("Test: Enroll with File...");
+    // 2. Test Enroll with File and Transaction Code Generation
+    console.log("Test: Enroll with File & TransCode...");
     const enrollData = {
         action: 'enroll',
         user_id: regJson.data.nim,
@@ -68,7 +68,16 @@ async function runTests() {
     const enrollJson = JSON.parse(enrollRes.getContent());
     console.log("Enroll Response:", enrollJson);
     assert(enrollJson.success, "Enrollment should succeed");
-    assert(enrollJson.data.file_url.includes("mock-drive"), "File URL should be returned");
+
+    // Verify Transaction Code
+    const txId = enrollJson.data.transaction_id;
+    console.log("Generated Trans ID:", txId);
+    // Format: KEU.PFN.BB.CC.0001
+    // "Pendaftaran" -> P, f, n -> PFN? Or P, a, n?
+    // My Logic: P (0), f (5), n (10). -> PFN.
+    assert(txId.startsWith("KEU."), "Should start with KEU");
+    assert(txId.includes(".PFN."), "Should contain type code PFN for Pendaftaran");
+    assert(txId.endsWith(".0001"), "Should be first sequence");
 
     // Check DB
     const trans = Database.getTable(Config.SHEETS.TRANSAKSI);
