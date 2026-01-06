@@ -1,123 +1,314 @@
-<!--
-  WIDGET LOGIN DIPLOMA ILMI
-  Cara Pasang di Elementor:
-  1. Drag widget "HTML" ke halaman.
-  2. Paste kode ini.
-  3. GANTI 'YOUR_GAS_WEB_APP_URL' dengan URL Google Apps Script Anda (setelah deploy).
--->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Portal - Diploma Ilmi</title>
 
-<div class="lms-login-container">
-  <h3>Login LMS Diploma Ilmi</h3>
-  <form id="loginForm">
-    <div class="form-group">
-      <label>Email atau NIM</label>
-      <input type="text" id="identifier" placeholder="Contoh: ahmad@gmail.com" required>
+    <!-- Import Google Fonts (Poppins) -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Import FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Import Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Konfigurasi Tailwind & Animasi -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: {
+                        kampus: {
+                            primary: '#3b7d48',
+                            dark: '#1a4a25',
+                            accent: '#eab308',
+                        }
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+                        'fade-in-left': 'fadeInLeft 0.8s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        fadeInLeft: {
+                            '0%': { opacity: '0', transform: 'translateX(-20px)' },
+                            '100%': { opacity: '1', transform: 'translateX(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="font-sans antialiased overflow-x-hidden">
+
+    <!-- BACKGROUND IMAGE FULL SCREEN -->
+    <div class="fixed inset-0 z-0">
+        <img src="https://diplomailmi.my.id/wp-content/uploads/2025/09/photo-mosque-with-green-dome-green-dome-madinah-masjid-al-nabawi-nabawi-mosque-scaled.jpg"
+             alt="Masjid Nabawi"
+             class="w-full h-full object-cover">
+        <!-- Overlay Hijau Gelap -->
+        <div class="absolute inset-0 bg-gradient-to-br from-kampus-dark/90 via-kampus-primary/80 to-black/60"></div>
+        <!-- Pattern Halus -->
+        <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 24px 24px;"></div>
     </div>
-    <div class="form-group">
-      <label>Password</label>
-      <input type="password" id="password" placeholder="Default: 4 digit terakhir WA" required>
+
+    <!-- CTA Verifikasi Sertifikat (akses tanpa login) -->
+    <div class="fixed top-6 right-6 z-20">
+        <a href="/verifikasi-sertifikat" class="inline-flex items-center gap-2 bg-white/90 text-kampus-dark px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest shadow-lg hover:bg-white transition">
+            <i class="fa-solid fa-shield-check text-kampus-primary"></i>
+            <span>Verifikasi Sertifikat</span>
+        </a>
     </div>
-    <div class="form-group">
-      <label>Login Sebagai</label>
-      <select id="role">
-        <option value="Mahasiswa">Mahasiswa</option>
-        <option value="Dosen">Dosen</option>
-        <option value="Staff Akademik">Staff Akademik</option>
-        <option value="Staff Keuangan">Staff Keuangan</option>
-        <option value="Staff Kesiswaan">Staff Kesiswaan</option>
-        <option value="Super Admin">Super Admin</option>
-      </select>
+
+    <!-- CONTAINER UTAMA (GRID) -->
+    <div class="relative z-10 min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-12">
+        <div class="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+
+            <!-- KOLOM KIRI: BRANDING & MOTIVASI -->
+            <div class="text-white space-y-6 text-center lg:text-left animate-fade-in-left order-1 lg:order-1">
+
+                <!-- Logo -->
+                <img src="https://diplomailmi.my.id/wp-content/uploads/2025/09/Diploma-Ilmi-MS-White.png"
+                     alt="Logo Diploma Ilmi"
+                     style="height: 100px; width: auto;">
+
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight drop-shadow-md text-white">
+                    Menuntut Ilmu<br>
+                    <span class="text-white"> Jalan Menuju Surga</span>
+                </h1>
+
+                <p class="text-base sm:text-lg text-green-50 font-light leading-relaxed max-w-xl mx-auto lg:mx-0 drop-shadow"> “Siapa yang menempuh jalan untuk mencari ilmu, maka Allah akan mudahkan baginya jalan menuju surga.” - (HR. Muslim)
+                </p>
+
+                <!-- Fitur Pills -->
+                <div class="flex flex-wrap justify-center lg:justify-start gap-3 pt-4">
+                    <span class="bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-full text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-laptop-code"></i> E-Learning
+                    </span>
+                    <span class="bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-full text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-file-invoice"></i> E-Finance
+                    </span>
+                    <span class="bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-full text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-user-shield"></i> Staff Portal
+                    </span>
+                </div>
+            </div>
+
+            <!-- KOLOM KANAN: LOGIN CARD -->
+            <div class="w-full flex justify-center lg:justify-end animate-fade-in-up order-2 lg:order-2">
+
+                <div class="w-full max-w-md bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-6 sm:p-10 border border-white/50 relative overflow-hidden">
+
+                    <!-- Hiasan Header Kartu -->
+                    <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-kampus-primary to-green-400"></div>
+
+                    <!-- Header Form -->
+                    <div class="text-center mb-8">
+                        <div class="inline-flex items-center justify-center w-16 h-16 bg-green-50 rounded-2xl text-kampus-primary mb-4 shadow-sm transform transition hover:scale-110 duration-300">
+                            <i class="fa-solid fa-right-to-bracket text-2xl"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800">Ahlan wa Sahlan!</h2>
+                        <p class="text-gray-500 text-sm mt-1">Silakan masuk ke akun Mahasiswa</p>
+                    </div>
+
+                    <!-- FORM LOGIN -->
+                    <form onsubmit="handleLogin(event)" class="space-y-6">
+
+                        <!-- Alert Error (Hidden by default) -->
+                        <div id="login-error" class="hidden bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            <span id="error-text">Email atau password salah!</span>
+                        </div>
+
+                        <!-- Input Email -->
+                        <div class="group">
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Username / Email / NIM</label>
+                            <div class="flex items-center gap-3">
+                                <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-green-50 text-kampus-primary rounded-xl border border-green-100 shadow-sm">
+                                    <i class="fa-regular fa-envelope text-lg"></i>
+                                </div>
+                                <input id="login-email" type="text" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-kampus-primary focus:ring-2 focus:ring-green-100 outline-none transition-all duration-200 text-gray-700 placeholder-gray-400 text-sm shadow-sm" placeholder="Contoh: DI.IN.25..." required>
+                            </div>
+                        </div>
+
+                        <!-- Input Password -->
+                        <div class="group">
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Kata Sandi</label>
+                            <div class="flex items-center gap-3">
+                                <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-green-50 text-kampus-primary rounded-xl border border-green-100 shadow-sm">
+                                    <i class="fa-solid fa-lock text-lg"></i>
+                                </div>
+                                <input id="login-password" type="password" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-kampus-primary focus:ring-2 focus:ring-green-100 outline-none transition-all duration-200 text-gray-700 placeholder-gray-400 text-sm shadow-sm" placeholder="••••••••">
+                            </div>
+                            <!-- Link Lupa Sandi -->
+                            <div class="flex justify-end mt-2">
+                                <a href="https://wa.me/6285282832038?text=Assalamu'alaikum%20Admin,%20saya%20lupa%20password%20akun%20LMS" target="_blank" class="text-xs text-kampus-primary hover:text-kampus-dark font-medium transition-colors">Lupa Sandi?</a>
+                            </div>
+                        </div>
+
+                        <!-- Tombol Login -->
+                        <button type="submit" id="btn-login" class="w-full bg-kampus-primary hover:bg-kampus-dark text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-green-500/30 transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 group mt-2">
+                            <span id="btn-text">Masuk Sekarang</span>
+                            <div class="spinner" id="btn-spinner"></div>
+                            <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform" id="btn-icon"></i>
+                        </button>
+
+                    </form>
+
+                    <!-- Divider & Opsi Lain -->
+                    <div class="mt-8 text-center border-t border-gray-100 pt-6 space-y-4">
+
+                        <!-- TOMBOL LOGIN KARYAWAN -->
+                        <a href="/login-staff" class="block w-full text-center text-sm font-semibold text-gray-500 hover:text-kampus-primary border border-gray-200 hover:border-kampus-primary hover:bg-green-50 py-3 rounded-xl transition-all duration-300">
+                            <i class="fa-solid fa-user-tie mr-2"></i> Login sebagai Staff / Dosen
+                        </a>
+
+                        <div class="relative flex py-2 items-center">
+                            <div class="flex-grow border-t border-gray-200"></div>
+                            <span class="flex-shrink px-4 text-xs text-gray-400 font-medium">MAHASISWA BARU?</span>
+                            <div class="flex-grow border-t border-gray-200"></div>
+                        </div>
+                        <a href="/pendaftaran" class="inline-block text-sm font-semibold text-kampus-primary hover:text-kampus-dark bg-green-50 hover:bg-green-100 px-6 py-2 rounded-full transition-all duration-300 border border-transparent hover:border-green-200">
+                            Daftar Akun Baru
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
     </div>
-    <button type="submit" id="btnLogin">Masuk</button>
-  </form>
-  <div id="loginMessage" style="margin-top:10px;"></div>
-</div>
 
-<style>
-  .lms-login-container {
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background: #fff;
-    font-family: sans-serif;
-  }
-  .form-group { margin-bottom: 15px; }
-  .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-  .form-group input, .form-group select {
-    width: 100%; padding: 8px; box-sizing: border-box;
-  }
-  button {
-    width: 100%; padding: 10px; background: #28a745; color: white; border: none; cursor: pointer;
-  }
-  button:hover { background: #218838; }
-  .loading { opacity: 0.5; pointer-events: none; }
-</style>
+    <!-- LOGIC LOGIN JAVASCRIPT -->
+    <script>
+        // CONFIGURATION: URL Backend GAS
+        const GAS_WEB_APP_URL = 'YOUR_GAS_WEB_APP_URL'; // GANTI DENGAN URL DEPLOY ANDA
 
-<script>
-  // === KONFIGURASI ===
-  const GAS_URL = "YOUR_GAS_WEB_APP_URL"; // Ganti dengan URL Deploy GAS Anda
+        // PAGE REDIRECT MAP
+        const REDIRECT_MAP = {
+            'Mahasiswa': '/dashboard-mahasiswa',
+            'Super Admin': '/dashboard-superadmin',
+            'Dosen': '/dashboard-dosen',
+            'Staff Keuangan': '/dashboard-keuangan',
+            'Staff Akademik': '/dashboard-akademik',
+            'Staff Kesiswaan': '/dashboard-kesiswaan'
+        };
 
-  document.getElementById('loginForm').addEventListener('submit', function(e) {
-    e.preventDefault();
+        // Cek jika sudah login
+        const currentUser = localStorage.getItem('lms_user');
+        if (currentUser) {
+            try {
+                const user = JSON.parse(currentUser);
+                if (user && user.role) {
+                    // Opsional: Redirect langsung atau biarkan user melihat login page lalu redirect
+                    // window.location.href = REDIRECT_MAP[user.role] || REDIRECT_MAP['Mahasiswa'];
+                }
+            } catch(e) { localStorage.removeItem('lms_user'); }
+        }
 
-    const btn = document.getElementById('btnLogin');
-    const msg = document.getElementById('loginMessage');
+        function handleLogin(e) {
+            e.preventDefault();
 
-    // UI Loading
-    btn.innerText = "Memproses...";
-    btn.classList.add('loading');
-    msg.innerText = "";
-    msg.style.color = "black";
+            // 1. Ambil Input
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
 
-    // Data
-    const payload = {
-      action: "login",
-      identifier: document.getElementById('identifier').value,
-      password: document.getElementById('password').value,
-      role: document.getElementById('role').value
-    };
+            // UI Elements
+            const errorBox = document.getElementById('login-error');
+            const errorText = document.getElementById('error-text');
+            const btnLogin = document.getElementById('btn-login');
+            const btnText = document.getElementById('btn-text');
+            const btnSpinner = document.getElementById('btn-spinner');
+            const btnIcon = document.getElementById('btn-icon');
 
-    // Kirim ke GAS (menggunakan no-cors karena keterbatasan browser jika beda domain,
-    // tapi GAS return JSONP atau kita gunakan standard fetch dengan redirect follow)
-    // NOTE: GAS Web App defaultnya redirect 302. fetch kadang issue dengan CORS.
-    // Solusi terbaik untuk form Elementor sederhana adalah menggunakan `application/x-www-form-urlencoded`
-    // atau JSON text via text/plain agar tidak trigger preflight OPTIONS yang sering gagal di GAS.
+            // Reset State
+            errorBox.classList.add('hidden');
+            btnLogin.disabled = true;
+            btnLogin.classList.add('opacity-75', 'cursor-not-allowed');
+            btnText.innerText = 'Memverifikasi...';
+            btnSpinner.style.display = 'block';
+            btnIcon.style.display = 'none';
 
-    fetch(GAS_URL, {
-      method: "POST",
-      body: JSON.stringify(payload)
-      // Tidak pakai header Content-Type: application/json agar tidak preflight
-    })
-    .then(response => response.json())
-    .then(data => {
-      btn.innerText = "Masuk";
-      btn.classList.remove('loading');
+            // FETCH CALL
+            const payload = {
+                action: 'login',
+                identifier: email, // Backend expects 'identifier'
+                password: password,
+                role: 'Mahasiswa' // Default role for this page
+            };
 
-      if (data.success) {
-        msg.innerText = "Login Berhasil! Mengalihkan...";
-        msg.style.color = "green";
+            // Gunakan Text/Plain atau no-cors strategy jika perlu,
+            // tapi JSON.stringify + fetch standar biasanya OK dengan Web App (Exec as Me, Access Anyone)
+            fetch(GAS_WEB_APP_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    // Login Sukses
+                    localStorage.setItem('lms_user', JSON.stringify(result.user));
 
-        // Simpan sesi (sederhana)
-        localStorage.setItem("lms_user", JSON.stringify(data.user));
+                    const role = result.user.role || 'Mahasiswa';
+                    const redirectUrl = REDIRECT_MAP[role] || REDIRECT_MAP['Mahasiswa'];
 
-        // Redirect ke Dashboard sesuai Role (Anda perlu buat page ini di WP)
-        if(payload.role === "Mahasiswa") window.location.href = "/dashboard-mahasiswa";
-        else if(payload.role === "Dosen") window.location.href = "/dashboard-dosen";
-        else window.location.href = "/dashboard-staff";
+                    window.location.href = redirectUrl;
+                } else {
+                    // Login Gagal
+                    errorBox.classList.remove('hidden');
+                    errorText.innerText = result.message || "Email atau Password salah!";
+                    resetBtn();
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                errorBox.classList.remove('hidden');
+                errorText.innerText = "Gagal menghubungi server.";
+                resetBtn();
+            });
 
-      } else {
-        msg.innerText = "Gagal: " + data.message;
-        msg.style.color = "red";
-      }
-    })
-    .catch(error => {
-      console.error(error);
-      btn.innerText = "Masuk";
-      btn.classList.remove('loading');
-      msg.innerText = "Terjadi kesalahan koneksi.";
-      msg.style.color = "red";
-    });
-  });
-</script>
+            function resetBtn() {
+                btnLogin.disabled = false;
+                btnLogin.classList.remove('opacity-75', 'cursor-not-allowed');
+                btnText.innerText = 'Masuk Sekarang';
+                btnSpinner.style.display = 'none';
+                btnIcon.style.display = 'block';
+            }
+        }
+    </script>
+
+    <!-- Footer Credit -->
+    <div class="fixed bottom-6 left-0 right-0 z-20 flex justify-center px-4">
+        <div class="flex flex-wrap justify-center items-center gap-x-2 gap-y-1 text-[9px] font-bold uppercase tracking-widest bg-white/90 text-slate-600 px-4 py-2 rounded-full shadow-lg border border-white/60">
+            <span class="text-slate-700">© 2025</span>
+            <span class="text-slate-900 font-black">Diploma Ilmi</span>
+        </div>
+    </div>
+</body>
+</html>

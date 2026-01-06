@@ -1,8 +1,5 @@
 // --- Database.js ---
-if (typeof Config === 'undefined') {
-  // Safe require for Node.js, ignored in GAS if Config is already global
-  try { var Config = require('./Config'); } catch(e) {}
-}
+if (typeof Config === 'undefined') { try { var Config = require('./Config'); } catch(e) {} }
 
 var Database = {
   // Define Schema for Validation & Setup
@@ -10,9 +7,6 @@ var Database = {
     // Defined dynamically below or hardcoded if Config is available
   },
 
-  /**
-   * Initializes the database by creating sheets and headers if they don't exist.
-   */
   setupDatabase: function() {
     this._initSchema();
     var ss = SpreadsheetApp.openById(Config.SPREADSHEET_ID);
@@ -24,7 +18,6 @@ var Database = {
         sheet = ss.insertSheet(sheetName);
       }
 
-      // Check if headers exist
       var lastRow = sheet.getLastRow();
       if (lastRow === 0) {
         var headers = Database.SCHEMA[sheetName];
@@ -32,22 +25,22 @@ var Database = {
         try {
             sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold");
         } catch (e) {}
+      } else {
+        // Simple Migration: Check if headers match, if not append new cols?
+        // For now, we assume standard setup. User can manually add cols if needed.
       }
     });
 
     return "Setup Success";
   },
 
-  /**
-   * Helper to get all data from a sheet as an array of objects
-   */
   getTable: function(sheetName) {
     var ss = SpreadsheetApp.openById(Config.SPREADSHEET_ID);
     var sheet = ss.getSheetByName(sheetName);
     if (!sheet) return [];
 
     var data = sheet.getDataRange().getValues();
-    if (data.length < 2) return []; // Only headers or empty
+    if (data.length < 2) return [];
 
     var headers = data[0];
     var results = [];
@@ -63,9 +56,6 @@ var Database = {
     return results;
   },
 
-  /**
-   * Helper to insert a row into a sheet
-   */
   insertRow: function(sheetName, dataObj) {
     this._initSchema();
     var ss = SpreadsheetApp.openById(Config.SPREADSHEET_ID);
@@ -73,7 +63,10 @@ var Database = {
     if (!sheet) throw new Error("Sheet " + sheetName + " not found");
 
     var headers = Database.SCHEMA[sheetName];
-    var rowData = headers.map(function(header) {
+    // Re-read headers from sheet to be safe against manual changes
+    var sheetHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+
+    var rowData = sheetHeaders.map(function(header) {
       return dataObj[header] || "";
     });
 
@@ -84,10 +77,11 @@ var Database = {
   _initSchema: function() {
     if (Object.keys(this.SCHEMA).length > 0) return;
 
+    // UPDATED SCHEMA TO MATCH USER FRONTEND
     this.SCHEMA[Config.SHEETS.USERS_MAHASISWA] = [
       "NIM", "Nama", "Email", "NoWA", "Password_Hash", "Gender",
       "Tahun_Masuk", "Kode_Angkatan", "Status_Klasifikasi", "Mustawa_Saat_Ini",
-      "Status_Aktif", "Tgl_Daftar"
+      "Status_Aktif", "Tgl_Daftar", "Alamat", "Tgl_Lahir", "Status_S1", "NIM_Lama"
     ];
     this.SCHEMA[Config.SHEETS.USERS_STAFF] = [
       "Kode_Staff", "Nama", "Email", "Role", "Password_Hash", "NoWA"
@@ -107,7 +101,7 @@ var Database = {
     ];
     this.SCHEMA[Config.SHEETS.TRANSAKSI] = [
       "Kode_Trans", "NIM", "Jenis_Transaksi", "Nominal", "Bukti_Transfer",
-      "Status", "Tgl_Input", "Tgl_Verifikasi", "Petugas_Verifikator"
+      "Status", "Tgl_Input", "Tgl_Verifikasi", "Petugas_Verifikator", "Komitmen_Bayar"
     ];
     this.SCHEMA[Config.SHEETS.PENGUMUMAN] = [
       "Kode_Pengumuman", "Judul", "Isi_Pesan", "Link_Gambar_Slide", "Target_Role", "Tgl_Terbit", "Pembuat"
@@ -118,5 +112,4 @@ var Database = {
   }
 };
 
-// Node.js Export
 if (typeof module !== 'undefined') module.exports = Database;

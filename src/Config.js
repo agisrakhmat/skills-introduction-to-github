@@ -9,7 +9,7 @@ var Config = {
 
   // Folder IDs (Placeholders)
   FOLDERS: {
-    BUKTI_TRANSFER: "FOLDER_ID_BUKTI_TRANSFER",
+    BUKTI_TRANSFER: "FOLDER_ID_BUKTI_TRANSFER", // User must replace this
     SERTIFIKAT: "FOLDER_ID_SERTIFIKAT",
     MATERI: "FOLDER_ID_MATERI"
   },

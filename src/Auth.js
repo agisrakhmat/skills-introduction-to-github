@@ -6,7 +6,6 @@ if (typeof Users === 'undefined') { try { var Users = require('./Users'); } catc
 var Auth = {
 
   hashPassword: function(password) {
-    // Check if Utilities is available (GAS)
     if (typeof Utilities !== 'undefined' && Utilities.computeDigest) {
         var rawHash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, password);
         var txtHash = "";
@@ -18,73 +17,89 @@ var Auth = {
         }
         return txtHash;
     } else {
-        // Node.js fallback (Simulated)
         return "MOCK_HASH_" + password;
     }
   },
 
   registerStudent: function(data) {
-    // data: { Nama, Email, NoWA, Gender, Status (RGR/FAA), AngkatanCode }
+    // data matches frontend payload:
+    // { nama_ktp, email, no_hp, password, tgl_lahir, jenis_kelamin, alamat, status_s1, nim_lama, angkatan, kode_status }
 
     try {
-        // Use LockService to prevent race conditions (Duplicate NIMs)
         var lock = LockService.getScriptLock();
-        var hasLock = lock.tryLock(10000); // Wait up to 10s
+        var hasLock = lock.tryLock(10000);
 
         if (!hasLock) {
             return { success: false, message: "Server sibuk, silakan coba lagi." };
         }
 
-        // CRITICAL SECTION START
-
         // 1. Validate Uniqueness
-        var existing = Users.findUserByEmailOrWA(data.Email, data.NoWA, Config.ROLES.MAHASISWA);
+        // Map frontend keys to backend expectations
+        var email = data.email || data.Email;
+        var noWa = data.no_hp || data.NoWA;
+
+        var existing = Users.findUserByEmailOrWA(email, noWa, Config.ROLES.MAHASISWA);
         if (existing) {
           lock.releaseLock();
-          return { success: false, message: "Email atau No WA sudah terdaftar." };
+          // Frontend expects { status: 'error', message: ... } or custom handling
+          // But our standard is { success: false }. Frontend logic handles this.
+          // Note: Frontend handles "Email already registered" specifically.
+          return { success: false, message: "Email already registered", data: { user_id: existing.NIM, nim: existing.NIM } };
         }
 
         // 2. Generate Password
-        var cleanWA = data.NoWA.replace(/[^0-9]/g, '');
-        var rawPass = cleanWA.slice(-4);
-        if (rawPass.length < 4) rawPass = "1234";
+        var rawPass = data.password || noWa.replace(/[^0-9]/g, '').slice(-4);
         var passHash = this.hashPassword(rawPass);
 
-        // 3. Generate NIM (Must be inside Lock)
-        var nim = Users.generateNIM(data.Gender, data.AngkatanCode || "07", data.Status || "RGR");
+        // 3. Generate NIM
+        var gender = (data.jenis_kelamin === 'L' || data.jenis_kelamin === 'IN') ? 'IN' : 'AT';
+        var angkatan = data.angkatan || "07";
+        var status = data.kode_status || "RGR";
+
+        var nim = Users.generateNIM(gender, angkatan, status);
 
         // 4. Prepare Record
         var newStudent = {
           "NIM": nim,
-          "Nama": data.Nama,
-          "Email": data.Email,
-          "NoWA": data.NoWA,
+          "Nama": data.nama_ktp || data.Nama,
+          "Email": email,
+          "NoWA": noWa,
           "Password_Hash": passHash,
-          "Gender": (data.Gender === 'IN' || data.Gender === 'Laki-laki') ? 'IN' : 'AT',
+          "Gender": gender,
           "Tahun_Masuk": new Date().getFullYear(),
-          "Kode_Angkatan": data.AngkatanCode || "07",
-          "Status_Klasifikasi": data.Status || "RGR",
-          "Mustawa_Saat_Ini": "01",
+          "Kode_Angkatan": angkatan,
+          "Status_Klasifikasi": status,
+          "Mustawa_Saat_Ini": "01", // Default, will be updated by Enroll
           "Status_Aktif": "Aktif",
-          "Tgl_Daftar": Utilities.formatDate(new Date(), "GMT+7", "yyyy-MM-dd")
+          "Tgl_Daftar": Utilities.formatDate(new Date(), "GMT+7", "yyyy-MM-dd"),
+          // New Fields
+          "Alamat": data.alamat || "",
+          "Tgl_Lahir": data.tgl_lahir || "",
+          "Status_S1": data.status_s1 || "",
+          "NIM_Lama": data.nim_lama || ""
         };
 
         // 5. Save
         Users.createUser(newStudent, Config.ROLES.MAHASISWA);
 
-        // CRITICAL SECTION END
         lock.releaseLock();
 
         return {
           success: true,
+          status: "success", // For frontend compatibility
           message: "Pendaftaran berhasil.",
-          data: { NIM: nim, Password: rawPass }
+          data: {
+              user_id: nim,
+              nim: nim,
+              password: rawPass,
+              NIM: nim, // redundancy for safety
+              Password: rawPass
+          }
         };
 
     } catch (e) {
-        // Ensure lock is released even if error
         try { LockService.getScriptLock().releaseLock(); } catch(e2) {}
-        return { success: false, message: "Error sistem: " + e.toString() };
+        return { success: false, status: "error", message: "Error sistem: " + e.toString() };
     }
   },
 

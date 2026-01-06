@@ -46,6 +46,8 @@ const MockRange = class {
   setValue(value) {
       this.setValues([[value]]);
   }
+
+  setFontWeight(w) {} // Mock
 };
 
 const MockSheet = class {
@@ -84,6 +86,11 @@ const MockSheet = class {
   getLastRow() {
     this.recalculateBounds();
     return this.lastRow;
+  }
+
+  getLastColumn() {
+    this.recalculateBounds();
+    return this.lastCol;
   }
 
   clear() {
@@ -144,7 +151,7 @@ const LockService = {
 
 const Utilities = {
   base64Decode: (str) => Buffer.from(str, 'base64'),
-  newBlob: (data, mime, name) => ({ getDataAsString: () => data.toString() }),
+  newBlob: (data, mime, name) => ({ getDataAsString: () => data.toString(), name: name }),
   computeDigest: (algorithm, value) => {
       // Simple mock for SHA-256
       const crypto = require('crypto');
