@@ -5,6 +5,7 @@ if (typeof Auth === 'undefined') { try { var Auth = require('./Auth'); } catch(e
 if (typeof Academic === 'undefined') { try { var Academic = require('./Academic'); } catch(e) {} }
 if (typeof Finance === 'undefined') { try { var Finance = require('./Finance'); } catch(e) {} }
 if (typeof Users === 'undefined') { try { var Users = require('./Users'); } catch(e) {} }
+if (typeof Lecturer === 'undefined') { try { var Lecturer = require('./Lecturer'); } catch(e) {} }
 
 function doPost(e) {
   var output = { success: false, message: "Invalid Request" };
@@ -42,6 +43,14 @@ function doPost(e) {
     } else if (action === "submit_pg_answer") {
         output = { success: true, status: 'success', message: "Kuis berhasil disimpan" };
 
+    } else if (action === "submit_bulk_attendance") {
+        // Lecturer Action
+        output = Lecturer.submitBulkAttendance(params.course_id, params.pertemuan, params.data);
+
+    } else if (action === "submit_bulk_grades") {
+        // Lecturer Action
+        output = Lecturer.submitBulkGrades(params.course_id, params.data);
+
     } else if (action === "setup_db") {
         if (params.admin_secret === "DIPLOMA_ILMI_SETUP_2024") {
              output = { success: true, message: Database.setupDatabase() };
@@ -72,14 +81,11 @@ function doGet(e) {
             var nim = params.user_id;
             var allUsers = Database.getTable(Config.SHEETS.USERS_MAHASISWA);
             var u = allUsers.find(function(x) { return x.NIM === nim; }) || {};
-
             output = {
-                success: true,
-                status: 'success',
+                success: true, status: 'success',
                 data: {
                     status_text: u.Status_Aktif || "Aktif",
-                    ipk: "3.50",
-                    bill_text: "Lunas",
+                    ipk: "3.50", bill_text: "Lunas",
                     profile: { email: u.Email, wa: u.NoWA }
                 }
             };
@@ -100,23 +106,24 @@ function doGet(e) {
             output = { success: true, status: 'success', data: Finance.getStudentPayments(params.user_id) };
 
         } else if (action === "get_announcements") {
-            // New endpoint for announcements
             var allAnnouncements = Database.getTable(Config.SHEETS.PENGUMUMAN);
-            // Filter by Target_Role = 'Mahasiswa' or 'All' and sort by Date desc
             var filtered = allAnnouncements.filter(function(a) {
                 return !a.Target_Role || a.Target_Role.toLowerCase() === 'mahasiswa' || a.Target_Role.toLowerCase() === 'all';
             }).map(function(a) {
-                return {
-                    title: a.Judul,
-                    content: a.Isi_Pesan,
-                    image: a.Link_Gambar_Slide,
-                    date: a.Tgl_Terbit
-                };
+                return { title: a.Judul, content: a.Isi_Pesan, image: a.Link_Gambar_Slide, date: a.Tgl_Terbit };
             });
             output = { success: true, status: 'success', data: filtered };
 
         } else if (action === "list_certificates") {
             output = { success: true, status: 'success', data: [] };
+
+        } else if (action === "get_dosen_mk") {
+            // Lecturer Action
+            output = { success: true, status: 'success', data: Lecturer.getDosenCourses(params.user_id) };
+
+        } else if (action === "get_enrolled_students") {
+            // Lecturer Action
+            output = { success: true, status: 'success', data: Lecturer.getEnrolledStudents(params.course_id, params.mustawa) };
 
         } else {
             output = { success: true, status: 'active', message: "Service Ready" };

@@ -44,7 +44,7 @@ var Academic = {
       "ID_Presensi": "PRS." + new Date().getTime() + "." + nim,
       "NIM": nim,
       "Kode_MK": kodeMK,
-      "Pertemuan_Ke": pertemuanKe || 1, // Default if not provided
+      "Pertemuan_Ke": pertemuanKe || 1,
       "Status_Hadir": type,
       "Poin": poin,
       "Tanggal": Utilities.formatDate(new Date(), "GMT+7", "yyyy-MM-dd"),
@@ -59,7 +59,27 @@ var Academic = {
     }
   },
 
-  // Getters for Dashboard
+  processFinalGrade: function(nim, kodeMK, nilaiTugas, nilaiUTS, nilaiUAS) {
+    var avgAbsen = this.calculateAttendanceScore(nim, kodeMK);
+    var finalScore = this.calculateFinalScore(avgAbsen, nilaiTugas, nilaiUTS, nilaiUAS);
+    var predikatObj = this.determinePredicate(finalScore);
+
+    var data = {
+      "ID_Nilai": "GRD." + nim + "." + kodeMK,
+      "NIM": nim,
+      "Kode_MK": kodeMK,
+      "Nilai_Absen": avgAbsen,
+      "Nilai_Latihan": nilaiTugas,
+      "Nilai_UTS": nilaiUTS,
+      "Nilai_UAS": nilaiUAS,
+      "Nilai_Akhir": finalScore,
+      "Predikat": predikatObj.predikat,
+      "Status_Lulus": predikatObj.status
+    };
+
+    Database.insertRow(Config.SHEETS.NILAI, data);
+    return data;
+  },
 
   getStudentGrades: function(nim) {
       var allNilai = Database.getTable(Config.SHEETS.NILAI);
@@ -72,24 +92,19 @@ var Academic = {
           var pred = Academic.determinePredicate(Number(g.Nilai_Akhir || 0));
           return {
               course_name: mk.Nama_MK || g.Kode_MK,
-              sks: mk.SKS || 2, // Default 2 SKS if missing
+              sks: mk.SKS || 2,
               uts: g.Nilai_UTS,
               uas: g.Nilai_UAS,
               final_grade: g.Nilai_Akhir,
               letter_grade: pred.letter,
-              period: "Semester " + (mk.Mustawa || "1") // Infer period
+              period: "Semester " + (mk.Mustawa || "1")
           };
       });
   },
 
-  getSchedules: function(nim, userMustawa) {
-      // Logic: Get schedules for the student's current Mustawa
+  getSchedules: function(nim) {
       var allJadwal = Database.getTable(Config.SHEETS.JADWAL);
       var allMK = Database.getTable(Config.SHEETS.MATAKULIAH);
-
-      // Filter MK by Mustawa (Assuming user object passed or looked up)
-      // For MVP, we return all or filter if 'mustawa' is passed.
-      // Ideally we look up User's Mustawa.
 
       return allJadwal.map(function(j) {
           var mk = allMK.find(function(m) { return m.Kode_MK === j.Kode_MK; }) || {};
@@ -123,7 +138,6 @@ var Academic = {
   },
 
   getAssignments: function(nim) {
-      // Mock assignments for MVP, or read from ASSIGNMENTS sheet if created
       return [
           { title: "Tugas Resume Fiqih", type: "essay", deadline: "2025-02-20", course_name: "Fiqih Ibadah" },
           { title: "Kuis Nahwu Dasar", type: "pg", deadline: "2025-02-22", course_name: "Nahwu 1" }
