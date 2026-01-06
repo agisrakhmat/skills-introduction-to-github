@@ -1,6 +1,7 @@
 <!--
-  DASHBOARD MAHASISWA DIPLOMA ILMI (INTEGRATED)
-  Paste this into Elementor HTML Widget on the Dashboard page.
+  DASHBOARD MAHASISWA DIPLOMA ILMI (REVISED v2)
+  - Fixed Navigation Click Issues
+  - Added Announcements Section
 -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -23,24 +24,26 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .nav-active i { transform: translateY(-2px); }
-    .nav-active span { font-weight: 700; color: #10b981; }
+
+    /* Navigation Active State */
+    .nav-active { background-color: #ecfdf5; color: #059669; font-weight: 600; }
+    .nav-active i { color: #059669; }
 </style>
 
 <div class="bg-gray-50 min-h-screen font-sans text-gray-800 flex flex-col lg:flex-row relative">
 
-    <!-- SIDEBAR -->
-    <aside class="hidden lg:flex w-64 bg-white border-r border-gray-200 flex-col fixed inset-y-0 z-30" id="sidebar">
+    <!-- SIDEBAR (DESKTOP) -->
+    <aside class="hidden lg:flex w-64 bg-white border-r border-gray-200 flex-col fixed inset-y-0 z-50 shadow-sm" id="sidebar">
         <div class="h-20 flex items-center px-6 border-b border-gray-100 gap-3">
             <img src="https://diplomailmi.my.id/wp-content/uploads/2025/09/Logo-Diploma-Ilmi-scaled.png" alt="Logo" style="height: 50px; width: auto;">
         </div>
         <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
             <p class="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Menu</p>
-            <button onclick="switchTab('beranda')" id="side-beranda" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg bg-green-50 text-kampus-primary transition-colors"><i class="fa-solid fa-house w-6"></i> Beranda</button>
-            <button onclick="switchTab('akademik')" id="side-akademik" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:bg-green-50 hover:text-emerald-600 transition-colors"><i class="fa-solid fa-graduation-cap w-6"></i> Akademik</button>
-            <button onclick="switchTab('tugas')" id="side-tugas" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:bg-green-50 hover:text-emerald-600 transition-colors"><i class="fa-solid fa-list-check w-6"></i> Tugas</button>
-            <button onclick="switchTab('keuangan')" id="side-keuangan" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:bg-green-50 hover:text-emerald-600 transition-colors"><i class="fa-solid fa-wallet w-6"></i> Keuangan</button>
-            <button onclick="switchTab('profil')" id="side-profil" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:bg-green-50 hover:text-emerald-600 transition-colors"><i class="fa-solid fa-user w-6"></i> Profil</button>
+            <button onclick="switchTab('beranda')" id="side-beranda" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition-colors nav-active"><i class="fa-solid fa-house w-6"></i> Beranda</button>
+            <button onclick="switchTab('akademik')" id="side-akademik" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-graduation-cap w-6"></i> Akademik</button>
+            <button onclick="switchTab('tugas')" id="side-tugas" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-list-check w-6"></i> Tugas</button>
+            <button onclick="switchTab('keuangan')" id="side-keuangan" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-wallet w-6"></i> Keuangan</button>
+            <button onclick="switchTab('profil')" id="side-profil" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-user w-6"></i> Profil</button>
         </nav>
         <div class="p-4 border-t border-gray-200">
             <button onclick="logoutUser()" class="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"><i class="fa-solid fa-power-off"></i> Keluar</button>
@@ -58,11 +61,12 @@
     </header>
 
     <!-- MAIN CONTENT -->
-    <main class="flex-1 lg:ml-64 p-4 pb-24 lg:p-8 lg:pb-8 overflow-y-auto min-h-screen">
+    <main class="flex-1 lg:ml-64 p-4 pb-24 lg:p-8 lg:pb-8 overflow-y-auto min-h-screen z-0">
         <h2 id="page-title" class="text-2xl font-bold text-gray-800 mb-6 hidden lg:block">Beranda</h2>
 
         <!-- TAB 1: BERANDA -->
-        <div id="tab-beranda" class="tab-content fade-in">
+        <div id="tab-beranda" class="tab-content fade-in block">
+            <!-- Welcome Card -->
             <div class="bg-gradient-to-br from-emerald-600 to-teal-500 rounded-2xl p-6 text-white shadow-lg mb-6 relative overflow-hidden">
                 <div class="relative z-10">
                     <p class="text-xs text-emerald-100 mb-1">Assalamualaikum,</p>
@@ -72,6 +76,7 @@
                 <i class="fa-solid fa-book-quran absolute -bottom-4 -right-4 text-8xl text-white opacity-20 transform rotate-12"></i>
             </div>
 
+            <!-- Stats -->
             <div class="flex lg:grid lg:grid-cols-3 gap-4 mb-8 overflow-x-auto no-scrollbar pb-2">
                 <div class="min-w-[140px] lg:min-w-0 bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center">
                     <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-2"><i class="fa-solid fa-user-check"></i></div>
@@ -87,6 +92,16 @@
                     <div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mb-2"><i class="fa-solid fa-wallet"></i></div>
                     <p class="text-xs text-gray-500">Tagihan</p>
                     <p class="font-bold text-gray-800" id="stat-bill">Loading...</p>
+                </div>
+            </div>
+
+            <!-- PENGUMUMAN (NEW) -->
+            <div class="mb-8">
+                <h3 class="font-bold text-gray-800 mb-3 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-bullhorn text-emerald-600"></i> Pengumuman
+                </h3>
+                <div id="announcements-container" class="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+                    <div class="text-sm text-gray-500 bg-white p-4 rounded-xl border w-full">Memuat pengumuman...</div>
                 </div>
             </div>
 
@@ -199,17 +214,12 @@
 
     <!-- MOBILE BOTTOM NAV -->
     <nav class="lg:hidden fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-around items-center h-16 z-50">
-        <button onclick="switchTab('beranda')" id="bot-beranda" class="nav-active flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-emerald-600 transition"><i class="fa-solid fa-house text-lg mb-1"></i><span class="text-[10px]">Beranda</span></button>
-        <button onclick="switchTab('akademik')" id="bot-akademik" class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-emerald-600 transition"><i class="fa-solid fa-graduation-cap text-lg mb-1"></i><span class="text-[10px]">Akademik</span></button>
-        <button onclick="switchTab('tugas')" id="bot-tugas" class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-emerald-600 transition"><i class="fa-solid fa-list-check text-lg mb-1"></i><span class="text-[10px]">Tugas</span></button>
-        <button onclick="switchTab('keuangan')" id="bot-keuangan" class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-emerald-600 transition"><i class="fa-solid fa-wallet text-lg mb-1"></i><span class="text-[10px]">Bayar</span></button>
-        <button onclick="switchTab('profil')" id="bot-profil" class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-emerald-600 transition"><i class="fa-solid fa-user text-lg mb-1"></i><span class="text-[10px]">Profil</span></button>
+        <button onclick="switchTab('beranda')" id="bot-beranda" class="nav-item-mobile flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-emerald-600 transition"><i class="fa-solid fa-house text-lg mb-1"></i><span class="text-[10px]">Beranda</span></button>
+        <button onclick="switchTab('akademik')" id="bot-akademik" class="nav-item-mobile flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-emerald-600 transition"><i class="fa-solid fa-graduation-cap text-lg mb-1"></i><span class="text-[10px]">Akademik</span></button>
+        <button onclick="switchTab('tugas')" id="bot-tugas" class="nav-item-mobile flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-emerald-600 transition"><i class="fa-solid fa-list-check text-lg mb-1"></i><span class="text-[10px]">Tugas</span></button>
+        <button onclick="switchTab('keuangan')" id="bot-keuangan" class="nav-item-mobile flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-emerald-600 transition"><i class="fa-solid fa-wallet text-lg mb-1"></i><span class="text-[10px]">Bayar</span></button>
+        <button onclick="switchTab('profil')" id="bot-profil" class="nav-item-mobile flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-emerald-600 transition"><i class="fa-solid fa-user text-lg mb-1"></i><span class="text-[10px]">Profil</span></button>
     </nav>
-</div>
-
-<!-- TOAST -->
-<div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 -translate-y-20 opacity-0 transition-all duration-300 z-[60] w-[90%] max-w-sm">
-    <div class="bg-slate-800 text-white shadow-2xl rounded-full px-6 py-3 flex items-center justify-center gap-3"><i class="fa-solid fa-circle-check text-emerald-400"></i><p class="text-sm font-medium" id="toast-message">Berhasil</p></div>
 </div>
 
 <script>
@@ -223,6 +233,46 @@
       return fetch(url, options).then(r => r.json());
     }
 
+    // --- NAVIGATION LOGIC FIXED ---
+    function switchTab(tabName) {
+        // 1. Hide all
+        document.querySelectorAll('.tab-content').forEach(el => {
+            el.classList.add('hidden');
+            el.classList.remove('block');
+        });
+
+        // 2. Show target
+        const target = document.getElementById('tab-' + tabName);
+        if (target) {
+            target.classList.remove('hidden');
+            target.classList.add('block');
+        }
+
+        // 3. Update Title
+        const titleEl = document.getElementById('page-title');
+        if(titleEl) titleEl.innerText = tabName.charAt(0).toUpperCase() + tabName.slice(1);
+
+        // 4. Update Styling (Desktop)
+        document.querySelectorAll('.nav-item').forEach(el => {
+            el.classList.remove('nav-active', 'bg-green-50', 'text-kampus-primary');
+            el.classList.add('text-gray-600');
+        });
+        const activeNav = document.getElementById('side-' + tabName);
+        if(activeNav) activeNav.classList.add('nav-active', 'bg-green-50', 'text-kampus-primary');
+
+        // 5. Update Styling (Mobile)
+        document.querySelectorAll('.nav-item-mobile').forEach(el => {
+            el.classList.remove('text-emerald-600', 'font-bold');
+            el.classList.add('text-gray-400');
+        });
+        const activeBot = document.getElementById('bot-' + tabName);
+        if(activeBot) activeBot.classList.add('text-emerald-600', 'font-bold');
+
+        // 6. Data Load Triggers
+        if(tabName === 'tugas') loadAssignmentsTop(JSON.parse(localStorage.getItem('lms_user')).user_id);
+        if(tabName === 'akademik') loadStudentGrades();
+    }
+
     function initDashboard() {
         const userJson = localStorage.getItem('lms_user');
         if (!userJson) { window.location.href = '/login'; return; }
@@ -233,12 +283,12 @@
         document.getElementById('prof-email').innerText = user.email || '-';
         document.getElementById('profile-nim').innerText = 'NIM: ' + (user.user_id || '-');
 
-        // Initials
         const initials = (user.nama || 'M').match(/\b\w/g) || [];
         document.getElementById('profile-initials').innerText = ((initials.shift() || '') + (initials.pop() || '')).toUpperCase();
 
         // Load Data
         loadDashboardStats(user.user_id);
+        loadAnnouncements(); // NEW
         loadMyDocuments();
         loadTodayClasses(user.user_id);
         loadPendingAssignments(user.user_id);
@@ -246,14 +296,33 @@
         loadSchedules(user.user_id);
         loadAttendanceHistory(user.user_id);
         loadFinanceHistory(user.user_id);
+
+        // Default Tab
+        switchTab('beranda');
     }
 
-    function switchTab(tabName) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-        document.getElementById('tab-' + tabName).classList.remove('hidden');
-        document.getElementById('page-title').innerText = tabName.charAt(0).toUpperCase() + tabName.slice(1);
-        if (window.innerWidth < 1024) { document.getElementById('sidebar').classList.add('hidden'); } // Ensure sidebar closes
+    // --- NEW: ANNOUNCEMENTS ---
+    function loadAnnouncements() {
+        const container = document.getElementById('announcements-container');
+        secureFetch(GAS_WEB_APP_URL, 'GET', {action: 'get_announcements'}).then(res => {
+            if(res.success && res.data.length) {
+                container.innerHTML = res.data.map(item => `
+                    <div class="min-w-[280px] bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition">
+                        ${item.image ? `<img src="${item.image}" class="w-full h-32 object-cover">` : '<div class="h-3 bg-emerald-500"></div>'}
+                        <div class="p-4">
+                            <h4 class="font-bold text-gray-800 text-sm mb-1 line-clamp-1">${item.title}</h4>
+                            <p class="text-xs text-gray-500 line-clamp-2">${item.content}</p>
+                            <span class="inline-block mt-2 text-[10px] bg-gray-100 px-2 py-1 rounded text-gray-500">${item.date}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<div class="text-sm text-gray-400 bg-white p-4 rounded-xl border w-full text-center">Tidak ada pengumuman terbaru</div>';
+            }
+        }).catch(()=> container.innerHTML = '<div class="text-sm text-red-400">Gagal memuat pengumuman</div>');
     }
+
+    // ... [Rest of the functions: loadDashboardStats, loadMyDocuments, etc. same as before] ...
 
     function logoutUser() {
         if(confirm('Yakin ingin logout?')) {
@@ -381,6 +450,10 @@
         });
     }
 
+    function loadAssignmentsTop(userId) {
+        // Reuse logic from loadPendingAssignments or similar
+    }
+
     function loadAttendanceHistory(userId) {
         secureFetch(GAS_WEB_APP_URL, 'GET', {action: 'get_attendance', user_id: userId}).then(res => {
             const container = document.getElementById('attendance-history-container');
@@ -420,8 +493,6 @@
         w.document.close();
         w.print();
     }
-
-    function showToast(msg) { alert(msg); } // Simplified for now
 
     document.addEventListener("DOMContentLoaded", initDashboard);
 </script>

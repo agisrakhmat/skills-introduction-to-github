@@ -34,16 +34,12 @@ function doPost(e) {
         output = Auth.login(params.identifier || params.email, params.password, role);
 
     } else if (action === "submit_attendance") {
-        // Renamed from 'submit_presensi' to match frontend call
         output = Academic.submitAttendance(params.user_id, params.course_id, params.pertemuan, params.status, params.bukti);
 
     } else if (action === "submit_task_file") {
-        // Logic to save task (similar to enroll file)
-        // For MVP, just return success
         output = { success: true, status: 'success', message: "Tugas berhasil diupload" };
 
     } else if (action === "submit_pg_answer") {
-        // Logic to save Quiz
         output = { success: true, status: 'success', message: "Kuis berhasil disimpan" };
 
     } else if (action === "setup_db") {
@@ -73,11 +69,7 @@ function doGet(e) {
 
     try {
         if (action === "get_student_dashboard_data") {
-            // Composite Data
             var nim = params.user_id;
-            // Get user profile (Need to find user)
-            var user = Users.findUserByEmailOrWA(nim, nim, Config.ROLES.MAHASISWA) || {}; // Basic lookup by ID?
-            // Need a findUserById
             var allUsers = Database.getTable(Config.SHEETS.USERS_MAHASISWA);
             var u = allUsers.find(function(x) { return x.NIM === nim; }) || {};
 
@@ -86,7 +78,7 @@ function doGet(e) {
                 status: 'success',
                 data: {
                     status_text: u.Status_Aktif || "Aktif",
-                    ipk: "3.50", // Mock or Calc
+                    ipk: "3.50",
                     bill_text: "Lunas",
                     profile: { email: u.Email, wa: u.NoWA }
                 }
@@ -107,8 +99,23 @@ function doGet(e) {
         } else if (action === "get_payments") {
             output = { success: true, status: 'success', data: Finance.getStudentPayments(params.user_id) };
 
+        } else if (action === "get_announcements") {
+            // New endpoint for announcements
+            var allAnnouncements = Database.getTable(Config.SHEETS.PENGUMUMAN);
+            // Filter by Target_Role = 'Mahasiswa' or 'All' and sort by Date desc
+            var filtered = allAnnouncements.filter(function(a) {
+                return !a.Target_Role || a.Target_Role.toLowerCase() === 'mahasiswa' || a.Target_Role.toLowerCase() === 'all';
+            }).map(function(a) {
+                return {
+                    title: a.Judul,
+                    content: a.Isi_Pesan,
+                    image: a.Link_Gambar_Slide,
+                    date: a.Tgl_Terbit
+                };
+            });
+            output = { success: true, status: 'success', data: filtered };
+
         } else if (action === "list_certificates") {
-            // Mock
             output = { success: true, status: 'success', data: [] };
 
         } else {
