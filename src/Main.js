@@ -35,7 +35,11 @@ function doPost(e) {
         output = Auth.login(params.identifier || params.email, params.password, role);
 
     } else if (action === "submit_attendance") {
-        output = Academic.submitAttendance(params.user_id, params.course_id, params.pertemuan, params.status, params.bukti);
+        output = Academic.submitAttendance(params.user_id || params.session_user_id, params.code, params.pertemuan, params.type, params.bukti);
+
+    } else if (action === "upload_bukti") {
+        // New Endpoint for V3 Dashboard
+        output = Finance.uploadPaymentProof(params);
 
     } else if (action === "submit_task_file") {
         output = { success: true, status: 'success', message: "Tugas berhasil diupload" };
@@ -44,11 +48,9 @@ function doPost(e) {
         output = { success: true, status: 'success', message: "Kuis berhasil disimpan" };
 
     } else if (action === "submit_bulk_attendance") {
-        // Lecturer Action
         output = Lecturer.submitBulkAttendance(params.course_id, params.pertemuan, params.data);
 
     } else if (action === "submit_bulk_grades") {
-        // Lecturer Action
         output = Lecturer.submitBulkGrades(params.course_id, params.data);
 
     } else if (action === "setup_db") {
@@ -77,15 +79,18 @@ function doGet(e) {
     var output = { success: false, message: "Invalid GET" };
 
     try {
-        if (action === "get_student_dashboard_data") {
+        if (action === "get_student_dashboard_data" || action === "get_student_data") {
             var nim = params.user_id;
             var allUsers = Database.getTable(Config.SHEETS.USERS_MAHASISWA);
             var u = allUsers.find(function(x) { return x.NIM === nim; }) || {};
             output = {
                 success: true, status: 'success',
                 data: {
+                    status: u.Status_Aktif || "Aktif",
                     status_text: u.Status_Aktif || "Aktif",
-                    ipk: "3.50", bill_text: "Lunas",
+                    ipk: "3.50",
+                    bill: "Lunas",
+                    bill_text: "Lunas",
                     profile: { email: u.Email, wa: u.NoWA }
                 }
             };
@@ -118,11 +123,9 @@ function doGet(e) {
             output = { success: true, status: 'success', data: [] };
 
         } else if (action === "get_dosen_mk") {
-            // Lecturer Action
             output = { success: true, status: 'success', data: Lecturer.getDosenCourses(params.user_id) };
 
         } else if (action === "get_enrolled_students") {
-            // Lecturer Action
             output = { success: true, status: 'success', data: Lecturer.getEnrolledStudents(params.course_id, params.mustawa) };
 
         } else {
