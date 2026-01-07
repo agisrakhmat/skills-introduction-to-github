@@ -1,0 +1,315 @@
+<!--
+  DASHBOARD DOSEN (LECTURER PORTAL)
+  Paste this into Elementor HTML Widget.
+-->
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          staff: { primary: '#1e40af', dark: '#1e3a8a', light: '#dbeafe' }
+        }
+      }
+    }
+  }
+</script>
+<style>
+    .fade-in { animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="bg-gray-50 min-h-screen font-sans text-gray-800 flex flex-col">
+
+    <!-- HEADER -->
+    <header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-6 sticky top-0 z-30">
+        <div class="flex items-center gap-3">
+            <img src="https://diplomailmi.my.id/wp-content/uploads/2025/09/Logo-Diploma-Ilmi-scaled.png" alt="Logo" class="h-8 w-auto">
+            <span class="text-sm font-bold text-gray-500 border-l border-gray-300 pl-3 uppercase">Portal Dosen</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="text-right hidden sm:block">
+                <p class="text-sm font-bold text-gray-800" id="header-name">Nama Dosen</p>
+                <p class="text-xs text-gray-500" id="header-id">NIP: -</p>
+            </div>
+            <button onclick="logoutUser()" class="text-red-500 hover:bg-red-50 p-2 rounded-full transition"><i class="fa-solid fa-power-off"></i></button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 p-6 max-w-7xl mx-auto w-full">
+
+        <!-- COURSE SELECTOR -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8">
+            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Pilih Mata Kuliah</label>
+            <div class="flex flex-col sm:flex-row gap-4">
+                <select id="course-selector" class="flex-1 border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-staff-primary outline-none bg-gray-50" onchange="loadCourseData()">
+                    <option value="">-- Pilih Mata Kuliah --</option>
+                </select>
+                <button onclick="loadCourseData()" class="bg-staff-primary text-white px-6 py-3 rounded-lg font-bold text-sm hover:bg-staff-dark transition shadow-md"><i class="fa-solid fa-rotate mr-2"></i> Muat Data</button>
+            </div>
+        </div>
+
+        <!-- TABS -->
+        <div id="course-content" class="hidden fade-in">
+            <div class="flex border-b border-gray-200 mb-6 overflow-x-auto">
+                <button onclick="switchTab('presensi')" id="tab-btn-presensi" class="px-6 py-3 text-sm font-bold text-staff-primary border-b-2 border-staff-primary transition whitespace-nowrap">Input Presensi</button>
+                <button onclick="switchTab('nilai')" id="tab-btn-nilai" class="px-6 py-3 text-sm font-medium text-gray-500 hover:text-staff-primary transition whitespace-nowrap">Input Nilai</button>
+            </div>
+
+            <!-- TAB 1: PRESENSI -->
+            <div id="tab-presensi" class="block">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-gray-800 text-lg">Daftar Mahasiswa</h3>
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-bold text-gray-500">Pertemuan Ke:</label>
+                        <input type="number" id="meet-number" class="w-16 border border-gray-300 rounded p-1 text-center text-sm" value="1" min="1" max="16">
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+                            <tr>
+                                <th class="px-6 py-3">Nama Mahasiswa</th>
+                                <th class="px-6 py-3 text-center">Status Kehadiran</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendance-tbody" class="divide-y divide-gray-100">
+                            <!-- Rows injected here -->
+                        </tbody>
+                    </table>
+                    <div class="p-4 bg-gray-50 border-t border-gray-200 text-right">
+                        <button onclick="submitAttendanceBulk()" id="btn-save-attendance" class="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-emerald-700 shadow-md transition"><i class="fa-solid fa-save mr-2"></i> Simpan Presensi</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: NILAI -->
+            <div id="tab-nilai" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-gray-800 text-lg">Input Nilai Akademik</h3>
+                    <p class="text-xs text-gray-500 italic">*Nilai Akhir dihitung otomatis</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+                                <tr>
+                                    <th class="px-4 py-3">Nama Mahasiswa</th>
+                                    <th class="px-4 py-3 w-24 text-center">Tugas (15%)</th>
+                                    <th class="px-4 py-3 w-24 text-center">UTS (30%)</th>
+                                    <th class="px-4 py-3 w-24 text-center">UAS (40%)</th>
+                                    <th class="px-4 py-3 w-24 text-center bg-gray-100">Akhir</th>
+                                </tr>
+                            </thead>
+                            <tbody id="grades-tbody" class="divide-y divide-gray-100">
+                                <!-- Rows injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-4 bg-gray-50 border-t border-gray-200 text-right">
+                        <button onclick="submitGradesBulk()" id="btn-save-grades" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-blue-700 shadow-md transition"><i class="fa-solid fa-save mr-2"></i> Simpan Nilai</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+    <div class="bg-slate-800 text-white shadow-2xl rounded-lg px-6 py-4 flex items-center gap-3">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-xl"></i>
+        <div>
+            <h4 class="font-bold text-sm">Berhasil</h4>
+            <p class="text-xs text-gray-300" id="toast-message">Data disimpan.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const GAS_WEB_APP_URL = 'YOUR_GAS_WEB_APP_URL';
+
+    function secureFetch(url, method, payload) {
+      const user = JSON.parse(localStorage.getItem('lms_user') || '{}');
+      if (method === 'POST' && payload) { payload.session_user_id = user.user_id || ''; payload.session_user_role = user.role || 'dosen'; }
+      const options = { method: method, body: method === 'POST' ? JSON.stringify(payload) : undefined };
+      if (method === 'GET' && payload) { url += '?' + new URLSearchParams(payload).toString(); }
+      return fetch(url, options).then(r => r.json());
+    }
+
+    function initDosenDashboard() {
+        const userJson = localStorage.getItem('lms_user');
+        if (!userJson) { window.location.href = '/staff-login'; return; }
+        const user = JSON.parse(userJson);
+
+        document.getElementById('header-name').innerText = user.nama || 'Dosen';
+        document.getElementById('header-id').innerText = 'NIP: ' + (user.user_id || '-');
+
+        loadCourses(user.user_id);
+    }
+
+    function loadCourses(userId) {
+        secureFetch(GAS_WEB_APP_URL, 'GET', {action: 'get_dosen_mk', user_id: userId}).then(res => {
+            const select = document.getElementById('course-selector');
+            if(res.success && res.data.length) {
+                res.data.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.course_id;
+                    opt.innerText = `${c.course_name} (Mustawa ${c.mustawa})`;
+                    opt.dataset.mustawa = c.mustawa;
+                    select.appendChild(opt);
+                });
+            }
+        });
+    }
+
+    function loadCourseData() {
+        const courseId = document.getElementById('course-selector').value;
+        if(!courseId) return;
+
+        document.getElementById('course-content').classList.remove('hidden');
+        const mustawa = document.querySelector('#course-selector option:checked').dataset.mustawa;
+
+        // Load Students
+        const tbodyAtt = document.getElementById('attendance-tbody');
+        const tbodyGrades = document.getElementById('grades-tbody');
+        tbodyAtt.innerHTML = '<tr><td colspan="2" class="text-center py-4 text-gray-500">Memuat...</td></tr>';
+        tbodyGrades.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Memuat...</td></tr>';
+
+        secureFetch(GAS_WEB_APP_URL, 'GET', {action: 'get_enrolled_students', course_id: courseId, mustawa: mustawa}).then(res => {
+            if(res.success && res.data.length) {
+                renderAttendanceTable(res.data);
+                renderGradesTable(res.data);
+            } else {
+                const empty = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Tidak ada mahasiswa</td></tr>';
+                tbodyAtt.innerHTML = empty; tbodyGrades.innerHTML = empty;
+            }
+        });
+    }
+
+    function renderAttendanceTable(students) {
+        const tbody = document.getElementById('attendance-tbody');
+        tbody.innerHTML = students.map(s => `
+            <tr class="hover:bg-gray-50" data-nim="${s.nim}">
+                <td class="px-6 py-4 font-medium text-gray-800">${s.name}<br><span class="text-xs text-gray-400">${s.nim}</span></td>
+                <td class="px-6 py-4 text-center">
+                    <div class="flex justify-center gap-4">
+                        <label class="cursor-pointer"><input type="radio" name="att-${s.nim}" value="Hadir" class="mr-1 accent-emerald-600" checked> Hadir</label>
+                        <label class="cursor-pointer"><input type="radio" name="att-${s.nim}" value="Izin" class="mr-1 accent-yellow-500"> Izin</label>
+                        <label class="cursor-pointer"><input type="radio" name="att-${s.nim}" value="Sakit" class="mr-1 accent-orange-500"> Sakit</label>
+                        <label class="cursor-pointer"><input type="radio" name="att-${s.nim}" value="Alpha" class="mr-1 accent-red-600"> Alpha</label>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderGradesTable(students) {
+        const tbody = document.getElementById('grades-tbody');
+        tbody.innerHTML = students.map(s => `
+            <tr class="hover:bg-gray-50" data-nim="${s.nim}">
+                <td class="px-4 py-3 font-medium text-gray-800">${s.name}<br><span class="text-xs text-gray-400">${s.nim}</span></td>
+                <td class="px-4 py-3"><input type="number" class="w-full border border-gray-300 rounded p-1 text-center grade-input" data-type="tugas" value="${s.tugas||0}" oninput="calcRowFinal(this)"></td>
+                <td class="px-4 py-3"><input type="number" class="w-full border border-gray-300 rounded p-1 text-center grade-input" data-type="uts" value="${s.uts||0}" oninput="calcRowFinal(this)"></td>
+                <td class="px-4 py-3"><input type="number" class="w-full border border-gray-300 rounded p-1 text-center grade-input" data-type="uas" value="${s.uas||0}" oninput="calcRowFinal(this)"></td>
+                <td class="px-4 py-3 bg-gray-50 text-center font-bold text-gray-800 final-score">0</td>
+            </tr>
+        `).join('');
+        // Calc initial totals
+        document.querySelectorAll('#grades-tbody tr').forEach(row => calcRowFinal(row.querySelector('input')));
+    }
+
+    function calcRowFinal(el) {
+        const row = el.closest('tr');
+        const tugas = Number(row.querySelector('input[data-type="tugas"]').value) || 0;
+        const uts = Number(row.querySelector('input[data-type="uts"]').value) || 0;
+        const uas = Number(row.querySelector('input[data-type="uas"]').value) || 0;
+        // Simple approx formula for preview: (Tugas*0.3 + UTS*0.3 + UAS*0.4) - ignoring Attendance for frontend preview
+        // Or strictly match backend formula: (Absen 15%) + (Tugas 15%) + (UTS 30%) + (UAS 40%)
+        // We assume perfect attendance for preview or ignore it.
+        const final = (tugas * 0.15) + (uts * 0.30) + (uas * 0.40) + (100 * 0.15); // Assume 100 attendance for visual
+        row.querySelector('.final-score').innerText = Math.round(final);
+    }
+
+    function submitAttendanceBulk() {
+        const courseId = document.getElementById('course-selector').value;
+        const meet = document.getElementById('meet-number').value;
+        const rows = document.querySelectorAll('#attendance-tbody tr');
+        const data = [];
+
+        rows.forEach(row => {
+            const nim = row.dataset.nim;
+            const status = row.querySelector(`input[name="att-${nim}"]:checked`).value;
+            data.push({nim, status});
+        });
+
+        const btn = document.getElementById('btn-save-attendance');
+        btn.innerText = 'Menyimpan...'; btn.disabled = true;
+
+        secureFetch(GAS_WEB_APP_URL, 'POST', {
+            action: 'submit_bulk_attendance',
+            course_id: courseId,
+            pertemuan: meet,
+            data: data
+        }).then(res => {
+            showToast('Presensi Disimpan');
+            btn.innerText = 'Simpan Presensi'; btn.disabled = false;
+        }).catch(()=> { showToast('Gagal Simpan'); btn.disabled=false; });
+    }
+
+    function submitGradesBulk() {
+        const courseId = document.getElementById('course-selector').value;
+        const rows = document.querySelectorAll('#grades-tbody tr');
+        const data = [];
+
+        rows.forEach(row => {
+            data.push({
+                nim: row.dataset.nim,
+                tugas: row.querySelector('input[data-type="tugas"]').value,
+                uts: row.querySelector('input[data-type="uts"]').value,
+                uas: row.querySelector('input[data-type="uas"]').value
+            });
+        });
+
+        const btn = document.getElementById('btn-save-grades');
+        btn.innerText = 'Menyimpan...'; btn.disabled = true;
+
+        secureFetch(GAS_WEB_APP_URL, 'POST', {
+            action: 'submit_bulk_grades',
+            course_id: courseId,
+            data: data
+        }).then(res => {
+            showToast('Nilai Disimpan');
+            btn.innerText = 'Simpan Nilai'; btn.disabled = false;
+        }).catch(()=> { showToast('Gagal Simpan'); btn.disabled=false; });
+    }
+
+    function switchTab(tab) {
+        document.getElementById('tab-presensi').classList.add('hidden');
+        document.getElementById('tab-nilai').classList.add('hidden');
+        document.getElementById('tab-btn-presensi').classList.replace('border-b-2', 'text-gray-500');
+        document.getElementById('tab-btn-presensi').classList.remove('border-staff-primary', 'text-staff-primary');
+        document.getElementById('tab-btn-nilai').classList.replace('border-b-2', 'text-gray-500');
+        document.getElementById('tab-btn-nilai').classList.remove('border-staff-primary', 'text-staff-primary');
+
+        document.getElementById('tab-' + tab).classList.remove('hidden');
+        const btn = document.getElementById('tab-btn-' + tab);
+        btn.classList.add('border-b-2', 'border-staff-primary', 'text-staff-primary');
+        btn.classList.remove('text-gray-500');
+    }
+
+    function logoutUser() { localStorage.removeItem('lms_user'); window.location.href = '/staff-login'; }
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        document.getElementById('toast-message').innerText = msg;
+        t.classList.remove('translate-y-20', 'opacity-0');
+        setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
+    }
+
+    document.addEventListener('DOMContentLoaded', initDosenDashboard);
+</script>
