@@ -46,9 +46,8 @@ var Academic = {
   },
 
   processFinalGrade: function(nim, kodeMK, nilaiTugas, nilaiUTS, nilaiUAS) {
-    var avgAbsen = 0; // Calculate later if needed
-    // Calculate Score (Simple version for Bulk Input)
-    var finalScore = (100 * 0.15) + (nilaiTugas * 0.15) + (nilaiUTS * 0.30) + (nilaiUAS * 0.40); // Assume perfect attendance for bulk input?
+    var avgAbsen = 0;
+    var finalScore = (100 * 0.15) + (nilaiTugas * 0.15) + (nilaiUTS * 0.30) + (nilaiUAS * 0.40);
     var predikatObj = this.determinePredicate(finalScore);
 
     var data = {
@@ -78,63 +77,81 @@ var Academic = {
           var mk = allMK.find(function(m) { return m.Kode_MK === g.Kode_MK; }) || {};
           var pred = Academic.determinePredicate(Number(g.Nilai_Akhir || 0));
           return {
-              course: mk.Nama_MK || g.Kode_MK, // Key adapted for V3 Frontend
+              course: mk.Nama_MK || g.Kode_MK,
               sks: mk.SKS || 2,
               uts: g.Nilai_UTS,
               uas: g.Nilai_UAS,
-              score: g.Nilai_Akhir, // Key adapted
-              grade: pred.letter,   // Key adapted
+              score: g.Nilai_Akhir,
+              grade: pred.letter,
               period: "Semester " + (mk.Mustawa || "1")
           };
       });
+  },
+
+  _determineStatus: function(day, startTime, endTime) {
+      var now = new Date();
+      var days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+      var todayName = days[now.getDay()];
+
+      if (day !== todayName) return "Upcoming";
+
+      var currentVal = now.getHours() * 60 + now.getMinutes();
+      var startParts = (startTime || "00:00").split(':');
+      var endParts = (endTime || "00:00").split(':');
+      var startVal = parseInt(startParts[0])*60 + parseInt(startParts[1]);
+      var endVal = parseInt(endParts[0])*60 + parseInt(endParts[1]);
+
+      if (currentVal >= startVal && currentVal <= endVal) return "Live";
+      if (currentVal > endVal) return "Selesai";
+      return "Upcoming";
   },
 
   getSchedules: function(nim) {
       var allJadwal = Database.getTable(Config.SHEETS.JADWAL);
       var allMK = Database.getTable(Config.SHEETS.MATAKULIAH);
 
-      var now = new Date();
-      var currentHour = now.getHours();
-      var currentMin = now.getMinutes();
-      var currentTimeVal = currentHour * 60 + currentMin;
-
-      // Simple Day mapping (Indonesian)
-      var days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-      var todayName = days[now.getDay()];
-
       return allJadwal.map(function(j) {
           var mk = allMK.find(function(m) { return m.Kode_MK === j.Kode_MK; }) || {};
-
-          // Determine status
-          var status = "upcoming";
-          if (j.Hari === todayName) {
-              // Parse Time "08:00"
-              var startParts = (j.Jam_Mulai || "00:00").split(':');
-              var endParts = (j.Jam_Selesai || "00:00").split(':');
-              var startVal = parseInt(startParts[0])*60 + parseInt(startParts[1]);
-              var endVal = parseInt(endParts[0])*60 + parseInt(endParts[1]);
-
-              if (currentTimeVal >= startVal && currentTimeVal <= endVal) {
-                  status = "live";
-              } else if (currentTimeVal > endVal) {
-                  status = "done";
-              }
-          } else {
-              status = "upcoming"; // Or logic for past days
-          }
+          var status = Academic._determineStatus(j.Hari, j.Jam_Mulai, j.Jam_Selesai);
 
           return {
               course_id: j.Kode_MK,
-              code: j.Kode_MK, // Key adapted
+              code: j.Kode_MK,
               course_name: mk.Nama_MK || j.Kode_MK,
               day: j.Hari,
-              time: (j.Jam_Mulai || "") + " - " + (j.Jam_Selesai || ""), // Key adapted
+              time: (j.Jam_Mulai || "") + " - " + (j.Jam_Selesai || ""),
               time_start: j.Jam_Mulai,
               time_end: j.Jam_Selesai,
-              teacher: "Dosen " + (mk.Dosen_Pengampu || ""), // Key adapted
+              teacher: "Dosen " + (mk.Dosen_Pengampu || ""),
               teacher_name: "Dosen " + (mk.Dosen_Pengampu || ""),
               link_zoom: j.Link_Zoom,
-              status: status // Key adapted
+              status: status.toLowerCase()
+          };
+      });
+  },
+
+  getStudentLectures: function(nim) {
+      // V3.3 Specific Endpoint
+      // Maps JADWAL to "Daftar Pertemuan"
+      // Keys: mk_code, name, meeting, date, time, teacher, status, link_zoom, link_yt
+
+      var allJadwal = Database.getTable(Config.SHEETS.JADWAL);
+      var allMK = Database.getTable(Config.SHEETS.MATAKULIAH);
+
+      return allJadwal.map(function(j) {
+          var mk = allMK.find(function(m) { return m.Kode_MK === j.Kode_MK; }) || {};
+          var status = Academic._determineStatus(j.Hari, j.Jam_Mulai, j.Jam_Selesai);
+
+          return {
+              mk_code: j.Kode_MK,
+              name: mk.Nama_MK || j.Kode_MK,
+              meeting: "Rutin", // Static for now as we don't track numbered meetings in JADWAL
+              date: j.Hari,     // Display Day instead of date for weekly schedule
+              time: (j.Jam_Mulai || "") + " - " + (j.Jam_Selesai || ""),
+              teacher: "Dosen " + (mk.Dosen_Pengampu || ""),
+              status: status, // Live, Selesai, Upcoming
+              link_zoom: j.Link_Zoom,
+              link_yt: j.Link_Youtube
           };
       });
   },

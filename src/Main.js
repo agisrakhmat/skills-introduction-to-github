@@ -38,7 +38,6 @@ function doPost(e) {
         output = Academic.submitAttendance(params.user_id || params.session_user_id, params.code, params.pertemuan, params.type, params.bukti);
 
     } else if (action === "upload_bukti") {
-        // New Endpoint for V3 Dashboard
         output = Finance.uploadPaymentProof(params);
 
     } else if (action === "submit_task_file") {
@@ -100,6 +99,10 @@ function doGet(e) {
 
         } else if (action === "get_schedules") {
             output = { success: true, status: 'success', data: Academic.getSchedules(params.user_id) };
+
+        } else if (action === "get_lectures") {
+            // New V3.3 Endpoint
+            output = { success: true, status: 'success', data: Academic.getStudentLectures(params.user_id) };
 
         } else if (action === "get_assignments") {
             output = { success: true, status: 'success', data: Academic.getAssignments(params.user_id) };
