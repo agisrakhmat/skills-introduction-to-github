@@ -1,6 +1,6 @@
 // src/Database.js
 
-if (typeof Config === 'undefined') {
+if (typeof module !== 'undefined' && typeof Config === 'undefined') {
   var Config = require('./Config');
 }
 
@@ -74,6 +74,7 @@ var Database = {
 
   /**
    * Fetches grade for a specific course and NIM.
+   * dynamically looks for column header matching Config.HEADER_GRADE.
    * @param {string} sheetName
    * @param {string} nim
    * @returns {number} Score (defaults to 0 if not found).
@@ -84,14 +85,35 @@ var Database = {
     var sheet = this._getSheet(sheetName);
     var data = sheet.getDataRange().getValues();
 
-    // Start from row 1
+    if (data.length === 0) return 0;
+
+    // 1. Find the Grade Column Index by Header Name
+    var headers = data[0]; // Row 0 is header
+    var gradeColIndex = -1;
+
+    // Config.HEADER_GRADE should be 'Nilai Akhir'
+    var targetHeader = (Config.HEADER_GRADE || 'Nilai Akhir').toLowerCase();
+
+    for (var j = 0; j < headers.length; j++) {
+      if (String(headers[j]).trim().toLowerCase() === targetHeader) {
+        gradeColIndex = j;
+        break;
+      }
+    }
+
+    // If header not found, fallback to default K (index 10)
+    if (gradeColIndex === -1) {
+       gradeColIndex = 10; // Fallback
+    }
+
+    // 2. Iterate rows to find NIM
+    // Assuming NIM is still in Column A (Config.COL_INDEX_GRADE_NIM)
     for (var i = 1; i < data.length; i++) {
       var row = data[i];
-      // Use Configured Indexes
       var dbNim = row[Config.COL_INDEX_GRADE_NIM] ? String(row[Config.COL_INDEX_GRADE_NIM]).trim() : '';
 
       if (dbNim.toLowerCase() === nim.toLowerCase()) {
-        var score = row[Config.COL_INDEX_GRADE_FINAL];
+        var score = row[gradeColIndex];
         // Handle empty or string scores
         if (score === '' || score === null) return 0;
         return Number(score) || 0;
@@ -115,8 +137,7 @@ var Database = {
     }
 
     var data = sheet.getDataRange().getValues();
-    // Col B is NIM (Index 1). This is internal schema, can stay hardcoded or also moved to Config if super generic.
-    // For now, keeping cert log schema simple/fixed is fine.
+    // Col B is NIM (Index 1)
     for (var i = 1; i < data.length; i++) {
       var row = data[i];
       if (row.length > 1 && String(row[1]).toLowerCase() === nim.toLowerCase()) {

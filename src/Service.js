@@ -1,9 +1,9 @@
 // src/Service.js
 
-if (typeof Config === 'undefined') {
+if (typeof module !== 'undefined' && typeof Config === 'undefined') {
   var Config = require('./Config');
 }
-if (typeof Database === 'undefined') {
+if (typeof module !== 'undefined' && typeof Database === 'undefined') {
   var Database = require('./Database');
 }
 
