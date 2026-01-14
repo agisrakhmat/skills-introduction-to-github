@@ -125,6 +125,7 @@ var Database = {
    */
   getCourseGrade: function(sheetName, nim) {
     // Force recalculation of formulas to ensure fresh data
+    // This is CRITICAL to resolve "Data Not Synced" issues.
     SpreadsheetApp.flush();
 
     var sheet = this._getSheet(sheetName);
@@ -163,9 +164,23 @@ var Database = {
         if (gradeColIndex >= row.length) return 0;
 
         var score = row[gradeColIndex];
-        // Handle empty or string scores
+
+        // Normalize common string formats returned by formulas/locales
         if (score === '' || score === null) return 0;
-        return Number(score) || 0;
+
+        if (typeof score === 'number') return score;
+
+        var s = String(score).trim();
+        // Replace comma decimal separators with dot, remove percent sign and non-numeric characters except dot and minus
+        s = s.replace(/\s+/g, '').replace('%', '').replace(',', '.');
+        s = s.replace(/[^0-9.\-]/g, '');
+
+        var parsed = parseFloat(s);
+        if (isNaN(parsed)) {
+          // Log parsing error for debugging
+          return 0;
+        }
+        return parsed;
       }
     }
     return 0;
@@ -294,6 +309,10 @@ var Service = {
 
     return {
       status: 'success',
+      meta: {
+        server_timestamp: new Date().toISOString(), // For debugging cache
+        generated_by: 'Diploma Ilmi System'
+      },
       data: {
         nim: user.nim,
         nama: user.nama,
