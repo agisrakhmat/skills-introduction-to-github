@@ -18,13 +18,114 @@
             --glass-bg: rgba(26, 26, 26, 0.65);
             --navbar-height: 80px;
         }
-        /* ... (Keep CSS logic) ... */
-        .di-footer {
-            /* CHANGE FOOTER BACKGROUND URL */
-            background-image: url('[YOUR_FOOTER_IMAGE_URL]');
-            background-color: var(--brand-green);
+        /* --- CSS NAVBAR --- */
+        .elementor-widget-html { position: relative; z-index: 1000; }
+        .custom-navbar {
+            font-family: 'Montserrat', sans-serif; background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(245, 245, 245, 0.1); padding: 0 2rem; height: var(--navbar-height);
+            display: flex; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; z-index: 1000;
+            width: 100%; box-sizing: border-box; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
         }
-        /* ... */
+        .nav-logo img { height: 45px; width: auto; }
+
+        /* --- CSS WIDGET --- */
+        #sp-widget-wrapper {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #ffffff; border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 25px; max-width: 500px; margin: 120px auto 50px auto;
+            border: 1px solid #e0e0e0; color: #333; position: relative; z-index: 10;
+        }
+        .sp-header { text-align: center; margin-bottom: 25px; }
+        .sp-header h3 { margin: 0; color: #2c3e50; font-size: 24px; font-weight: 700; }
+        .sp-header p { margin: 8px 0 0; color: #7f8c8d; font-size: 14px; }
+        .sp-form-group { margin-bottom: 15px; }
+        .sp-label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #34495e; }
+        .sp-input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; box-sizing: border-box; }
+        .sp-btn { width: 100%; padding: 12px; background-color: var(--brand-green); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .sp-btn:hover { background-color: #26572a; }
+        .sp-btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        .sp-loading { display: none; text-align: center; margin-top: 15px; }
+        .sp-spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--brand-green); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- CSS POPUP MODAL --- */
+        .sp-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 2000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+        .sp-modal-overlay.active { display: flex; }
+        .sp-modal-content { background: #fff; width: 100%; max-width: 900px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); display: flex; flex-direction: column; overflow: hidden; max-height: 90vh; }
+        .sp-modal-content.error-modal { max-width: 400px; text-align: center; border-top: 5px solid #c0392b; }
+        .sp-modal-header { padding: 20px; background: var(--brand-green); color: white; display: flex; justify-content: space-between; align-items: center; }
+        .sp-modal-title { font-size: 18px; font-weight: 700; font-family: 'Poppins', sans-serif; }
+        .sp-close-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+        .sp-modal-body { padding: 25px; overflow-y: auto; font-family: 'Segoe UI', sans-serif; }
+        .sp-info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px solid #eee; }
+        .sp-info-item { display: flex; font-size: 14px; }
+        .sp-info-key { font-weight: 600; width: 140px; color: #555; }
+        .sp-info-val { color: #000; font-weight: 500; }
+        .sp-grade-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
+        .sp-grade-table th { background-color: #f2f2f2; color: #333; font-weight: 700; padding: 10px; border: 1px solid #ddd; text-align: center; }
+        .sp-grade-table td { padding: 8px; border: 1px solid #ddd; color: #444; }
+        .sp-text-center { text-align: center; }
+        .sp-text-left { text-align: left; }
+        .sp-col-no { width: 40px; }
+        .sp-status-lulus { color: var(--brand-green); font-weight: bold; }
+        .sp-status-gagal { color: #c0392b; font-weight: bold; }
+        .sp-modal-footer { padding: 15px 25px; border-top: 1px solid #eee; background: #f9f9f9; display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+        .sp-footer-buttons { display: flex; gap: 10px; width: 100%; justify-content: flex-end; }
+        .sp-warning-text { color: #c0392b; font-size: 12px; font-weight: 600; margin-top: 5px; display: none; }
+        .sp-action-btn { padding: 10px 20px; border-radius: 5px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: none; transition: all 0.3s; }
+        .btn-download { background: var(--brand-green); color: white; }
+        .btn-print { background: #2980b9; color: white; }
+        .btn-disabled { background-color: #bdc3c7 !important; color: #7f8c8d !important; cursor: not-allowed; pointer-events: none; }
+
+        /* --- CSS FOOTER --- */
+        .di-footer {
+            width: 100vw; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw;
+            background-image: url('[YOUR_FOOTER_IMAGE_URL]'); background-position: center bottom; background-repeat: no-repeat; background-size: cover;
+            padding-top: 4rem; padding-bottom: 2rem; box-sizing: border-box; overflow: hidden; background-color: var(--brand-green);
+        }
+        .di-footer::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(49, 110, 53, 0.92); z-index: 1; }
+        .di-footer-container { max-width: 1140px; margin: 0 auto; padding: 0 20px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 3rem; position: relative; z-index: 2; color: #ffffff !important; font-family: 'Poppins', sans-serif; }
+        .di-col-brand { flex: 2; min-width: 300px; }
+        .di-col-links, .di-col-contact { flex: 1; min-width: 220px; }
+        .di-footer-logo { max-width: 240px; height: auto; display: block; margin-bottom: 1.5rem; }
+        .di-tagline { font-size: 0.95rem; line-height: 1.6; opacity: 0.9; margin-bottom: 2rem; max-width: 350px; color: #fff !important; }
+        .di-yayasan-box { background: rgba(255, 255, 255, 0.1); border-left: 5px solid #8FD556; padding: 15px 20px; border-radius: 0 8px 8px 0; display: inline-block; }
+        .di-yayasan-box small { display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #e0e0e0; }
+        .di-yayasan-box strong { display: block; font-size: 1.1rem; font-weight: 700; color: #fff; }
+        .di-footer-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 1.5rem; color: #ffffff !important; position: relative; padding-bottom: 10px; }
+        .di-footer-title::after { content: ''; position: absolute; left: 0; bottom: 0; width: 40px; height: 3px; background-color: #8FD556; border-radius: 2px; }
+        .di-menu-list { list-style: none; padding: 0; margin: 0; }
+        .di-menu-list li { margin-bottom: 12px; }
+        .di-menu-list a { color: #e0e0e0 !important; text-decoration: none; font-size: 0.95rem; display: flex; align-items: center; transition: 0.3s; }
+        .di-menu-list a:hover { color: #fff !important; transform: translateX(5px); }
+        .di-contact-item { display: flex; align-items: flex-start; margin-bottom: 18px; font-size: 0.95rem; line-height: 1.5; color: #fff; }
+        .di-social-btn { display: inline-flex; align-items: center; background-color: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 50px; color: white !important; text-decoration: none; margin-top: 15px; border: 1px solid rgba(255,255,255,0.2); transition: 0.3s; }
+        .di-social-btn:hover { background-color: #fff; color: #316E35 !important; }
+        .di-copyright { border-top: 1px solid rgba(255,255,255,0.1); margin-top: 3rem; padding-top: 1.5rem; text-align: center; font-size: 0.85rem; color: rgba(255,255,255,0.6) !important; position: relative; z-index: 2; }
+
+        @media print {
+            body * { visibility: hidden; }
+            .custom-navbar, .di-footer, #sp-widget-wrapper { display: none !important; }
+            .sp-modal-overlay { position: absolute; left: 0; top: 0; background: white; display: block !important; visibility: visible; }
+            .sp-modal-content { box-shadow: none; max-width: 100%; width: 100%; visibility: visible; transform: none !important; }
+            .sp-modal-content * { visibility: visible; }
+            .sp-close-btn, .sp-modal-footer { display: none !important; }
+        }
+        @media (max-width: 768px) {
+            .custom-navbar { padding: 0 1rem; height: 70px; }
+            .nav-logo img { height: 35px; }
+            #sp-widget-wrapper { margin-top: 100px; width: 90%; padding: 20px; }
+            .di-footer-container { flex-direction: column; gap: 2.5rem; }
+            .di-col-brand, .di-col-links, .di-col-contact { width: 100%; min-width: 100%; }
+            .sp-modal-content { max-height: 95vh; width: 95%; margin: 0 auto; border-radius: 8px; }
+            .sp-modal-body { padding: 15px; }
+            .sp-info-grid { grid-template-columns: 1fr; gap: 12px; }
+            .sp-info-item { flex-direction: column; align-items: flex-start; border-bottom: 1px solid #f5f5f5; padding-bottom: 8px; }
+            .sp-info-item:last-child { border-bottom: none; }
+            .sp-info-key { width: 100%; font-size: 12px; color: #888; margin-bottom: 4px; }
+            .sp-info-val { font-size: 15px; }
+            .sp-footer-buttons { flex-direction: column; gap: 10px; }
+            .sp-action-btn { width: 100%; justify-content: center; padding: 12px; }
+        }
     </style>
 </head>
 <body>
@@ -33,7 +134,6 @@
     <nav class="custom-navbar">
         <div class="nav-logo">
             <a href="#">
-                <!-- CHANGE LOGO URL -->
                 <img src="[YOUR_LOGO_URL]" alt="Logo">
             </a>
         </div>
@@ -57,10 +157,72 @@
             </div>
             <button type="submit" class="sp-btn" id="sp-submit-btn">Cek Data</button>
         </form>
-        <!-- ... -->
+
+        <div class="sp-loading" id="sp-loading">
+            <div class="sp-spinner"></div>
+            <p style="font-size:12px; color:#666; margin-top:5px;">Sedang mencari data...</p>
+        </div>
     </div>
 
-    <!-- ... (MODALS) ... -->
+    <!-- RESULT MODAL -->
+    <div class="sp-modal-overlay" id="sp-result-modal">
+        <div class="sp-modal-content">
+            <div class="sp-modal-header">
+                <div class="sp-modal-title">Lembar Kemajuan Akademik Mahasiswa</div>
+                <button class="sp-close-btn" onclick="closeModal('sp-result-modal')">&times;</button>
+            </div>
+            <div class="sp-modal-body">
+                <div class="sp-info-grid">
+                    <div class="sp-info-item"><div class="sp-info-key">NIM:</div> <div class="sp-info-val" id="res-nim">-</div></div>
+                    <div class="sp-info-item"><div class="sp-info-key">Nama:</div> <div class="sp-info-val" id="res-nama">-</div></div>
+                    <div class="sp-info-item"><div class="sp-info-key">Program:</div> <div class="sp-info-val" id="res-prodi">-</div></div>
+                    <div class="sp-info-item"><div class="sp-info-key">Angkatan:</div> <div class="sp-info-val" id="res-angkatan">-</div></div>
+                    <div class="sp-info-item"><div class="sp-info-key">Alamat:</div> <div class="sp-info-val" id="res-alamat">-</div></div>
+                    <div class="sp-info-item"><div class="sp-info-key">TTL:</div> <div class="sp-info-val" id="res-ttl">-</div></div>
+                </div>
+                <h4 style="margin: 0 0 15px 0; border-bottom:1px solid #ddd; padding-bottom:5px;">Riwayat Mata Kuliah</h4>
+                <div style="overflow-x: auto;">
+                    <table class="sp-grade-table">
+                        <thead>
+                            <tr>
+                                <th class="sp-col-no">No</th>
+                                <th>Nama Mata Kuliah</th>
+                                <th>Nilai</th>
+                                <th>Mutu</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sp-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="sp-modal-footer">
+                <div class="sp-footer-buttons">
+                    <a href="#" id="sp-dl-sertifikat" class="sp-action-btn btn-download" target="_blank">
+                        <span class="material-symbols-outlined">verified</span> Cetak Sertifikat
+                    </a>
+                    <button id="sp-dl-nilai" class="sp-action-btn btn-print" onclick="window.print()">
+                        <span class="material-symbols-outlined">download</span> Download Transkrip
+                    </button>
+                </div>
+                <div id="sp-cert-warning" class="sp-warning-text">
+                    Sertifikat tidak dapat dicetak jika tidak lulus.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ERROR MODAL -->
+    <div class="sp-modal-overlay" id="sp-error-modal">
+        <div class="sp-modal-content error-modal">
+            <div class="sp-modal-body" style="padding: 30px 20px;">
+                <span class="material-symbols-outlined" style="font-size: 48px; color: #c0392b; margin-bottom: 15px;">error</span>
+                <h4 style="margin: 0 0 10px 0; color: #c0392b;">Data Tidak Ditemukan</h4>
+                <p id="sp-error-msg" style="color: #555; font-size: 14px; margin: 0;">-</p>
+                <button onclick="closeModal('sp-error-modal')" class="sp-btn" style="margin-top: 20px; background-color: #c0392b;">Tutup</button>
+            </div>
+        </div>
+    </div>
 
     <!-- FOOTER -->
     <footer class="di-footer">
@@ -73,15 +235,19 @@
                     <strong>[YOUR_ORGANIZATION_NAME]</strong>
                 </div>
             </div>
-            <!-- ... Links ... -->
+            <div class="di-col-links">
+                <h4 class="di-footer-title">Akses Cepat</h4>
+                <ul class="di-menu-list">
+                    <li><a href="#"><span class="material-symbols-outlined">home</span> Beranda</a></li>
+                    <li><a href="#"><span class="material-symbols-outlined">info</span> Tentang Kami</a></li>
+                </ul>
+            </div>
             <div class="di-col-contact">
                 <h4 class="di-footer-title">Hubungi Kami</h4>
                 <div class="di-contact-item"><span class="material-symbols-outlined">location_on</span><span>[YOUR_ADDRESS]</span></div>
                 <div class="di-contact-item"><span class="material-symbols-outlined">chat</span><span>[YOUR_PHONE_NUMBER]</span></div>
                 <div class="di-contact-item"><span class="material-symbols-outlined">mail</span><span>[YOUR_EMAIL]</span></div>
-                <a href="[YOUR_SOCIAL_LINK]" target="_blank" class="di-social-btn">
-                    Follow Us
-                </a>
+                <a href="[YOUR_SOCIAL_LINK]" target="_blank" class="di-social-btn">Follow Us</a>
             </div>
         </div>
         <div class="di-copyright">&copy; 2025 [YOUR_COPYRIGHT_NAME]. All Rights Reserved.</div>
@@ -91,8 +257,94 @@
         // --- CONFIGURATION ---
         const GOOGLE_SCRIPT_URL = 'PASTE_YOUR_NEW_GAS_WEB_APP_URL_HERE';
 
-        // ... (Keep JS logic) ...
-        // ...
+        function handleSearch(event) {
+            event.preventDefault();
+            const nim = document.getElementById('nim').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const btn = document.getElementById('sp-submit-btn');
+            const loading = document.getElementById('sp-loading');
+
+            if (!nim || !phone) return;
+
+            btn.disabled = true; btn.innerText = 'Memproses...';
+            loading.style.display = 'block';
+
+            // --- REAL FETCH ---
+            // Added timestamp to prevent browser caching
+            const finalUrl = `${GOOGLE_SCRIPT_URL}?nim=${encodeURIComponent(nim)}&phone=${encodeURIComponent(phone)}&_t=${new Date().getTime()}`;
+            fetch(finalUrl)
+                .then(response => response.json())
+                .then(json => {
+                    loading.style.display = 'none';
+                    btn.disabled = false; btn.innerText = 'Cek Data';
+
+                    if (json.status === 'success') {
+                        renderModal(json);
+                    } else {
+                        renderError(json.message || 'Maaf NIM atau Nomor telepon tidak terdaftar.');
+                    }
+                })
+                .catch(err => {
+                    loading.style.display = 'none';
+                    btn.disabled = false; btn.innerText = 'Cek Data';
+                    renderError('Terjadi kesalahan koneksi server.');
+                });
+        }
+
+        function renderModal(response) {
+            const data = response.data;
+            document.getElementById('res-nim').innerText = data.nim || '-';
+            document.getElementById('res-nama').innerText = data.nama || '-';
+            document.getElementById('res-prodi').innerText = data.program_pembelajaran || '-';
+            document.getElementById('res-angkatan').innerText = data.angkatan || '-';
+            document.getElementById('res-alamat').innerText = data.alamat || '-';
+            document.getElementById('res-ttl').innerText = data.ttl || '-';
+
+            const tbody = document.getElementById('sp-table-body');
+            tbody.innerHTML = '';
+
+            if (data.nilai && data.nilai.length > 0) {
+                data.nilai.forEach(item => {
+                    const row = document.createElement('tr');
+                    const statusClass = item.status === 'LL' ? 'sp-status-lulus' : 'sp-status-gagal';
+                    row.innerHTML = `
+                        <td class="sp-text-center">${item.no}</td>
+                        <td class="sp-text-left">${item.nama}</td>
+                        <td class="sp-text-center">${item.nilai}</td>
+                        <td class="sp-text-center">${item.mutu}</td>
+                        <td class="sp-text-center ${statusClass}">${item.status}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="5" class="sp-text-center">Belum ada data nilai.</td></tr>';
+            }
+
+            const btnCert = document.getElementById('sp-dl-sertifikat');
+            const warnText = document.getElementById('sp-cert-warning');
+            const isGraduated = data.status_kelulusan === true || data.status_kelulusan === "true";
+
+            if(isGraduated && data.sertifikat_url) {
+                btnCert.href = data.sertifikat_url;
+                btnCert.classList.remove('btn-disabled');
+                btnCert.removeAttribute('onclick');
+                warnText.style.display = 'none';
+            } else {
+                btnCert.href = "javascript:void(0)";
+                btnCert.classList.add('btn-disabled');
+                warnText.style.display = 'block';
+            }
+            openModal('sp-result-modal');
+        }
+
+        function renderError(msg) {
+            document.getElementById('sp-error-msg').innerText = msg;
+            openModal('sp-error-modal');
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        window.onclick = function(event) { if (event.target.classList.contains('sp-modal-overlay')) event.target.classList.remove('active'); }
     </script>
 </body>
 </html>

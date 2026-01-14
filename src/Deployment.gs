@@ -1,11 +1,18 @@
 /**
- * DIPLOMA ILMI LMS BACKEND - FULL BUNDLE
- * Copy ALL content of this file into a single file named 'Code.gs' in Google Apps Script.
+ * DEPLOYMENT FILE - DIPLOMA ILMI LMS BACKEND
+ *
+ * INSTRUCTIONS:
+ * 1. Copy ALL content of this file.
+ * 2. Paste into 'Code.gs' in your Google Apps Script project.
+ * 3. Save and Deploy as Web App.
+ *
+ * NOTE: This file bundles Config, Database, Service, and Router into one
+ * to avoid "require is not defined" errors in the Apps Script environment.
  */
 
-// ==========================================
-// 1. CONFIGURATION (Config)
-// ==========================================
+/* =========================================
+   1. CONFIGURATION
+   ========================================= */
 var Config = {
   // IDs provided by the user
   SPREADSHEET_ID: '18_VYfJHfwK3hDSaFT6bkQYSzQS1MScEbLuUd0wPuAEE',
@@ -18,7 +25,7 @@ var Config = {
   SHEET_COURSES: ['Aqidah', 'Dakwah', "Fiqih Syafi'i", 'Fiqih Waris', 'Nahwu'],
 
   // Column Indexes (0-based)
-  // Data User Sheet
+  // Data User Sheet: A=0, B=1, ...
   COL_INDEX_NIM: 0,        // Column A
   COL_INDEX_NAME: 1,       // Column B
   COL_INDEX_SEX: 2,        // Column C
@@ -30,15 +37,16 @@ var Config = {
   COL_INDEX_BIRTHDATE: 8,  // Column I
 
   // Course Sheets
-  COL_INDEX_GRADE_NIM: 0,  // Column A (Default fallback)
-  HEADER_GRADE: 'Nilai Akhir', // Header name to search for dynamically
+  // NIM in Column A. 'Nilai Akhir' usually in K (10), but we use Smart Lookup.
+  // 'Keterangan' is in L (11), but logic focuses on Nilai Akhir for calculation.
+  HEADER_GRADE: 'Nilai Akhir', // Header name to search for
+  COL_INDEX_GRADE_NIM: 0,      // Column A
 
   // Certificate Configuration
   CERT_PREFIX: 'Diplim-MSTW-01-',
-  CERT_STATIC_CODE: '07', // Used as part of the number: Prefix + StaticCode + Sequence
+  CERT_STATIC_CODE: '07', // Format: Prefix + StaticCode + Sequence
 
   // Grading Thresholds (Predikat)
-  // >= 95 Mumtaz, >= 85 Jayyid Jiddan Murtafi, >= 80 Jayyid Jiddan, >= 75 Jayyid Murtafi', >= 60 Jayyid
   GRADE_THRESHOLDS: [
     { min: 95, predicate: 'Mumtaz' },
     { min: 85, predicate: 'Jayyid Jiddan Murtafi' },
@@ -51,9 +59,9 @@ var Config = {
   MIN_PASS_AVERAGE: 60
 };
 
-// ==========================================
-// 2. DATABASE LOGIC (Database)
-// ==========================================
+/* =========================================
+   2. DATABASE (Google Sheets Interaction)
+   ========================================= */
 var Database = {
   /**
    * Helper to get a sheet by name with error checking.
@@ -72,6 +80,7 @@ var Database = {
    */
   getUserByNimAndPhone: function(nim, phone) {
     var sheet = this._getSheet(Config.SHEET_USER);
+    // Get all data (A:I) to cover all fields
     var data = sheet.getDataRange().getValues();
 
     // Start from row 1 (skip header)
@@ -99,7 +108,7 @@ var Database = {
   },
 
   /**
-   * Cleans phone number for comparison.
+   * Cleans phone number for comparison (08 -> 62).
    */
   _cleanPhone: function(phone) {
     if (!phone) return '';
@@ -112,9 +121,12 @@ var Database = {
 
   /**
    * Fetches grade for a specific course and NIM.
-   * dynamically looks for column header matching Config.HEADER_GRADE.
+   * Uses "Smart Lookup" to find the column with header "Nilai Akhir".
    */
   getCourseGrade: function(sheetName, nim) {
+    // Force recalculation of formulas to ensure fresh data
+    SpreadsheetApp.flush();
+
     var sheet = this._getSheet(sheetName);
     var data = sheet.getDataRange().getValues();
 
@@ -124,17 +136,19 @@ var Database = {
     var headers = data[0]; // Row 0 is header
     var gradeColIndex = -1;
 
-    // Config.HEADER_GRADE should be 'Nilai Akhir'
-    var targetHeader = (Config.HEADER_GRADE || 'Nilai Akhir').toLowerCase();
+    // Normalize target: remove all spaces, lowercase
+    var targetHeader = (Config.HEADER_GRADE || 'Nilai Akhir').replace(/\s/g, '').toLowerCase();
 
     for (var j = 0; j < headers.length; j++) {
-      if (String(headers[j]).trim().toLowerCase() === targetHeader) {
+      var headerClean = String(headers[j]).replace(/\s/g, '').toLowerCase();
+      if (headerClean === targetHeader) {
         gradeColIndex = j;
         break;
       }
     }
 
-    // If header not found, fallback to default (10 / Column K)
+    // Fallback: If header not found, use default Column K (Index 10)
+    // Note: User mentioned Keterangan is in L (Index 11), so K (Index 10) for Grade is consistent.
     if (gradeColIndex === -1) {
        gradeColIndex = 10;
     }
@@ -145,6 +159,9 @@ var Database = {
       var dbNim = row[Config.COL_INDEX_GRADE_NIM] ? String(row[Config.COL_INDEX_GRADE_NIM]).trim() : '';
 
       if (dbNim.toLowerCase() === nim.toLowerCase()) {
+        // Ensure we don't read out of bounds if row is short
+        if (gradeColIndex >= row.length) return 0;
+
         var score = row[gradeColIndex];
         // Handle empty or string scores
         if (score === '' || score === null) return 0;
@@ -155,13 +172,14 @@ var Database = {
   },
 
   /**
-   * Checks if certificate exists for NIM.
+   * Checks if certificate exists for NIM in 'sertifikat' sheet.
    */
   getCertificateLog: function(nim) {
     try {
       var sheet = this._getSheet(Config.SHEET_CERTIFICATE);
     } catch (e) {
-      throw e;
+      // If sheet doesn't exist, we can't get log
+      return null;
     }
 
     var data = sheet.getDataRange().getValues();
@@ -203,9 +221,9 @@ var Database = {
   }
 };
 
-// ==========================================
-// 3. SERVICE LOGIC (Service)
-// ==========================================
+/* =========================================
+   3. SERVICE (Business Logic)
+   ========================================= */
 var Service = {
   /**
    * Main logic to process grade request.
@@ -224,7 +242,7 @@ var Service = {
       };
     }
 
-    // Fetch grades for all courses
+    // Fetch grades
     var gradeResults = [];
     var totalScore = 0;
     var courseCount = Config.SHEET_COURSES.length;
@@ -234,6 +252,7 @@ var Service = {
       var score = Database.getCourseGrade(courseName, nim);
 
       var predicate = this.getPredicate(score);
+      // Status Passed if score >= 60
       var status = (score >= 60) ? 'LL' : 'BL';
 
       gradeResults.push({
@@ -248,6 +267,8 @@ var Service = {
     }
 
     var average = (courseCount > 0) ? (totalScore / courseCount) : 0;
+
+    // Check graduation
     var isGraduated = (average >= Config.MIN_PASS_AVERAGE);
 
     // Format TTL
@@ -262,10 +283,12 @@ var Service = {
         if (certLog) {
           certUrl = certLog.url;
         } else {
-           certUrl = this.generateCertificate(user, average);
+          certUrl = this.generateCertificate(user, average);
         }
       } catch (e) {
-        console.error('Cert Gen Error: ' + e.toString());
+        // Log error but don't fail the whole request
+        // certUrl remains empty
+        Logger.log('Certificate Generation Error: ' + e.toString());
       }
     }
 
@@ -286,7 +309,7 @@ var Service = {
   },
 
   /**
-   * Generates certificate PDF.
+   * Generates certificate PDF using Google Slides.
    */
   generateCertificate: function(user, averageScore) {
     // 1. Determine Predicate
@@ -302,6 +325,7 @@ var Service = {
     var folder = DriveApp.getFolderById(Config.DRIVE_FOLDER_ID);
 
     var filename = user.nim + '_' + user.nama + '_' + user.program;
+
     var copyFile = templateFile.makeCopy(filename, folder);
     var copyId = copyFile.getId();
 
@@ -361,10 +385,9 @@ var Service = {
   }
 };
 
-// ==========================================
-// 4. MAIN ENTRY POINT (Code)
-// ==========================================
-
+/* =========================================
+   4. ROUTER (doGet)
+   ========================================= */
 function doGet(e) {
   var output = {};
 

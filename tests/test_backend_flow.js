@@ -7,6 +7,7 @@ const Config = require('../src/Config');
 // --- MOCKS ---
 // Mock SpreadsheetApp
 global.SpreadsheetApp = {
+    flush: () => { console.log('Mock Flush'); },
     openById: (id) => ({
         getSheetByName: (name) => {
             if (name === Config.SHEET_USER) {

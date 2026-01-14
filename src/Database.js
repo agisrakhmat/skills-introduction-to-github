@@ -82,6 +82,9 @@ var Database = {
   getCourseGrade: function(sheetName, nim) {
     if (typeof SpreadsheetApp === 'undefined') return this._mockGetGrade(sheetName, nim);
 
+    // Force recalculation of formulas
+    SpreadsheetApp.flush();
+
     var sheet = this._getSheet(sheetName);
     var data = sheet.getDataRange().getValues();
 
@@ -91,11 +94,14 @@ var Database = {
     var headers = data[0]; // Row 0 is header
     var gradeColIndex = -1;
 
+    // Normalize target: remove all spaces, lowercase
     // Config.HEADER_GRADE should be 'Nilai Akhir'
-    var targetHeader = (Config.HEADER_GRADE || 'Nilai Akhir').toLowerCase();
+    var targetHeader = (Config.HEADER_GRADE || 'Nilai Akhir').replace(/\s/g, '').toLowerCase();
 
     for (var j = 0; j < headers.length; j++) {
-      if (String(headers[j]).trim().toLowerCase() === targetHeader) {
+      // Normalize header: remove all spaces, lowercase
+      var headerClean = String(headers[j]).replace(/\s/g, '').toLowerCase();
+      if (headerClean === targetHeader) {
         gradeColIndex = j;
         break;
       }
