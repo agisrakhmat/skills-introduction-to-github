@@ -19,7 +19,7 @@ var CONF = {
  * Parameter: ?nim=...&phone=...
  */
 function doGet(e) {
-  var params = e.parameter;
+  var params = e ? e.parameter : {}; // Cegah error jika e undefined (Manual Run)
   var nim = params.nim;
   var phone = params.phone;
 
@@ -30,7 +30,7 @@ function doGet(e) {
   if (!nim || !phone) {
     return output.setContent(JSON.stringify({
       status: 'error',
-      message: 'Parameter NIM dan Nomor Telepon wajib diisi.'
+      message: 'Parameter NIM dan Nomor Telepon wajib diisi. Jika anda menjalankan script ini manual, gunakan fungsi testManual().'
     }));
   }
 
@@ -43,6 +43,23 @@ function doGet(e) {
       message: 'Terjadi kesalahan sistem: ' + err.toString()
     }));
   }
+}
+
+/**
+ * FUNGSI TESTING MANUAL
+ * Jalankan fungsi ini di Editor Apps Script untuk simulasi
+ */
+function testManual() {
+  // Ganti data di bawah ini sesuai data asli di spreadsheet Anda untuk testing
+  var mockEvent = {
+    parameter: {
+      nim: 'DI.AT.25.07.RGR.0000', // Ganti dengan NIM valid
+      phone: '628123456789'        // Ganti dengan No HP valid
+    }
+  };
+
+  var result = doGet(mockEvent);
+  Logger.log(result.getContent());
 }
 
 /**
@@ -183,23 +200,7 @@ function handleCertificate(ss, student, predikat) {
   var sheetCert = ss.getSheetByName(CONF.SHEET_NAME_SERTIFIKAT);
   var data = sheetCert.getDataRange().getDisplayValues();
 
-  // 1. Cek apakah sudah ada sertifikat (NIM di Kolom A ? Wait, schema says No_Sertifikat in A, need to check structure)
-  // User Schema: No_Sertifikat(A), Nama(B), Peringkat(C), Timestamp(D), Link_Sertifikat(E)
-  // Masalah: Tidak ada kolom NIM di schema sertifikat user.
-  // Solusi: Kita harus mencari berdasarkan Nama? Tidak unik.
-  // *Koreksi*: Sebaiknya kita simpan NIM di kolom tersembunyi atau format No_Sertifikat mengandung info unik?
-  // User bilang: "Format: Diplim-MSTW-01-[Angkatan]-[XXXX]"
-  // User bilang: "nama output sertifikat yang tersimpan adalah: NIM_Nama_Jurusan"
-  // Karena struktur kolom database sertifikat yang diminta User TIDAK memiliki kolom NIM,
-  // Saya akan mencari berdasarkan pola nama file atau kita harus 'menyelipkan' pencarian.
-  // Tapi tunggu, User bilang "Check if user already has a certificate in sertifikat sheet."
-  // Saya akan berasumsi untuk menambahkan kolom NIM di sheet Sertifikat agar pencarian akurat,
-  // atau saya cari berdasarkan Link/Nama jika terpaksa.
-  // *UPDATE*: Saya akan cek kolom Link_Sertifikat, biasanya nama file di drive bisa dicek, tapi lambat.
-  // *Better Approach*: Saya akan asumsikan Kolom F (Ke-6) boleh dipakai untuk menyimpan NIM untuk referensi,
-  // atau saya cek Nama + Angkatan (resiko duplikat nama kecil tapi ada).
-  // *Decision*: Saya akan mencari berdasarkan NAMA (Kolom B) yang sama persis.
-
+  // 1. Cek apakah sudah ada sertifikat
   for (var i = 1; i < data.length; i++) {
     // Cek Nama (Kolom B)
     if (String(data[i][1]).trim().toUpperCase() === String(student.nama).trim().toUpperCase()) {
