@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Widget Cek Nilai Mahasiswa</title>
+
+    <!-- Import Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Google Material Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+    <style>
+        /* --- GLOBAL VARIABLES --- */
+        :root {
+            --brand-green: #316E35;
+            --brand-dark: #1a1a1a;
+            --text-light: #F5F5F5;
+            --glass-bg: rgba(26, 26, 26, 0.65);
+            --navbar-height: 80px;
+        }
+
+        /* --- CSS NAVBAR --- */
+        .elementor-widget-html {
+            position: relative;
+            z-index: 1000;
+        }
+
+        .custom-navbar {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(245, 245, 245, 0.1);
+            padding: 0 2rem;
+            height: var(--navbar-height);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(0);
+            transition: transform 0.4s ease-in-out;
+        }
+
+        .nav-logo img {
+            height: 45px;
+            width: auto;
+        }
+
+        /* --- CSS WIDGET FORM PENCARIAN --- */
+        #sp-widget-wrapper {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 25px;
+            max-width: 500px;
+            margin: 120px auto 50px auto;
+            border: 1px solid #e0e0e0;
+            color: #333;
+            position: relative;
+            z-index: 10;
+        }
+
+        .sp-header { text-align: center; margin-bottom: 25px; }
+        .sp-header h3 { margin: 0; color: #2c3e50; font-size: 24px; font-weight: 700; }
+        .sp-header p { margin: 8px 0 0; color: #7f8c8d; font-size: 14px; }
+
+        .sp-form-group { margin-bottom: 15px; }
+        .sp-label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #34495e; }
+        .sp-input {
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        .sp-input:focus { outline: none; border-color: var(--brand-green); box-shadow: 0 0 0 3px rgba(49, 110, 53, 0.1); }
+
+        .sp-btn {
+            width: 100%; padding: 12px; background-color: var(--brand-green); color: white; border: none; border-radius: 8px;
+            font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s;
+        }
+        .sp-btn:hover { background-color: #26572a; }
+        .sp-btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+
+        .sp-loading { display: none; text-align: center; margin-top: 15px; }
+        .sp-spinner {
+            border: 4px solid #f3f3f3; border-top: 4px solid var(--brand-green); border-radius: 50%;
+            width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- CSS POPUP MODAL (HASIL NILAI & ERROR) --- */
+        .sp-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sp-modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .sp-modal-content {
+            background: #fff;
+            width: 100%;
+            max-width: 900px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            max-height: 90vh; /* Default max height */
+        }
+        .sp-modal-overlay.active .sp-modal-content { transform: translateY(0); }
+
+        /* Error Modal Specific */
+        .sp-modal-content.error-modal {
+            max-width: 400px;
+            text-align: center;
+            border-top: 5px solid #c0392b;
+        }
+
+        /* Modal Header */
+        .sp-modal-header {
+            padding: 20px;
+            background: var(--brand-green);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sp-modal-title { font-size: 18px; font-weight: 700; font-family: 'Poppins', sans-serif; }
+        .sp-close-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+
+        /* Modal Body */
+        .sp-modal-body {
+            padding: 25px;
+            overflow-y: auto;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* Info Mahasiswa Grid */
+        .sp-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        .sp-info-item { display: flex; font-size: 14px; }
+        .sp-info-key { font-weight: 600; width: 140px; color: #555; }
+        .sp-info-val { color: #000; font-weight: 500; }
+
+        /* Tabel Akademik */
+        .sp-grade-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+        .sp-grade-table th {
+            background-color: #f2f2f2;
+            color: #333;
+            font-weight: 700;
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .sp-grade-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            color: #444;
+        }
+        .sp-text-center { text-align: center; }
+        .sp-text-left { text-align: left; }
+        .sp-col-no { width: 40px; }
+
+        .sp-status-lulus { color: var(--brand-green); font-weight: bold; }
+        .sp-status-gagal { color: #c0392b; font-weight: bold; }
+
+        /* Modal Footer (Tombol Aksi) */
+        .sp-modal-footer {
+            padding: 15px 25px;
+            border-top: 1px solid #eee;
+            background: #f9f9f9;
+            display: flex;
+            flex-direction: column; /* Stack untuk pesan warning */
+            align-items: flex-end;
+            gap: 5px;
+        }
+        .sp-footer-buttons {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            justify-content: flex-end;
+        }
+        .sp-warning-text {
+            color: #c0392b;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 5px;
+            display: none; /* Hidden by default */
+        }
+
+        .sp-action-btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+            transition: all 0.3s;
+        }
+        .btn-download { background: var(--brand-green); color: white; }
+        .btn-download:hover { background: #26572a; }
+        .btn-print { background: #2980b9; color: white; }
+        .btn-print:hover { background: #21618c; }
+
+        /* Tombol Disabled (Terkunci) */
+        .btn-disabled {
+            background-color: #bdc3c7 !important;
+            color: #7f8c8d !important;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* --- CSS FOOTER FULL WIDTH --- */
+        .di-footer {
+            width: 100vw;
+            position: relative;
+            left: 50%; right: 50%;
+            margin-left: -50vw; margin-right: -50vw;
+            background-image: url('https://diplomailmi.my.id/wp-content/uploads/2025/09/photo-mosque-with-green-dome-green-dome-madinah-masjid-al-nabawi-nabawi-mosque-scaled.jpg');
+            background-position: center bottom;
+            background-repeat: no-repeat;
+            background-size: cover;
+            padding-top: 4rem; padding-bottom: 2rem;
+            box-sizing: border-box;
+            overflow: hidden;
+            background-color: #316E35;
+        }
+        .di-footer::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(49, 110, 53, 0.92); z-index: 1;
+        }
+        .di-footer-container {
+            max-width: 1140px; margin: 0 auto; padding: 0 20px;
+            display: flex; flex-wrap: wrap; justify-content: space-between; gap: 3rem;
+            position: relative; z-index: 2; color: #ffffff !important;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .di-col-brand { flex: 2; min-width: 300px; }
+        .di-col-links, .di-col-contact { flex: 1; min-width: 220px; }
+
+        .di-footer-logo { max-width: 240px; height: auto; display: block; margin-bottom: 1.5rem; }
+        .di-tagline { font-size: 0.95rem; line-height: 1.6; opacity: 0.9; margin-bottom: 2rem; max-width: 350px; color: #fff !important; }
+
+        .di-yayasan-box {
+            background: rgba(255, 255, 255, 0.1); border-left: 5px solid #8FD556;
+            padding: 15px 20px; border-radius: 0 8px 8px 0; display: inline-block;
+        }
+        .di-yayasan-box small { display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #e0e0e0; }
+        .di-yayasan-box strong { display: block; font-size: 1.1rem; font-weight: 700; color: #fff; }
+
+        .di-footer-title {
+            font-size: 1.2rem; font-weight: 700; margin-bottom: 1.5rem; color: #ffffff !important; position: relative; padding-bottom: 10px;
+        }
+        .di-footer-title::after {
+            content: ''; position: absolute; left: 0; bottom: 0; width: 40px; height: 3px; background-color: #8FD556; border-radius: 2px;
+        }
+
+        .di-menu-list { list-style: none; padding: 0; margin: 0; }
+        .di-menu-list li { margin-bottom: 12px; }
+        .di-menu-list a {
+            color: #e0e0e0 !important; text-decoration: none; font-size: 0.95rem; display: flex; align-items: center; transition: 0.3s;
+        }
+        .di-menu-list a:hover { color: #fff !important; transform: translateX(5px); }
+        .di-menu-list .material-symbols-outlined { font-size: 20px; margin-right: 10px; }
+
+        .di-contact-item { display: flex; align-items: flex-start; margin-bottom: 18px; font-size: 0.95rem; line-height: 1.5; color: #fff; }
+        .di-contact-item .material-symbols-outlined { margin-right: 10px; flex-shrink: 0; }
+
+        .di-social-btn {
+            display: inline-flex; align-items: center; background-color: rgba(255,255,255,0.1); padding: 10px 20px;
+            border-radius: 50px; color: white !important; text-decoration: none; margin-top: 15px;
+            border: 1px solid rgba(255,255,255,0.2); transition: 0.3s;
+        }
+        .di-social-btn:hover { background-color: #fff; color: #316E35 !important; }
+        .di-social-btn svg { width: 18px; height: 18px; margin-right: 8px; fill: currentColor; }
+
+        .di-copyright {
+            border-top: 1px solid rgba(255,255,255,0.1); margin-top: 3rem; padding-top: 1.5rem;
+            text-align: center; font-size: 0.85rem; color: rgba(255,255,255,0.6) !important; position: relative; z-index: 2;
+        }
+
+        /* --- PRINT STYLES --- */
+        @media print {
+            body * { visibility: hidden; }
+            .custom-navbar, .di-footer, #sp-widget-wrapper { display: none !important; }
+            .sp-modal-overlay {
+                position: absolute; left: 0; top: 0; background: white;
+                display: block !important; visibility: visible;
+            }
+            .sp-modal-content {
+                box-shadow: none; max-width: 100%; width: 100%;
+                visibility: visible; transform: none !important;
+            }
+            .sp-modal-content * { visibility: visible; }
+            .sp-close-btn, .sp-modal-footer { display: none !important; }
+        }
+
+        /* --- MOBILE RESPONSIVE TWEAKS --- */
+        @media (max-width: 768px) {
+            .custom-navbar { padding: 0 1rem; height: 70px; }
+            .nav-logo img { height: 35px; }
+            #sp-widget-wrapper { margin-top: 100px; width: 90%; padding: 20px; }
+            .di-footer-container { flex-direction: column; gap: 2.5rem; }
+            .di-col-brand, .di-col-links, .di-col-contact { width: 100%; min-width: 100%; }
+            .sp-modal-content { max-height: 95vh; width: 95%; margin: 0 auto; border-radius: 8px; }
+            .sp-modal-body { padding: 15px; }
+            .sp-info-grid { grid-template-columns: 1fr; gap: 12px; }
+            .sp-info-item { flex-direction: column; align-items: flex-start; border-bottom: 1px solid #f5f5f5; padding-bottom: 8px; }
+            .sp-info-item:last-child { border-bottom: none; }
+            .sp-info-key { width: 100%; font-size: 12px; color: #888; margin-bottom: 4px; }
+            .sp-info-val { font-size: 15px; }
+            .sp-footer-buttons { flex-direction: column; gap: 10px; }
+            .sp-action-btn { width: 100%; justify-content: center; padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="custom-navbar">
+        <div class="nav-logo">
+            <a href="#">
+                <img src="https://diplomailmi.my.id/wp-content/uploads/2025/09/Diploma-Ilmi-MS-White.png" alt="Logo Diploma Ilmi">
+            </a>
+        </div>
+    </nav>
+
+    <!-- WIDGET FORM PENCARIAN -->
+    <div id="sp-widget-wrapper">
+        <div class="sp-header">
+            <h3>Portal Akademik</h3>
+            <p>Masukkan data untuk melihat nilai & sertifikat</p>
+        </div>
+
+        <form id="sp-form" onsubmit="handleSearch(event)">
+            <div class="sp-form-group">
+                <label class="sp-label" for="nim">NIM</label>
+                <input type="text" id="nim" class="sp-input" placeholder="Contoh: DI.AT.25.07.RGR.0000" required>
+            </div>
+
+            <div class="sp-form-group">
+                <label class="sp-label" for="phone">Nomor Telepon</label>
+                <input type="tel" id="phone" class="sp-input" placeholder="Contoh: 628123456789" required>
+            </div>
+
+            <button type="submit" class="sp-btn" id="sp-submit-btn">Cek Data</button>
+        </form>
+
+        <!-- Loading Indicator -->
+        <div class="sp-loading" id="sp-loading">
+            <div class="sp-spinner"></div>
+            <p style="font-size:12px; color:#666; margin-top:5px;">Sedang mencari data...</p>
+        </div>
+    </div>
+
+    <!-- POPUP MODAL HASIL NILAI -->
+    <div class="sp-modal-overlay" id="sp-result-modal">
+        <div class="sp-modal-content">
+            <div class="sp-modal-header">
+                <div class="sp-modal-title">Lembar Kemajuan Akademik Mahasiswa</div>
+                <button class="sp-close-btn" onclick="closeModal('sp-result-modal')">&times;</button>
+            </div>
+
+            <div class="sp-modal-body">
+                <!-- Info Mahasiswa -->
+                <div class="sp-info-grid">
+                    <div class="sp-info-item"><div class="sp-info-key">NIM:</div> <div class="sp-info-val" id="res-nim">-</div></div>
+                    <div class="sp-info-item"><div class="sp-info-key">Nama:</div> <div class="sp-info-val" id="res-nama">-</div></div>
+                    <div class="sp-info-item"><div class="sp-info-key">Program Pembelajaran:</div> <div class="sp-info-val" id="res-prodi">-</div></div>
+                    <div class="sp-info-item"><div class="sp-info-key">Angkatan:</div> <div class="sp-info-val" id="res-upbjj">-</div></div>
+                    <div class="sp-info-item"><div class="sp-info-key">Alamat:</div> <div class="sp-info-val" id="res-alamat">-</div></div>
+                    <div class="sp-info-item"><div class="sp-info-key">TTL:</div> <div class="sp-info-val" id="res-ttl">-</div></div>
+                </div>
+
+                <!-- Tabel Nilai -->
+                <h4 style="margin: 0 0 15px 0; border-bottom:1px solid #ddd; padding-bottom:5px;">Riwayat Mata Kuliah</h4>
+                <div style="overflow-x: auto;">
+                    <table class="sp-grade-table">
+                        <thead>
+                            <tr>
+                                <th class="sp-col-no">No</th>
+                                <th>Nama Mata Kuliah</th>
+                                <th>Nilai</th>
+                                <th>Mutu</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sp-table-body">
+                            <!-- Data injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="sp-modal-footer">
+                <div class="sp-footer-buttons">
+                    <!-- Tombol Cetak Sertifikat -->
+                    <a href="#" id="sp-dl-sertifikat" class="sp-action-btn btn-download" target="_blank">
+                        <span class="material-symbols-outlined">verified</span> Cetak Sertifikat
+                    </a>
+
+                    <!-- Tombol Download Transkrip -->
+                    <button id="sp-dl-nilai" class="sp-action-btn btn-print" onclick="window.print()">
+                        <span class="material-symbols-outlined">download</span> Download Transkrip
+                    </button>
+                </div>
+                <!-- Pesan Peringatan Sertifikat -->
+                <div id="sp-cert-warning" class="sp-warning-text">
+                    Sertifikat tidak dapat dicetak jika tidak lulus.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP MODAL ERROR -->
+    <div class="sp-modal-overlay" id="sp-error-modal">
+        <div class="sp-modal-content error-modal">
+            <div class="sp-modal-body" style="padding: 30px 20px;">
+                <span class="material-symbols-outlined" style="font-size: 48px; color: #c0392b; margin-bottom: 15px;">error</span>
+                <h4 style="margin: 0 0 10px 0; color: #c0392b;">Data Tidak Ditemukan</h4>
+                <p id="sp-error-msg" style="color: #555; font-size: 14px; margin: 0;">
+                    Maaf NIM atau Nomor telepon tidak terdaftar, mohon cek kembali data anda.
+                </p>
+                <button onclick="closeModal('sp-error-modal')" class="sp-btn" style="margin-top: 20px; background-color: #c0392b;">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="di-footer">
+        <div class="di-footer-container">
+            <!-- IDENTITAS -->
+            <div class="di-col-brand">
+                <img src="https://diplomailmi.my.id/wp-content/uploads/2025/09/Diploma-Ilmi-MS-White.png" alt="Diploma Ilmi Logo" class="di-footer-logo">
+                <p class="di-tagline">Mewujudkan generasi Thalibul Ilmi yang berilmu, bertahap dalam belajar, dan kokoh dalam pemahaman sesuai manhaj Ahlussunnah wal Jama’ah.</p>
+                <div class="di-yayasan-box">
+                    <small>Program Pendidikan Di Bawah Naungan:</small>
+                    <strong>YAYASAN MADINAH SALAM</strong>
+                </div>
+            </div>
+
+            <!-- NAVIGASI -->
+            <div class="di-col-links">
+                <h4 class="di-footer-title">Akses Cepat</h4>
+                <ul class="di-menu-list">
+                    <li><a href="#beranda"><span class="material-symbols-outlined">home</span> Beranda</a></li>
+                    <li><a href="#tentang"><span class="material-symbols-outlined">info</span> Tentang Kami</a></li>
+                    <li><a href="#kurikulum"><span class="material-symbols-outlined">menu_book</span> Kurikulum</a></li>
+                    <li><a href="#pendaftaran"><span class="material-symbols-outlined">how_to_reg</span> Pendaftaran</a></li>
+                    <li><a href="#pengajar"><span class="material-symbols-outlined">school</span> Profil Pengajar</a></li>
+                </ul>
+            </div>
+
+            <!-- KONTAK -->
+            <div class="di-col-contact">
+                <h4 class="di-footer-title">Hubungi Kami</h4>
+                <div class="di-contact-item"><span class="material-symbols-outlined">location_on</span><span>Mekah, Arab Saudi & Indonesia</span></div>
+                <div class="di-contact-item"><span class="material-symbols-outlined">chat</span><span>+62 852-8283-2038 (WhatsApp)</span></div>
+                <div class="di-contact-item"><span class="material-symbols-outlined">mail</span><span>info@diplomailmi.my.id</span></div>
+                <a href="https://www.instagram.com/diplomailmi.madinahsalam" target="_blank" class="di-social-btn">
+                    <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.069-4.85.069-3.204 0-3.584-.011-4.849-.069-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948-.072-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                    Follow @diplomailmi.madinahsalam
+                </a>
+            </div>
+        </div>
+        <div class="di-copyright">&copy; 2025 Diploma Ilmi - Yayasan Madinah Salam. All Rights Reserved.</div>
+    </footer>
+
+    <script>
+        // --- KONFIGURASI URL GAS ---
+        const GOOGLE_SCRIPT_URL = 'GANTI_DENGAN_URL_GAS_ANDA_DI_SINI';
+
+        function handleSearch(event) {
+            event.preventDefault();
+            const nim = document.getElementById('nim').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const btn = document.getElementById('sp-submit-btn');
+            const loading = document.getElementById('sp-loading');
+
+            btn.disabled = true; btn.innerText = 'Memproses...';
+            loading.style.display = 'block';
+
+            // --- SIMULASI DEMO DATA ---
+            if (GOOGLE_SCRIPT_URL.includes('GANTI')) {
+                setTimeout(() => {
+                    // Skenario 1: NIM Salah (Uncomment untuk test error)
+                    /*
+                    const mockError = {
+                        status: 'error',
+                        message: 'Maaf NIM atau Nomor telepon tidak terdaftar, mohon cek kembali data anda'
+                    };
+                    renderError(mockError.message);
+                    */
+
+                    // Skenario 2: Data Ditemukan (Ganti status_kelulusan ke false untuk test lock sertifikat)
+                    const mockData = {
+                        status: 'success',
+                        data: {
+                            nim: nim || '051462365',
+                            nama: 'AGIS RAKHMAT GUMELAR',
+                            program_pembelajaran: 'Diploma Ilmi',
+                            angkatan: '2025',
+                            alamat: 'KP. Gudang No 05 RT 01 RW 04, Kota Bogor',
+                            ttl: 'SUKABUMI, 19/08/1998',
+                            status_kelulusan: true, // TRUE = Lulus, FALSE = Tidak Lulus
+                            sertifikat_url: 'https://example.com/sertifikat.pdf',
+                            nilai: [
+                                { no: 1, nama: 'Aqidah', nilai: 'Mumtaz', mutu: 100, status: 'LL' },
+                                { no: 2, nama: 'Dakwah', nilai: 'Jayyid Jiddan', mutu: 85, status: 'LL' },
+                                { no: 3, nama: "Fiqih Syafi'i", nilai: 'Jayyid', mutu: 80, status: 'LL' },
+                                { no: 4, nama: 'Fiqih Waris', nilai: 'Jayyid', mutu: 80, status: 'LL' },
+                                { no: 5, nama: 'Nahwu', nilai: 'Mumtaz', mutu: 100, status: 'LL' }
+                            ]
+                        }
+                    };
+
+                    loading.style.display = 'none';
+                    btn.disabled = false; btn.innerText = 'Cek Data';
+
+                    // Logic Handling Demo
+                    if(mockData.status === 'success') {
+                        renderModal(mockData);
+                    } else {
+                        renderError(mockData.message);
+                    }
+                }, 1500);
+                return;
+            }
+
+            // --- REAL FETCH ---
+            // Add timestamp to prevent caching
+            const timestamp = new Date().getTime();
+            const finalUrl = `${GOOGLE_SCRIPT_URL}?nim=${encodeURIComponent(nim)}&phone=${encodeURIComponent(phone)}&_t=${timestamp}`;
+            fetch(finalUrl)
+                .then(response => response.json())
+                .then(json => {
+                    loading.style.display = 'none';
+                    btn.disabled = false; btn.innerText = 'Cek Data';
+
+                    if (json.status === 'success') {
+                        renderModal(json);
+                    } else {
+                        // Jika status error, tampilkan Modal Error
+                        renderError(json.message || 'Maaf NIM atau Nomor telepon tidak terdaftar, mohon cek kembali data anda');
+                    }
+                })
+                .catch(err => {
+                    loading.style.display = 'none';
+                    btn.disabled = false; btn.innerText = 'Cek Data';
+                    renderError('Terjadi kesalahan koneksi server.');
+                });
+        }
+
+        function renderModal(response) {
+            const data = response.data;
+
+            // Isi Data Header
+            document.getElementById('res-nim').innerText = data.nim || '-';
+            document.getElementById('res-nama').innerText = data.nama || '-';
+            document.getElementById('res-prodi').innerText = data.program_pembelajaran || '-';
+            document.getElementById('res-upbjj').innerText = data.angkatan || '-';
+            document.getElementById('res-alamat').innerText = data.alamat || '-';
+            document.getElementById('res-ttl').innerText = data.ttl || '-';
+
+            // Isi Tabel
+            const tbody = document.getElementById('sp-table-body');
+            tbody.innerHTML = '';
+
+            if (data.nilai && data.nilai.length > 0) {
+                data.nilai.forEach(item => {
+                    const row = document.createElement('tr');
+                    const statusClass = item.status === 'LL' ? 'sp-status-lulus' : (item.status === 'BL' ? 'sp-status-gagal' : '');
+                    row.innerHTML = `
+                        <td class="sp-text-center">${item.no}</td>
+                        <td class="sp-text-left">${item.nama}</td>
+                        <td class="sp-text-center">${item.nilai}</td>
+                        <td class="sp-text-center">${item.mutu}</td>
+                        <td class="sp-text-center ${statusClass}">${item.status}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="5" class="sp-text-center">Belum ada data nilai.</td></tr>';
+            }
+
+            // --- LOGIKA TOMBOL SERTIFIKAT (LOCK/UNLOCK) ---
+            const btnCert = document.getElementById('sp-dl-sertifikat');
+            const warnText = document.getElementById('sp-cert-warning');
+
+            // Cek apakah data status_kelulusan TRUE/FALSE
+            const isGraduated = data.status_kelulusan === true || data.status_kelulusan === "true";
+
+            if(isGraduated && data.sertifikat_url) {
+                // Lulus & Ada URL -> Aktifkan Tombol
+                btnCert.href = data.sertifikat_url;
+                btnCert.classList.remove('btn-disabled');
+                btnCert.removeAttribute('onclick'); // Hapus pencegah klik
+                warnText.style.display = 'none'; // Sembunyikan peringatan
+            } else {
+                // Tidak Lulus atau URL kosong -> Lock Tombol
+                btnCert.href = "javascript:void(0)";
+                btnCert.classList.add('btn-disabled');
+                warnText.style.display = 'block'; // Munculkan peringatan
+            }
+
+            // Buka Modal Hasil
+            openModal('sp-result-modal');
+        }
+
+        function renderError(msg) {
+            document.getElementById('sp-error-msg').innerText = msg;
+            openModal('sp-error-modal');
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        // Close modal jika klik di luar area konten
+        window.onclick = function(event) {
+            if (event.target.classList.contains('sp-modal-overlay')) {
+                event.target.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
