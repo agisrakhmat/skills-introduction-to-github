@@ -19,7 +19,10 @@ global.SpreadsheetApp = {
                                     // Mocking the headers from user screenshot
                                     // Index 0..10. K is 10.
                                     var headers = ['NIM', 'Nama', 'Absen(15%)', 'T1', 'T2', 'T3', 'T4', 'Rata(15%)', 'UTS', 'UAS', 'Nilai Akhir', 'Ket'];
+
                                     // Row 1: Student
+                                    // Note: Index 2 (Absen) = 14.2
+                                    // Note: Index 10 (Nilai Akhir) = 100
                                     var row = ['DI.001', 'Test User', 14.2, 0, 0, 0, 0, 10, 50, 50, 100, 'Pass'];
                                     return [headers, row];
                                 }
@@ -71,16 +74,16 @@ const assert = require('assert');
 
 console.log('Running Deployment Logic Tests...');
 
-// Test 1: getCourseGrade Priority Logic
+// Test 1: getCourseGrade Strict Logic
 // Scenario: 'Aqidah' sheet has headers. K is 'Nilai Akhir'.
 // Student has 100 in K (Index 10) and 14.2 in C (Index 2).
-// Logic should return 100 and meta should say "Priority K".
+// Logic should return 100 and meta should say "Fixed Column K".
 
 const gradeData = Database.getCourseGrade('Aqidah', 'DI.001');
 console.log('Result:', gradeData);
 
-assert.strictEqual(gradeData.score, 100, 'Should pick value from Column K (100)');
-assert.ok(gradeData.meta.includes('Priority K'), 'Meta should indicate Priority K was used');
+assert.strictEqual(gradeData.score, 100, 'Should pick value from Column K (100) strictly');
+assert.strictEqual(gradeData.meta, 'Fixed Column K', 'Meta should indicate Fixed Column K was used');
 
 // Test 2: Process Grades
 const result = Service.processGrades('DI.001', '628123');
@@ -88,6 +91,6 @@ console.log('Process Result Meta:', result.meta);
 
 assert.strictEqual(result.status, 'success');
 assert.ok(result.meta.debug_trace, 'Debug trace should be present');
-assert.ok(result.meta.debug_trace[0].includes('Priority K'), 'Debug trace should log the column source');
+assert.ok(result.meta.debug_trace[0].includes('Fixed Column K'), 'Debug trace should log the fixed source');
 
 console.log('✓ Deployment Logic Tests Passed');

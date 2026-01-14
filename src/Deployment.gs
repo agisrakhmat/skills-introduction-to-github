@@ -132,47 +132,21 @@ var Database = {
 
     if (data.length === 0) return { score: 0, meta: 'No Data' };
 
-    var headers = data[0]; // Row 0 is header
-    var gradeColIndex = -1;
-    var debugInfo = '';
+    // STRICT LOOKUP: ALWAYS USE COLUMN K (INDEX 10)
+    // As per specific instruction: "Nilai Akhir PASTI di Kolom K"
+    // We ignore header scanning to prevent misreading "Rata-Rata" columns.
+    var gradeColIndex = 10;
 
-    // 1. PRIORITY CHECK: Check Column K (Index 10) explicitly first
-    // Based on screenshot evidence, Nilai Akhir is in Column K.
-    if (headers.length > 10) {
-        var headerK = String(headers[10]).toLowerCase();
-        // Loose check: contains "nilai" or matches config
-        if (headerK.indexOf('nilai') !== -1 || headerK.indexOf('akhir') !== -1) {
-            gradeColIndex = 10;
-            debugInfo = '[Priority K] Found Header: "' + headers[10] + '"';
-        }
-    }
-
-    // 2. SEARCH: If Priority Check failed, search by name
-    if (gradeColIndex === -1) {
-        var targetHeader = (Config.HEADER_GRADE || 'Nilai Akhir').replace(/\s/g, '').toLowerCase();
-        for (var j = 0; j < headers.length; j++) {
-            var headerClean = String(headers[j]).replace(/\s/g, '').toLowerCase();
-            if (headerClean === targetHeader) {
-                gradeColIndex = j;
-                debugInfo = '[Search] Found Header: "' + headers[j] + '" at Index ' + j;
-                break;
-            }
-        }
-    }
-
-    // 3. FALLBACK: Default to Column K (Index 10) if still not found
-    if (gradeColIndex === -1) {
-       gradeColIndex = 10;
-       debugInfo = '[Fallback] Forced Index 10. Actual Header: "' + (headers[10] || 'Unknown') + '"';
-    }
-
-    // 4. Find User Row
+    // Find User Row
     for (var i = 1; i < data.length; i++) {
       var row = data[i];
       var dbNim = row[Config.COL_INDEX_GRADE_NIM] ? String(row[Config.COL_INDEX_GRADE_NIM]).trim() : '';
 
       if (dbNim.toLowerCase() === nim.toLowerCase()) {
-        if (gradeColIndex >= row.length) return { score: 0, meta: debugInfo + ' (Out of Bounds)' };
+        // Ensure we don't read out of bounds
+        if (gradeColIndex >= row.length) {
+            return { score: 0, meta: 'Fixed Column K (Out of Bounds)' };
+        }
 
         var rawScore = row[gradeColIndex];
         var finalScore = 0;
@@ -182,8 +156,11 @@ var Database = {
             finalScore = rawScore;
         } else {
             var s = String(rawScore).trim();
-            s = s.replace(/\s+/g, '').replace('%', '').replace(',', '.');
-            s = s.replace(/[^0-9.\-]/g, '');
+            // Handle commas as dots (European/Indonesian format)
+            s = s.replace(',', '.');
+            // Remove everything except digits, dots, and minus signs
+            s = s.replace(/[^\d.-]/g, '');
+
             var parsed = parseFloat(s);
             if (!isNaN(parsed)) {
                 finalScore = parsed;
@@ -192,12 +169,12 @@ var Database = {
 
         return {
             score: finalScore,
-            meta: debugInfo + ' | Raw Value: ' + rawScore
+            meta: 'Fixed Column K' // Simple debug tag
         };
       }
     }
 
-    return { score: 0, meta: debugInfo + ' | NIM Not Found in Sheet' };
+    return { score: 0, meta: 'NIM Not Found in Sheet' };
   },
 
   /**
