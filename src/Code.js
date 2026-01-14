@@ -10,8 +10,8 @@ var CONF = {
   SLIDE_TEMPLATE_ID: '1ujtPU4XqFV8n5CKiHcFtz9-wm3w-GYkhe7SDWdZdGbQ',
   SHEET_NAME_USER: 'data_user',
   SHEET_NAME_SERTIFIKAT: 'Sertifikat',
-  // Daftar Mata Kuliah (Pastikan nama sheet sesuai)
-  COURSES: ['Aqidah', 'Dakwah', 'Fiqh_Syafii', 'Fiqh_Waris', 'Nahwu']
+  // Daftar Mata Kuliah (Menggunakan nama yang mungkin memiliki spasi)
+  COURSES: ['Aqidah', 'Dakwah', 'Fiqh Syafii', 'Fiqh Waris', 'Nahwu']
 };
 
 /**
@@ -19,7 +19,7 @@ var CONF = {
  * Parameter: ?nim=...&phone=...
  */
 function doGet(e) {
-  var params = e ? e.parameter : {}; // Cegah error jika e undefined (Manual Run)
+  var params = e ? e.parameter : {};
   var nim = params.nim;
   var phone = params.phone;
 
@@ -47,17 +47,14 @@ function doGet(e) {
 
 /**
  * FUNGSI TESTING MANUAL
- * Jalankan fungsi ini di Editor Apps Script untuk simulasi
  */
 function testManual() {
-  // Ganti data di bawah ini sesuai data asli di spreadsheet Anda untuk testing
   var mockEvent = {
     parameter: {
-      nim: 'DI.AT.25.07.RGR.0000', // Ganti dengan NIM valid
-      phone: '628123456789'        // Ganti dengan No HP valid
+      nim: 'DI.AT.25.07.RGR.0000',
+      phone: '628123456789'
     }
   };
-
   var result = doGet(mockEvent);
   Logger.log(result.getContent());
 }
@@ -77,12 +74,12 @@ function processStudentRequest(nimInput, phoneInput) {
     };
   }
 
-  // 2. Ambil Nilai Mata Kuliah
+  // 2. Ambil Nilai Mata Kuliah (Sekarang dengan Smart Header Detection)
   var gradeData = getStudentGrades(ss, student.nim, CONF.COURSES);
 
   // 3. Hitung Rata-Rata & Kelulusan
   var averageScore = gradeData.totalScore / (gradeData.courseCount || 1);
-  var isGraduated = averageScore >= 60; // Syarat lulus rata-rata >= 60
+  var isGraduated = averageScore >= 60;
   var finalPredicate = getPredicate(averageScore);
 
   // 4. Cek / Generate Sertifikat
@@ -97,25 +94,28 @@ function processStudentRequest(nimInput, phoneInput) {
     data: {
       nim: student.nim,
       nama: student.nama,
-      program_pembelajaran: student.program, // Mapping dari 'Program'
+      program_pembelajaran: student.program,
       angkatan: student.angkatan,
       alamat: student.alamat,
       ttl: student.tempat_lahir + ', ' + formatDate(student.tanggal_lahir),
       status_kelulusan: isGraduated,
       sertifikat_url: certUrl,
       nilai: gradeData.details
+    },
+    meta: {
+      debug_trace: gradeData.debug // Info debug untuk user/developer
     }
   };
 }
 
 /**
  * Mencari Mahasiswa di Sheet 'data_user'
- * Validasi NIM dan No HP (Normalized)
  */
 function findStudent(ss, nimInput, phoneInput) {
   var sheet = ss.getSheetByName(CONF.SHEET_NAME_USER);
-  var data = sheet.getDataRange().getDisplayValues(); // Pakai display values untuk string
-  // Header: NIM(A), Nama(B), JK(C), Alamat(D), Program(E), Telp(F), Angkatan(G), TmpLahir(H), TglLahir(I)
+  if (!sheet) throw new Error("Sheet '" + CONF.SHEET_NAME_USER + "' tidak ditemukan.");
+
+  var data = sheet.getDataRange().getDisplayValues();
 
   var cleanNimInput = nimInput.trim().toUpperCase();
   var cleanPhoneInput = normalizePhone(phoneInput);
@@ -134,7 +134,7 @@ function findStudent(ss, nimInput, phoneInput) {
         program: row[4],
         angkatan: row[6],
         tempat_lahir: row[7],
-        tanggal_lahir: row[8] // Asumsi format string di sheet sudah benar atau perlu parsing
+        tanggal_lahir: row[8]
       };
     }
   }
@@ -143,25 +143,69 @@ function findStudent(ss, nimInput, phoneInput) {
 
 /**
  * Mengambil Nilai dari setiap Sheet Mata Kuliah
+ * UPDATED: Mencari nama sheet fleksibel (spasi/underscore) & mencari kolom nilai dinamis
  */
 function getStudentGrades(ss, nim, courses) {
   var details = [];
   var totalScore = 0;
   var courseCount = 0;
+  var debugLogs = [];
 
   courses.forEach(function(courseName, index) {
+    // 1. Coba Cari Sheet (Cek variasi underscore/spasi)
     var sheet = ss.getSheetByName(courseName);
-    if (!sheet) return; // Skip jika sheet tidak ada
+    var usedName = courseName;
 
-    var data = sheet.getDataRange().getValues(); // Get Values (raw) untuk angka
-    // Asumsi Struktur: NIM(A)... Nilai_Akhir(K) -> Index 10
+    if (!sheet) {
+      // Coba ganti Spasi <-> Underscore
+      var altName = courseName.indexOf('_') > -1 ? courseName.replace(/_/g, ' ') : courseName.replace(/ /g, '_');
+      sheet = ss.getSheetByName(altName);
+      if (sheet) usedName = altName;
+    }
+
+    if (!sheet) {
+      debugLogs.push("Sheet Not Found: " + courseName);
+      return;
+    }
+
+    // 2. Tentukan Index Kolom "Nilai Akhir" secara Dinamis
+    // Ambil Header (Baris 1)
+    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var scoreColIndex = -1; // Default -1 (Not found)
+
+    // Cari header yang mengandung kata kunci
+    for (var h = 0; h < headers.length; h++) {
+      var headerText = String(headers[h]).toLowerCase();
+      // Prioritas: "nilai akhir", "nilai_akhir", "total", "score", "na"
+      // Hindari "rata", "avg" jika bukan yang dimaksud user
+      if (headerText.includes("nilai akhir") || headerText.includes("nilai_akhir") || headerText === "na") {
+        scoreColIndex = h;
+        break;
+      }
+    }
+
+    // Fallback ke Index 10 (Kolom K) jika tidak ketemu header yang pas, tapi beresiko
+    if (scoreColIndex === -1) {
+       scoreColIndex = 10;
+       debugLogs.push(usedName + ": Header 'Nilai Akhir' not found, using default Col K (Index 10)");
+    } else {
+       debugLogs.push(usedName + ": Found Header '" + headers[scoreColIndex] + "' at Index " + scoreColIndex);
+    }
+
+    // 3. Ambil Data
+    var data = sheet.getDataRange().getValues();
 
     var score = 0;
     var found = false;
 
     for (var i = 1; i < data.length; i++) {
       if (String(data[i][0]).trim().toUpperCase() === nim) {
-        score = parseFloat(data[i][10]) || 0; // Kolom K
+        // Ambil nilai dari kolom yang ditentukan
+        var rawVal = data[i][scoreColIndex];
+        // Pastikan angka valid
+        score = typeof rawVal === 'number' ? rawVal : parseFloat(rawVal);
+        if (isNaN(score)) score = 0;
+
         found = true;
         break;
       }
@@ -171,45 +215,44 @@ function getStudentGrades(ss, nim, courses) {
       totalScore += score;
       courseCount++;
 
-      // Tentukan Predikat Per Mapel
       var mutu = getPredicate(score);
-      // Status Per Mapel (Asumsi >= 60 Lulus)
       var status = score >= 60 ? 'LL' : 'BL';
 
       details.push({
         no: courseCount,
-        nama: courseName.replace(/_/g, " "), // Rapikan nama (Fiqh_Syafii -> Fiqh Syafii)
-        nilai: mutu,       // Frontend minta teks (Mumtaz) di kolom 'nilai'
-        mutu: score,       // Frontend minta angka di kolom 'mutu'
+        nama: usedName.replace(/_/g, " "),
+        nilai: mutu,
+        mutu: score,
         status: status
       });
+    } else {
+      debugLogs.push(usedName + ": NIM not found in sheet");
     }
   });
 
   return {
     details: details,
     totalScore: totalScore,
-    courseCount: courseCount
+    courseCount: courseCount,
+    debug: debugLogs
   };
 }
 
 /**
- * Menghandle Logika Sertifikat (Cek Existing -> Generate Baru)
+ * Menghandle Logika Sertifikat
  */
 function handleCertificate(ss, student, predikat) {
   var sheetCert = ss.getSheetByName(CONF.SHEET_NAME_SERTIFIKAT);
+  if (!sheetCert) return ""; // Fail safe
+
   var data = sheetCert.getDataRange().getDisplayValues();
 
-  // 1. Cek apakah sudah ada sertifikat
   for (var i = 1; i < data.length; i++) {
-    // Cek Nama (Kolom B)
     if (String(data[i][1]).trim().toUpperCase() === String(student.nama).trim().toUpperCase()) {
-      // Return Link (Kolom E)
       return data[i][4];
     }
   }
 
-  // 2. Generate Baru
   return generateNewCertificate(ss, sheetCert, student, predikat);
 }
 
@@ -217,40 +260,30 @@ function handleCertificate(ss, student, predikat) {
  * Generate PDF Baru
  */
 function generateNewCertificate(ss, sheetCert, student, predikat) {
-  // Hitung Nomor Urut (XXXX) berdasarkan Angkatan
   var sequence = getNextSequence(sheetCert, student.angkatan);
   var certNumber = 'Diplim-MSTW-01-' + student.angkatan + '-' + sequence;
-
-  // Nama File
   var fileName = student.nim + '_' + student.nama + '_' + student.program;
 
-  // Copy Template Slide
   var templateFile = DriveApp.getFileById(CONF.SLIDE_TEMPLATE_ID);
   var targetFolder = DriveApp.getFolderById(CONF.DRIVE_FOLDER_ID);
   var copyFile = templateFile.makeCopy(fileName, targetFolder);
   var copyId = copyFile.getId();
 
-  // Edit Slide (Replace Text)
   var pres = SlidesApp.openById(copyId);
   var slide = pres.getSlides()[0];
 
-  // Replace placeholders
   slide.replaceAllText('<<nama>>', student.nama);
   slide.replaceAllText('<<nomor sertifikat>>', certNumber);
   slide.replaceAllText('<<predikat>>', predikat);
 
   pres.saveAndClose();
 
-  // Convert to PDF
   var pdfBlob = copyFile.getAs(MimeType.PDF);
   var pdfFile = targetFolder.createFile(pdfBlob);
-  var pdfUrl = pdfFile.getUrl(); // Atau getDownloadUrl()
+  var pdfUrl = pdfFile.getUrl();
 
-  // Hapus File Slide Temporary
   copyFile.setTrashed(true);
 
-  // Simpan ke Sheet Sertifikat
-  // Schema: No_Sertifikat(A), Nama(B), Peringkat(C), Timestamp(D), Link_Sertifikat(E)
   sheetCert.appendRow([
     certNumber,
     student.nama,
@@ -263,8 +296,7 @@ function generateNewCertificate(ss, sheetCert, student, predikat) {
 }
 
 /**
- * Menghitung Sequence Number (0001, 0002) per Angkatan
- * Logic: Hitung berapa banyak row di sheet sertifikat yang memiliki Angkatan sama di No Sertifikat
+ * Menghitung Sequence Number
  */
 function getNextSequence(sheetCert, angkatan) {
   var data = sheetCert.getDataRange().getValues();
@@ -286,7 +318,7 @@ function getNextSequence(sheetCert, angkatan) {
 
 function normalizePhone(phone) {
   if (!phone) return '';
-  phone = String(phone).replace(/[^0-9]/g, ''); // Hapus non-angka
+  phone = String(phone).replace(/[^0-9]/g, '');
   if (phone.startsWith('08')) {
     phone = '62' + phone.substring(1);
   }
@@ -299,7 +331,7 @@ function getPredicate(score) {
   if (score >= 80) return 'Jayyid Jiddan';
   if (score >= 75) return 'Jayyid Murtafi\'';
   if (score >= 60) return 'Jayyid';
-  return 'Rasib'; // Tidak Lulus
+  return 'Rasib';
 }
 
 function padZero(num, size) {
@@ -309,12 +341,9 @@ function padZero(num, size) {
 }
 
 function formatDate(dateInput) {
-  // Asumsi input string atau Date object.
-  // Jika dari sheet biasanya Date Object jika format cell Date, atau string.
-  // Kita coba parse sederhana.
   try {
     var d = new Date(dateInput);
-    if (isNaN(d.getTime())) return dateInput; // Return as is if fail
+    if (isNaN(d.getTime())) return dateInput;
     var day = padZero(d.getDate(), 2);
     var month = padZero(d.getMonth() + 1, 2);
     var year = d.getFullYear();
