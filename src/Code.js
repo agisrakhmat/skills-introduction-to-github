@@ -10,27 +10,111 @@ var CONF = {
   SLIDE_TEMPLATE_ID: '1ujtPU4XqFV8n5CKiHcFtz9-wm3w-GYkhe7SDWdZdGbQ',
   SHEET_NAME_USER: 'data_user',
   SHEET_NAME_SERTIFIKAT: 'Sertifikat',
-  // Daftar Mata Kuliah (Menggunakan nama yang mungkin memiliki spasi)
-  COURSES: ['Aqidah', 'Dakwah', 'Fiqh Syafii', 'Fiqh Waris', 'Nahwu']
+  // Nama Sheet Matakuliah Baku (Tanpa Spasi)
+  COURSES: ['Aqidah', 'Dakwah', 'Fiqh_Syafii', 'Fiqh_Waris', 'Nahwu']
 };
 
 /**
- * Fungsi Utama: Menangani Request GET dari Widget
- * Parameter: ?nim=...&phone=...
+ * ==========================================
+ * BAGIAN 1: SETUP DATABASE (Jalankan Sekali)
+ * ==========================================
  */
+
+/**
+ * Fungsi ini akan memperbaiki struktur Spreadsheet Anda secara otomatis.
+ * Cara pakai: Pilih fungsi 'setupDatabase' di editor, lalu klik Run.
+ */
+function setupDatabase() {
+  var ss = SpreadsheetApp.openById(CONF.SPREADSHEET_ID);
+
+  // 1. Setup Sheet User
+  setupSheet(ss, CONF.SHEET_NAME_USER, [
+    'NIM', 'Nama', 'Jenis_Kelamin', 'Alamat', 'Program',
+    'Nomor_Telepon', 'Angkatan', 'Tempat_Lahir', 'Tanggal_Lahir'
+  ]);
+
+  // 2. Setup Sheet Sertifikat
+  setupSheet(ss, CONF.SHEET_NAME_SERTIFIKAT, [
+    'No_Sertifikat', 'Nama', 'Predikat', 'Tanggal_Generate', 'Link_File'
+  ]);
+
+  // 3. Setup Sheet Mata Kuliah
+  var headerMatkul = [
+    'NIM', 'Nama', 'Absen', 'Tugas 1', 'Tugas 2', 'Tugas 3',
+    'Tugas 4', 'Rata-Rata', 'UTS', 'UAS', 'Nilai_Akhir', 'Keterangan'
+  ];
+  // NOTE: 'Nilai_Akhir' ada di index ke-10 (Kolom K)
+
+  CONF.COURSES.forEach(function(courseName) {
+    setupSheet(ss, courseName, headerMatkul);
+  });
+
+  Logger.log("SETUP SELESAI. Silahkan cek Spreadsheet Anda.");
+}
+
+/** Helper untuk membuat/memperbaiki header sheet */
+function setupSheet(ss, sheetName, headers) {
+  var sheet = ss.getSheetByName(sheetName);
+  if (!sheet) {
+    sheet = ss.insertSheet(sheetName);
+    Logger.log("Membuat Sheet Baru: " + sheetName);
+  } else {
+    Logger.log("Memperbaiki Sheet: " + sheetName);
+  }
+
+  // Set Header di Baris 1
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight('bold');
+
+  // Bekukan Baris 1
+  sheet.setFrozenRows(1);
+}
+
+/**
+ * Fungsi untuk membuat data contoh (Dummy)
+ * Jalankan ini jika ingin melihat contoh pengisian data yang benar
+ */
+function createDummyData() {
+  var ss = SpreadsheetApp.openById(CONF.SPREADSHEET_ID);
+
+  // Dummy User
+  var sheetUser = ss.getSheetByName(CONF.SHEET_NAME_USER);
+  if (sheetUser.getLastRow() === 1) { // Hanya isi jika kosong
+    sheetUser.appendRow([
+      'DI.AT.25.07.RGR.0000', 'Siswa Contoh', 'L', 'Jl. Contoh No. 1', 'Diploma Ilmi',
+      '628123456789', '2025', 'Jakarta', '2000-01-01'
+    ]);
+  }
+
+  // Dummy Nilai
+  CONF.COURSES.forEach(function(course) {
+    var sheet = ss.getSheetByName(course);
+    if (sheet.getLastRow() === 1) {
+      sheet.appendRow([
+        'DI.AT.25.07.RGR.0000', 'Siswa Contoh', 100, 100, 100, 100,
+        100, 100, 90, 90, 95, 'Lulus' // 95 di Kolom K (Nilai Akhir)
+      ]);
+    }
+  });
+}
+
+/**
+ * ==========================================
+ * BAGIAN 2: BACKEND API (Jangan Diubah)
+ * ==========================================
+ */
+
 function doGet(e) {
   var params = e ? e.parameter : {};
   var nim = params.nim;
   var phone = params.phone;
 
-  // Header agar bisa diakses dari domain mana saja (CORS)
   var output = ContentService.createTextOutput();
   output.setMimeType(ContentService.MimeType.JSON);
 
   if (!nim || !phone) {
     return output.setContent(JSON.stringify({
       status: 'error',
-      message: 'Parameter NIM dan Nomor Telepon wajib diisi. Jika anda menjalankan script ini manual, gunakan fungsi testManual().'
+      message: 'Parameter wajib diisi. Jalankan setupDatabase() dulu jika baru pertama kali.'
     }));
   }
 
@@ -40,55 +124,34 @@ function doGet(e) {
   } catch (err) {
     return output.setContent(JSON.stringify({
       status: 'error',
-      message: 'Terjadi kesalahan sistem: ' + err.toString()
+      message: 'Error Sistem: ' + err.toString()
     }));
   }
 }
 
-/**
- * FUNGSI TESTING MANUAL
- */
-function testManual() {
-  var mockEvent = {
-    parameter: {
-      nim: 'DI.AT.25.07.RGR.0000',
-      phone: '628123456789'
-    }
-  };
-  var result = doGet(mockEvent);
-  Logger.log(result.getContent());
-}
-
-/**
- * Logika Utama Pemrosesan Data
- */
 function processStudentRequest(nimInput, phoneInput) {
   var ss = SpreadsheetApp.openById(CONF.SPREADSHEET_ID);
 
-  // 1. Cari Data Mahasiswa
+  // 1. Cari Mahasiswa
   var student = findStudent(ss, nimInput, phoneInput);
   if (!student) {
-    return {
-      status: 'error',
-      message: 'Maaf NIM atau Nomor telepon tidak terdaftar, mohon cek kembali data anda.'
-    };
+    return { status: 'error', message: 'Data tidak ditemukan.' };
   }
 
-  // 2. Ambil Nilai Mata Kuliah (Sekarang dengan Smart Header Detection)
+  // 2. Ambil Nilai (STRICT MODE: Kolom K)
   var gradeData = getStudentGrades(ss, student.nim, CONF.COURSES);
 
-  // 3. Hitung Rata-Rata & Kelulusan
+  // 3. Hitung Rata-Rata
   var averageScore = gradeData.totalScore / (gradeData.courseCount || 1);
   var isGraduated = averageScore >= 60;
   var finalPredicate = getPredicate(averageScore);
 
-  // 4. Cek / Generate Sertifikat
+  // 4. Sertifikat
   var certUrl = '';
   if (isGraduated) {
     certUrl = handleCertificate(ss, student, finalPredicate);
   }
 
-  // 5. Format Respon JSON sesuai Frontend
   return {
     status: 'success',
     data: {
@@ -101,35 +164,25 @@ function processStudentRequest(nimInput, phoneInput) {
       status_kelulusan: isGraduated,
       sertifikat_url: certUrl,
       nilai: gradeData.details
-    },
-    meta: {
-      debug_trace: gradeData.debug // Info debug untuk user/developer
     }
   };
 }
 
-/**
- * Mencari Mahasiswa di Sheet 'data_user'
- */
 function findStudent(ss, nimInput, phoneInput) {
   var sheet = ss.getSheetByName(CONF.SHEET_NAME_USER);
-  if (!sheet) throw new Error("Sheet '" + CONF.SHEET_NAME_USER + "' tidak ditemukan.");
+  if (!sheet) return null;
 
   var data = sheet.getDataRange().getDisplayValues();
-
-  var cleanNimInput = nimInput.trim().toUpperCase();
-  var cleanPhoneInput = normalizePhone(phoneInput);
+  var cleanNim = nimInput.trim().toUpperCase();
+  var cleanPhone = normalizePhone(phoneInput);
 
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
-    var dbNim = String(row[0]).trim().toUpperCase();
-    var dbPhone = normalizePhone(String(row[5]));
-
-    if (dbNim === cleanNimInput && dbPhone === cleanPhoneInput) {
+    // Kolom A(0)=NIM, Kolom F(5)=Phone
+    if (String(row[0]).trim().toUpperCase() === cleanNim && normalizePhone(row[5]) === cleanPhone) {
       return {
-        nim: dbNim,
+        nim: row[0],
         nama: row[1],
-        jenis_kelamin: row[2],
         alamat: row[3],
         program: row[4],
         angkatan: row[6],
@@ -141,71 +194,24 @@ function findStudent(ss, nimInput, phoneInput) {
   return null;
 }
 
-/**
- * Mengambil Nilai dari setiap Sheet Mata Kuliah
- * UPDATED: Mencari nama sheet fleksibel (spasi/underscore) & mencari kolom nilai dinamis
- */
 function getStudentGrades(ss, nim, courses) {
   var details = [];
   var totalScore = 0;
   var courseCount = 0;
-  var debugLogs = [];
 
   courses.forEach(function(courseName, index) {
-    // 1. Coba Cari Sheet (Cek variasi underscore/spasi)
     var sheet = ss.getSheetByName(courseName);
-    var usedName = courseName;
+    if (!sheet) return;
 
-    if (!sheet) {
-      // Coba ganti Spasi <-> Underscore
-      var altName = courseName.indexOf('_') > -1 ? courseName.replace(/_/g, ' ') : courseName.replace(/ /g, '_');
-      sheet = ss.getSheetByName(altName);
-      if (sheet) usedName = altName;
-    }
-
-    if (!sheet) {
-      debugLogs.push("Sheet Not Found: " + courseName);
-      return;
-    }
-
-    // 2. Tentukan Index Kolom "Nilai Akhir" secara Dinamis
-    // Ambil Header (Baris 1)
-    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-    var scoreColIndex = -1; // Default -1 (Not found)
-
-    // Cari header yang mengandung kata kunci
-    for (var h = 0; h < headers.length; h++) {
-      var headerText = String(headers[h]).toLowerCase();
-      // Prioritas: "nilai akhir", "nilai_akhir", "total", "score", "na"
-      // Hindari "rata", "avg" jika bukan yang dimaksud user
-      if (headerText.includes("nilai akhir") || headerText.includes("nilai_akhir") || headerText === "na") {
-        scoreColIndex = h;
-        break;
-      }
-    }
-
-    // Fallback ke Index 10 (Kolom K) jika tidak ketemu header yang pas, tapi beresiko
-    if (scoreColIndex === -1) {
-       scoreColIndex = 10;
-       debugLogs.push(usedName + ": Header 'Nilai Akhir' not found, using default Col K (Index 10)");
-    } else {
-       debugLogs.push(usedName + ": Found Header '" + headers[scoreColIndex] + "' at Index " + scoreColIndex);
-    }
-
-    // 3. Ambil Data
     var data = sheet.getDataRange().getValues();
-
-    var score = 0;
     var found = false;
+    var score = 0;
 
     for (var i = 1; i < data.length; i++) {
+      // Kolom A (Index 0) = NIM
       if (String(data[i][0]).trim().toUpperCase() === nim) {
-        // Ambil nilai dari kolom yang ditentukan
-        var rawVal = data[i][scoreColIndex];
-        // Pastikan angka valid
-        score = typeof rawVal === 'number' ? rawVal : parseFloat(rawVal);
-        if (isNaN(score)) score = 0;
-
+        // Kolom K (Index 10) = NILAI AKHIR (STRICT)
+        score = parseFloat(data[i][10]) || 0;
         found = true;
         break;
       }
@@ -214,141 +220,96 @@ function getStudentGrades(ss, nim, courses) {
     if (found) {
       totalScore += score;
       courseCount++;
-
-      var mutu = getPredicate(score);
-      var status = score >= 60 ? 'LL' : 'BL';
-
       details.push({
         no: courseCount,
-        nama: usedName.replace(/_/g, " "),
-        nilai: mutu,
+        nama: courseName.replace(/_/g, " "),
+        nilai: getPredicate(score),
         mutu: score,
-        status: status
+        status: score >= 60 ? 'LL' : 'BL'
       });
-    } else {
-      debugLogs.push(usedName + ": NIM not found in sheet");
     }
   });
 
   return {
     details: details,
     totalScore: totalScore,
-    courseCount: courseCount,
-    debug: debugLogs
+    courseCount: courseCount
   };
 }
 
-/**
- * Menghandle Logika Sertifikat
- */
 function handleCertificate(ss, student, predikat) {
-  var sheetCert = ss.getSheetByName(CONF.SHEET_NAME_SERTIFIKAT);
-  if (!sheetCert) return ""; // Fail safe
+  var sheet = ss.getSheetByName(CONF.SHEET_NAME_SERTIFIKAT);
+  if (!sheet) return "";
 
-  var data = sheetCert.getDataRange().getDisplayValues();
-
+  var data = sheet.getDataRange().getDisplayValues();
+  // Cek Nama (Kolom B/Index 1)
   for (var i = 1; i < data.length; i++) {
     if (String(data[i][1]).trim().toUpperCase() === String(student.nama).trim().toUpperCase()) {
-      return data[i][4];
+      return data[i][4]; // Return Link (Kolom E)
     }
   }
 
-  return generateNewCertificate(ss, sheetCert, student, predikat);
-}
+  // Generate Baru
+  var seq = getNextSequence(sheet, student.angkatan);
+  var certNum = 'Diplim-MSTW-01-' + student.angkatan + '-' + seq;
+  var fName = student.nim + '_' + student.nama;
 
-/**
- * Generate PDF Baru
- */
-function generateNewCertificate(ss, sheetCert, student, predikat) {
-  var sequence = getNextSequence(sheetCert, student.angkatan);
-  var certNumber = 'Diplim-MSTW-01-' + student.angkatan + '-' + sequence;
-  var fileName = student.nim + '_' + student.nama + '_' + student.program;
+  var template = DriveApp.getFileById(CONF.SLIDE_TEMPLATE_ID);
+  var folder = DriveApp.getFolderById(CONF.DRIVE_FOLDER_ID);
+  var copy = template.makeCopy(fName, folder);
 
-  var templateFile = DriveApp.getFileById(CONF.SLIDE_TEMPLATE_ID);
-  var targetFolder = DriveApp.getFolderById(CONF.DRIVE_FOLDER_ID);
-  var copyFile = templateFile.makeCopy(fileName, targetFolder);
-  var copyId = copyFile.getId();
-
-  var pres = SlidesApp.openById(copyId);
-  var slide = pres.getSlides()[0];
-
+  var slide = SlidesApp.openById(copy.getId()).getSlides()[0];
   slide.replaceAllText('<<nama>>', student.nama);
-  slide.replaceAllText('<<nomor sertifikat>>', certNumber);
+  slide.replaceAllText('<<nomor sertifikat>>', certNum);
   slide.replaceAllText('<<predikat>>', predikat);
+  slide.getParent().saveAndClose();
 
-  pres.saveAndClose();
+  var pdf = folder.createFile(copy.getAs(MimeType.PDF));
+  copy.setTrashed(true);
 
-  var pdfBlob = copyFile.getAs(MimeType.PDF);
-  var pdfFile = targetFolder.createFile(pdfBlob);
-  var pdfUrl = pdfFile.getUrl();
-
-  copyFile.setTrashed(true);
-
-  sheetCert.appendRow([
-    certNumber,
-    student.nama,
-    predikat,
-    new Date(),
-    pdfUrl
-  ]);
-
-  return pdfUrl;
+  sheet.appendRow([certNum, student.nama, predikat, new Date(), pdf.getUrl()]);
+  return pdf.getUrl();
 }
 
-/**
- * Menghitung Sequence Number
- */
-function getNextSequence(sheetCert, angkatan) {
-  var data = sheetCert.getDataRange().getValues();
+function getNextSequence(sheet, angkatan) {
+  var data = sheet.getDataRange().getValues();
   var count = 0;
-  var pattern = 'Diplim-MSTW-01-' + angkatan;
-
+  var ptrn = 'Diplim-MSTW-01-' + angkatan;
   for (var i = 1; i < data.length; i++) {
-    var noCert = String(data[i][0]);
-    if (noCert.indexOf(pattern) > -1) {
-      count++;
-    }
+    if (String(data[i][0]).includes(ptrn)) count++;
   }
-
-  var nextSeq = count + 1;
-  return padZero(nextSeq, 4);
+  return padZero(count + 1, 4);
 }
 
-// --- HELPER FUNCTIONS ---
-
-function normalizePhone(phone) {
-  if (!phone) return '';
-  phone = String(phone).replace(/[^0-9]/g, '');
-  if (phone.startsWith('08')) {
-    phone = '62' + phone.substring(1);
-  }
-  return phone;
+function normalizePhone(p) {
+  p = String(p).replace(/[^0-9]/g, '');
+  if (p.startsWith('08')) p = '62' + p.substring(1);
+  return p;
 }
 
-function getPredicate(score) {
-  if (score >= 95) return 'Mumtaz';
-  if (score >= 85) return 'Jayyid Jiddan Murtafi';
-  if (score >= 80) return 'Jayyid Jiddan';
-  if (score >= 75) return 'Jayyid Murtafi\'';
-  if (score >= 60) return 'Jayyid';
+function getPredicate(s) {
+  if (s >= 95) return 'Mumtaz';
+  if (s >= 85) return 'Jayyid Jiddan Murtafi';
+  if (s >= 80) return 'Jayyid Jiddan';
+  if (s >= 75) return 'Jayyid Murtafi\'';
+  if (s >= 60) return 'Jayyid';
   return 'Rasib';
 }
 
-function padZero(num, size) {
-  var s = String(num);
+function padZero(n, size) {
+  var s = String(n);
   while (s.length < size) s = "0" + s;
   return s;
 }
 
-function formatDate(dateInput) {
+function formatDate(d) {
   try {
-    var d = new Date(dateInput);
-    if (isNaN(d.getTime())) return dateInput;
-    var day = padZero(d.getDate(), 2);
-    var month = padZero(d.getMonth() + 1, 2);
-    var year = d.getFullYear();
-    return day + '/' + month + '/' + year;
-  } catch (e) {
-    return dateInput;
-  }
+    var date = new Date(d);
+    if (isNaN(date.getTime())) return d;
+    return padZero(date.getDate(), 2) + '/' + padZero(date.getMonth() + 1, 2) + '/' + date.getFullYear();
+  } catch(e) { return d; }
+}
+
+function testManual() {
+  Logger.log(doGet({parameter:{nim:'DI.AT.25.07.RGR.0000', phone:'628123456789'}}).getContent());
 }
