@@ -121,69 +121,83 @@ var Database = {
 
   /**
    * Fetches grade for a specific course and NIM.
-   * Uses "Smart Lookup" to find the column with header "Nilai Akhir".
+   * Returns object { score: number, meta: string } for debugging.
    */
   getCourseGrade: function(sheetName, nim) {
     // Force recalculation of formulas to ensure fresh data
-    // This is CRITICAL to resolve "Data Not Synced" issues.
     SpreadsheetApp.flush();
 
     var sheet = this._getSheet(sheetName);
     var data = sheet.getDataRange().getValues();
 
-    if (data.length === 0) return 0;
+    if (data.length === 0) return { score: 0, meta: 'No Data' };
 
-    // 1. Find the Grade Column Index by Header Name
     var headers = data[0]; // Row 0 is header
     var gradeColIndex = -1;
+    var debugInfo = '';
 
-    // Normalize target: remove all spaces, lowercase
-    var targetHeader = (Config.HEADER_GRADE || 'Nilai Akhir').replace(/\s/g, '').toLowerCase();
-
-    for (var j = 0; j < headers.length; j++) {
-      var headerClean = String(headers[j]).replace(/\s/g, '').toLowerCase();
-      if (headerClean === targetHeader) {
-        gradeColIndex = j;
-        break;
-      }
+    // 1. PRIORITY CHECK: Check Column K (Index 10) explicitly first
+    // Based on screenshot evidence, Nilai Akhir is in Column K.
+    if (headers.length > 10) {
+        var headerK = String(headers[10]).toLowerCase();
+        // Loose check: contains "nilai" or matches config
+        if (headerK.indexOf('nilai') !== -1 || headerK.indexOf('akhir') !== -1) {
+            gradeColIndex = 10;
+            debugInfo = '[Priority K] Found Header: "' + headers[10] + '"';
+        }
     }
 
-    // Fallback: If header not found, use default Column K (Index 10)
-    // Note: User mentioned Keterangan is in L (Index 11), so K (Index 10) for Grade is consistent.
+    // 2. SEARCH: If Priority Check failed, search by name
+    if (gradeColIndex === -1) {
+        var targetHeader = (Config.HEADER_GRADE || 'Nilai Akhir').replace(/\s/g, '').toLowerCase();
+        for (var j = 0; j < headers.length; j++) {
+            var headerClean = String(headers[j]).replace(/\s/g, '').toLowerCase();
+            if (headerClean === targetHeader) {
+                gradeColIndex = j;
+                debugInfo = '[Search] Found Header: "' + headers[j] + '" at Index ' + j;
+                break;
+            }
+        }
+    }
+
+    // 3. FALLBACK: Default to Column K (Index 10) if still not found
     if (gradeColIndex === -1) {
        gradeColIndex = 10;
+       debugInfo = '[Fallback] Forced Index 10. Actual Header: "' + (headers[10] || 'Unknown') + '"';
     }
 
-    // 2. Iterate rows to find NIM
+    // 4. Find User Row
     for (var i = 1; i < data.length; i++) {
       var row = data[i];
       var dbNim = row[Config.COL_INDEX_GRADE_NIM] ? String(row[Config.COL_INDEX_GRADE_NIM]).trim() : '';
 
       if (dbNim.toLowerCase() === nim.toLowerCase()) {
-        // Ensure we don't read out of bounds if row is short
-        if (gradeColIndex >= row.length) return 0;
+        if (gradeColIndex >= row.length) return { score: 0, meta: debugInfo + ' (Out of Bounds)' };
 
-        var score = row[gradeColIndex];
+        var rawScore = row[gradeColIndex];
+        var finalScore = 0;
 
-        // Normalize common string formats returned by formulas/locales
-        if (score === '' || score === null) return 0;
-
-        if (typeof score === 'number') return score;
-
-        var s = String(score).trim();
-        // Replace comma decimal separators with dot, remove percent sign and non-numeric characters except dot and minus
-        s = s.replace(/\s+/g, '').replace('%', '').replace(',', '.');
-        s = s.replace(/[^0-9.\-]/g, '');
-
-        var parsed = parseFloat(s);
-        if (isNaN(parsed)) {
-          // Log parsing error for debugging
-          return 0;
+        // Parse Score
+        if (typeof rawScore === 'number') {
+            finalScore = rawScore;
+        } else {
+            var s = String(rawScore).trim();
+            s = s.replace(/\s+/g, '').replace('%', '').replace(',', '.');
+            s = s.replace(/[^0-9.\-]/g, '');
+            var parsed = parseFloat(s);
+            if (!isNaN(parsed)) {
+                finalScore = parsed;
+            }
         }
-        return parsed;
+
+        return {
+            score: finalScore,
+            meta: debugInfo + ' | Raw Value: ' + rawScore
+        };
       }
     }
-    return 0;
+
+    return { score: 0, meta: debugInfo + ' | NIM Not Found in Sheet' };
   },
 
   /**
@@ -261,10 +275,14 @@ var Service = {
     var gradeResults = [];
     var totalScore = 0;
     var courseCount = Config.SHEET_COURSES.length;
+    var debugLog = [];
 
     for (var i = 0; i < courseCount; i++) {
       var courseName = Config.SHEET_COURSES[i];
-      var score = Database.getCourseGrade(courseName, nim);
+      var gradeData = Database.getCourseGrade(courseName, nim);
+
+      var score = gradeData.score;
+      debugLog.push(courseName + ': ' + gradeData.meta);
 
       var predicate = this.getPredicate(score);
       // Status Passed if score >= 60
@@ -302,7 +320,6 @@ var Service = {
         }
       } catch (e) {
         // Log error but don't fail the whole request
-        // certUrl remains empty
         Logger.log('Certificate Generation Error: ' + e.toString());
       }
     }
@@ -310,8 +327,9 @@ var Service = {
     return {
       status: 'success',
       meta: {
-        server_timestamp: new Date().toISOString(), // For debugging cache
-        generated_by: 'Diploma Ilmi System'
+        server_timestamp: new Date().toISOString(),
+        generated_by: 'Diploma Ilmi System',
+        debug_trace: debugLog // Expose debug info to frontend
       },
       data: {
         nim: user.nim,
