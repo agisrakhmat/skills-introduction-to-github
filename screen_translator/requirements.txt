@@ -1,0 +1,4 @@
+pytesseract
+Pillow
+deep-translator
+python-docx
