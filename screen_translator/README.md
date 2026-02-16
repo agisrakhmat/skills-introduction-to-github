@@ -12,31 +12,51 @@ Aplikasi desktop sederhana untuk merekam teks dari layar (seperti subtitle video
 
 ## Prasyarat (Wajib Diinstall)
 
-Sebelum menjalankan aplikasi, pastikan Anda telah menginstall:
+Aplikasi ini membutuhkan dua komponen utama:
 
 1.  **Python 3.x**: [Download di sini](https://www.python.org/downloads/) (Pastikan centang "Add Python to PATH" saat instalasi).
 2.  **Tesseract OCR**: Ini adalah mesin pembaca teks.
     *   **Windows**: Download installer [di sini (ub-mannheim/tesseract)](https://github.com/UB-Mannheim/tesseract/wiki). Pilih versi terbaru (misalnya `tesseract-ocr-w64-setup-....exe`).
     *   **Penting:** Saat menginstall Tesseract, ingat lokasi instalasinya (biasanya di `C:\Program Files\Tesseract-OCR`). Aplikasi akan mencoba mencarinya otomatis, tapi jika gagal, Anda perlu menunjukkannya manual.
 
-## Instalasi
+---
+
+## Cara Membuat File .EXE (Aplikasi Portable)
+
+Jika Anda ingin membuat file aplikasi tunggal (`.exe`) agar bisa dijalankan tanpa membuka terminal/command prompt:
+
+1.  Pastikan Anda sudah menginstall Python dan Tesseract seperti di atas.
+2.  Buka folder aplikasi `screen_translator`.
+3.  Klik dua kali (double-click) pada file **`build_exe.bat`**.
+4.  Tunggu beberapa menit hingga proses selesai.
+5.  Setelah selesai, buka folder baru bernama **`dist`**.
+6.  Di dalamnya, Anda akan menemukan file **`ScreenTranslator.exe`**. Anda bisa memindahkan file ini ke Desktop atau folder lain.
+
+**Catatan untuk Mode Portable:**
+Jika Anda ingin membawa aplikasi ini ke komputer lain yang **belum** terinstall Tesseract:
+1.  Copy folder instalasi `Tesseract-OCR` dari Program Files komputer Anda.
+2.  Paste folder tersebut tepat di sebelah file `ScreenTranslator.exe`.
+3.  Aplikasi akan otomatis mendeteksi Tesseract di folder tersebut.
+
+---
+
+## Cara Menjalankan (Via Kode Python)
+
+Jika Anda ingin menjalankan aplikasi via kode tanpa membuat .exe:
 
 1.  Buka terminal (Command Prompt atau PowerShell) di dalam folder `screen_translator`.
 2.  Install pustaka Python yang dibutuhkan dengan perintah:
     ```bash
     pip install -r requirements.txt
     ```
-
-## Cara Menjalankan
-
-Jalankan aplikasi dengan perintah:
-```bash
-python app.py
-```
+3.  Jalankan aplikasi dengan perintah:
+    ```bash
+    python app.py
+    ```
 
 ## Cara Menggunakan
 
-1.  **Buka Aplikasi:** Jendela utama "Screen Translator" akan muncul.
+1.  **Buka Aplikasi:** Jalankan `ScreenTranslator.exe` atau `python app.py`.
 2.  **Tampilkan Bingkai:** Klik tombol **"Tampilkan Bingkai Ajaib"**. Sebuah kotak transparan akan muncul.
 3.  **Posisikan Bingkai:** Geser dan ubah ukuran kotak transparan tersebut agar pas menutupi area teks/subtitle yang ingin direkam.
     *   *Tips:* Pastikan hanya teks yang masuk dalam kotak agar hasil lebih akurat.
@@ -49,7 +69,7 @@ python app.py
 ## Troubleshooting
 
 *   **Error: Tesseract Tidak Ditemukan**
-    *   Jika muncul pesan error ini, aplikasi akan meminta Anda memilih file `tesseract.exe`. Cari di folder instalasi Tesseract (biasanya `C:\Program Files\Tesseract-OCR\tesseract.exe`).
+    *   Aplikasi akan meminta Anda memilih file `tesseract.exe`. Cari di folder instalasi Tesseract (biasanya `C:\Program Files\Tesseract-OCR\tesseract.exe`).
 *   **Hasil Terjemahan Aneh/Salah**
     *   Pastikan "Bingkai Ajaib" tidak menutupi area yang terlalu luas atau bergambar rumit. Semakin bersih latar belakang teks, semakin akurat hasilnya.
     *   Pastikan font subtitle cukup besar dan jelas.

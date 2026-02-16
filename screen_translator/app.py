@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox, filedialog
 import threading
 import os
+import sys
 import time
 from difflib import SequenceMatcher
 
@@ -22,6 +23,7 @@ class ScreenTranslatorApp:
         self.is_recording = False
         self.recorded_data = [] # List of {'original': str, 'translated': str}
         self.stop_event = threading.Event()
+        self.record_thread = None
         self.overlay = None
         self.current_bbox = None # Thread-safe bbox storage
 
@@ -71,6 +73,17 @@ class ScreenTranslatorApp:
             r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
             os.path.join(os.getenv('LOCALAPPDATA', ''), r'Programs\Tesseract-OCR\tesseract.exe'),
         ]
+
+        # Add portable path (relative to the executable)
+        if getattr(sys, 'frozen', False):
+            # If running as PyInstaller .exe
+            base_path = os.path.dirname(sys.executable)
+        else:
+            # If running as script
+            base_path = os.path.dirname(os.path.abspath(__file__))
+
+        portable_path = os.path.join(base_path, 'Tesseract-OCR', 'tesseract.exe')
+        common_paths.insert(0, portable_path) # Prioritize portable version
 
         # Check if tesseract is in PATH
         if self.is_tesseract_installed():
@@ -131,6 +144,9 @@ class ScreenTranslatorApp:
             messagebox.showwarning("Peringatan", "Harap tampilkan dan posisikan Bingkai Ajaib terlebih dahulu!")
             return
 
+        if self.record_thread and self.record_thread.is_alive():
+            return
+
         self.is_recording = True
         self.stop_event.clear()
         self.recorded_data = []
@@ -141,13 +157,17 @@ class ScreenTranslatorApp:
         self.btn_save.config(state=tk.DISABLED)
         self.btn_overlay.config(state=tk.DISABLED)
 
-        threading.Thread(target=self.recording_loop, daemon=True).start()
+        self.record_thread = threading.Thread(target=self.recording_loop, daemon=True)
+        self.record_thread.start()
 
     def stop_recording(self):
         if not self.is_recording:
             return
         self.is_recording = False
         self.stop_event.set()
+
+        # Wait for thread to finish (optional, but good practice if not blocking UI)
+        # We won't join here to keep UI responsive, but the check in start_recording protects us.
 
         self.label_status.config(text="Status: Berhenti", fg="blue")
         self.btn_start.config(state=tk.NORMAL)
@@ -183,54 +203,17 @@ class ScreenTranslatorApp:
         while not self.stop_event.is_set():
             try:
                 # Check for safe bbox
-                if not self.current_bbox:
+                capture_bbox = self.current_bbox
+                if not capture_bbox:
                     time.sleep(0.5)
                     continue
 
                 # Hide overlay to avoid capturing it in the screenshot
-                # We use root.after to schedule UI updates, but since we need to wait for it,
-                # we can't easily do it synchronously from here without complex locking.
-                # However, for a simple tool, we can try to rely on the fact that we're
-                # taking a screenshot of the *screen*.
-                #
-                # Issue: interacting with GUI (withdraw/deiconify) from thread is unsafe.
-                # Solution: We will rely on the overlay being "mostly" transparent (alpha 0.3).
-                # But to get clean text, we really should hide it.
-                # Since we can't safely hide/show from this thread synchronously,
-                # and we can't block the main thread easily...
-                #
-                # Alternative: The user just needs to position the window.
-                # Maybe we can make the overlay fully transparent (alpha=0.0) during capture?
-                # No, alpha applies to whole window.
-                #
-                # Let's try to just capture. If the text is white and overlay is red/alpha,
-                # tesseract might still read it.
-                # But the text "AREA REKAM" will be read.
-                #
-                # BEST FIX: Move the "AREA REKAM" label to the *title bar* or a side panel,
-                # and make the central area empty.
-                # But the overlay IS the window.
-                #
-                # Let's just minimize the visual noise in the overlay.
-                # Make the label text minimal or non-existent during recording?
-                #
-                # Better: When 'Start Recording' is clicked, we change the overlay style.
-                # We can't easily do that from here.
-                #
-                # Let's use a workaround:
-                # We will accept that we might capture the overlay border/text if we don't hide it.
-                # But the review was specific: "Self-Occlusion".
-                #
-                # Let's try to hide it safely.
-                # self.root.after(0, self.overlay.withdraw)
-                # time.sleep(0.2) # Wait for animation
-                # img = ImageGrab.grab(...)
-                # self.root.after(0, self.overlay.deiconify)
-
                 self.root.after(0, lambda: self.overlay.withdraw() if self.overlay else None)
                 time.sleep(0.2) # Give Tkinter time to process the hide
 
-                img = ImageGrab.grab(bbox=self.current_bbox)
+                # Use the local variable capture_bbox to prevent race condition
+                img = ImageGrab.grab(bbox=capture_bbox)
 
                 self.root.after(0, lambda: self.overlay.deiconify() if self.overlay else None)
 
