@@ -20,6 +20,7 @@
         display: block;
         font-weight: bold;
         margin-bottom: 5px;
+        color: #555;
       }
       input[type="text"], input[type="number"], select {
         width: 100%;
@@ -79,10 +80,12 @@
         margin-bottom: 20px;
       }
       .section-title {
-        margin-top: 20px;
-        margin-bottom: 10px;
+        margin-top: 25px;
+        margin-bottom: 15px;
         font-weight: bold;
-        color: #555;
+        color: #333;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 5px;
       }
       #status-message {
         margin-top: 15px;
@@ -112,6 +115,13 @@
         margin-left: 10px;
         display: none;
       }
+      #termin-group {
+        display: none;
+        background-color: #e9ecef;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+      }
       @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
@@ -135,34 +145,47 @@
 
       <div class="row">
         <div class="form-group col">
-          <label for="tipePembayaran">Tipe Pembayaran</label>
-          <select id="tipePembayaran" name="tipePembayaran">
-            <option value="Lunas">Lunas</option>
-            <option value="Termin">Termin (Cicilan)</option>
+          <label for="tipePembayaran">Tipe Pembayaran (Lunas/DP/Termin)</label>
+          <select id="tipePembayaran" name="tipePembayaran" onchange="toggleTerminGroup()">
+            <option value="Lunas">Lunas (100%)</option>
             <option value="DP">Down Payment (DP)</option>
-            <option value="Bulanan">Bulanan</option>
+            <option value="Termin">Termin (Cicilan)</option>
+            <option value="Bulanan">Bulanan / Retainer</option>
           </select>
         </div>
         <div class="form-group col">
-          <label for="status">Status Invoice</label>
-          <select id="status" name="status">
-            <option value="Belum Dibayar">Belum Dibayar</option>
-            <option value="Pending">Pending</option>
-            <option value="Lunas">Lunas</option>
-            <option value="Sebagian">Dibayar Sebagian</option>
-          </select>
+          <label for="nilaiProyek">Nilai Keseluruhan Proyek (Rp)</label>
+          <input type="number" id="nilaiProyek" name="nilaiProyek" min="0" required>
         </div>
       </div>
 
-      <div class="section-title">Detail Item / Layanan</div>
+      <!-- Grup input khusus DP/Termin -->
+      <div id="termin-group">
+        <div class="row">
+          <div class="form-group col" id="keteranganTerminDiv">
+            <label for="keteranganTermin">Keterangan (Misal: Termin 1 / DP 50%)</label>
+            <input type="text" id="keteranganTermin" name="keteranganTermin" placeholder="Contoh: Pembayaran DP 50%">
+          </div>
+          <div class="form-group col">
+            <label for="persentaseTagihan">Persentase Tagihan Ini (%)</label>
+            <input type="number" id="persentaseTagihan" name="persentaseTagihan" value="0" min="0" max="100" step="0.1" oninput="hitungOtomatisTagihan()">
+          </div>
+          <div class="form-group col">
+            <label for="nominalTargetTagihan">Target Tagihan (Rp)</label>
+            <input type="number" id="nominalTargetTagihan" name="nominalTargetTagihan" value="0" readonly style="background-color: #f0f0f0;">
+          </div>
+        </div>
+        <small style="color: #666;"><i>* Target Tagihan akan dihitung otomatis dari (Nilai Proyek × Persentase). Pastikan Total Rincian Item di bawah ini sesuai dengan Target Tagihan.</i></small>
+      </div>
+
+      <div class="section-title">Rincian Item Penagihan (Sesuai Termin/DP saat ini)</div>
       <div id="items-container">
-        <!-- Item baris pertama -->
         <div class="item-row">
           <div style="flex: 2;">
-            <input type="text" class="item-nama" placeholder="Nama Item" required>
+            <input type="text" class="item-nama" placeholder="Nama Item / Pekerjaan" required>
           </div>
           <div style="flex: 2;">
-            <input type="text" class="item-deskripsi" placeholder="Deskripsi Singkat">
+            <input type="text" class="item-deskripsi" placeholder="Deskripsi (Opsional)">
           </div>
           <div style="flex: 1;">
             <input type="number" class="item-qty" placeholder="Qty" value="1" min="1" step="0.01" required>
@@ -177,10 +200,10 @@
       </div>
       <button type="button" class="btn btn-add" onclick="addItem()">+ Tambah Item Lain</button>
 
-      <div class="section-title">Keuangan</div>
+      <div class="section-title">Tambahan & Potongan</div>
       <div class="row">
         <div class="form-group col">
-          <label for="pajak">Pajak (%)</label>
+          <label for="pajak">Pajak PPN (%)</label>
           <input type="number" id="pajak" name="pajak" value="0" min="0" max="100" step="0.1">
         </div>
         <div class="form-group col">
@@ -205,16 +228,45 @@
     <div id="status-message"></div>
 
     <script>
+      function toggleTerminGroup() {
+        var tipe = document.getElementById('tipePembayaran').value;
+        var group = document.getElementById('termin-group');
+        var ketTermin = document.getElementById('keteranganTermin');
+
+        if (tipe === 'DP' || tipe === 'Termin') {
+          group.style.display = 'block';
+          if (tipe === 'DP') {
+             ketTermin.placeholder = "Contoh: Pembayaran DP 50%";
+          } else {
+             ketTermin.placeholder = "Contoh: Termin 1 / Termin Ke-2";
+          }
+        } else {
+          group.style.display = 'none';
+          document.getElementById('persentaseTagihan').value = 0;
+          document.getElementById('nominalTargetTagihan').value = 0;
+          document.getElementById('keteranganTermin').value = "";
+        }
+      }
+
+      function hitungOtomatisTagihan() {
+        var nilaiProyek = parseFloat(document.getElementById('nilaiProyek').value) || 0;
+        var persen = parseFloat(document.getElementById('persentaseTagihan').value) || 0;
+        var target = nilaiProyek * (persen / 100);
+        document.getElementById('nominalTargetTagihan').value = target;
+      }
+
+      document.getElementById('nilaiProyek').addEventListener('input', hitungOtomatisTagihan);
+
       function addItem() {
         var container = document.getElementById('items-container');
         var row = document.createElement('div');
         row.className = 'item-row';
         row.innerHTML = `
           <div style="flex: 2;">
-            <input type="text" class="item-nama" placeholder="Nama Item" required>
+            <input type="text" class="item-nama" placeholder="Nama Item / Pekerjaan" required>
           </div>
           <div style="flex: 2;">
-            <input type="text" class="item-deskripsi" placeholder="Deskripsi Singkat">
+            <input type="text" class="item-deskripsi" placeholder="Deskripsi (Opsional)">
           </div>
           <div style="flex: 1;">
             <input type="number" class="item-qty" placeholder="Qty" value="1" min="1" step="0.01" required>
@@ -235,7 +287,7 @@
         if (container.children.length > 1) {
           container.removeChild(row);
         } else {
-          alert('Minimal harus ada satu item.');
+          alert('Minimal harus ada satu rincian item penagihan.');
         }
       }
 
@@ -274,7 +326,9 @@
           klien: document.getElementById('klien').value,
           proyek: document.getElementById('proyek').value,
           tipePembayaran: document.getElementById('tipePembayaran').value,
-          status: document.getElementById('status').value,
+          nilaiProyek: parseFloat(document.getElementById('nilaiProyek').value) || 0,
+          keteranganTermin: document.getElementById('keteranganTermin').value,
+          persentaseTagihan: parseFloat(document.getElementById('persentaseTagihan').value) || 0,
           pajak: parseFloat(document.getElementById('pajak').value) || 0,
           diskon: parseFloat(document.getElementById('diskon').value) || 0,
           dibayar: parseFloat(document.getElementById('dibayar').value) || 0,
@@ -291,6 +345,7 @@
               statusMsg.className = 'success';
               statusMsg.innerHTML = 'Berhasil! ' + response.message + '<br><a href="' + response.url + '" target="_blank">Lihat PDF di Drive</a>';
               document.getElementById('invoiceForm').reset();
+              toggleTerminGroup(); // Reset tampilan
             } else {
               statusMsg.className = 'error';
               statusMsg.textContent = 'Gagal: ' + response.message;

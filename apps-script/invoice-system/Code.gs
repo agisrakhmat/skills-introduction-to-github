@@ -14,7 +14,7 @@ function onOpen() {
 function showInvoiceForm() {
   var html = HtmlService.createHtmlOutputFromFile('Form')
       .setWidth(800)
-      .setHeight(800);
+      .setHeight(850);
   SpreadsheetApp.getUi().showModalDialog(html, 'Buat Invoice Baru');
 }
 
@@ -25,9 +25,13 @@ function setupSheets() {
   var sheetData = ss.getSheetByName('Data Invoice');
   if (!sheetData) {
     sheetData = ss.insertSheet('Data Invoice');
-    var headers = ['No Invoice', 'Tanggal', 'Klien', 'Proyek', 'Tipe Pembayaran', 'Status', 'Subtotal', 'Pajak (%)', 'Nominal Pajak', 'Diskon', 'Total Tagihan', 'Dibayar', 'Sisa Tagihan', 'Link PDF'];
+    var headers = ['No Invoice', 'Tanggal', 'Klien', 'Proyek', 'Tipe Pembayaran', 'Status', 'Nilai Total Proyek', 'Keterangan/Persentase', 'Subtotal Invoice', 'Pajak (%)', 'Nominal Pajak', 'Diskon', 'Total Tagihan', 'Dibayar', 'Sisa Tagihan', 'Link PDF'];
     sheetData.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight('bold').setBackground('#d9ead3');
     sheetData.setFrozenRows(1);
+
+    // Setup Data Validation Dropdown for Status column (Column F / Index 6)
+    var rule = SpreadsheetApp.newDataValidation().requireValueInList(['Belum Dibayar', 'Sebagian', 'Lunas']).setAllowInvalid(false).build();
+    sheetData.getRange("F2:F1000").setDataValidation(rule);
   }
 
   // Sheet Detail Item
@@ -46,7 +50,7 @@ function setupSheets() {
     setupTemplateDesign(sheetTemplate);
   }
 
-  SpreadsheetApp.getUi().alert('Setup Selesai! Semua sheet telah dibuat dan disiapkan.');
+  SpreadsheetApp.getUi().alert('Setup Selesai! Semua sheet telah dibuat dan disiapkan. Perhatikan Kolom F pada Data Invoice sudah memiliki Dropdown Status.');
 }
 
 function setupTemplateDesign(sheet) {
@@ -74,45 +78,49 @@ function setupTemplateDesign(sheet) {
   sheet.getRange('E5').setValue('Tanggal:').setFontWeight('bold').setHorizontalAlignment('right');
   sheet.getRange('F5').setValue('{{Tanggal}}');
 
-  sheet.getRange('E6').setValue('Status:').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F6').setValue('{{Status}}');
+  sheet.getRange('E6').setValue('Nilai Proyek:').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('F6').setValue('{{NilaiProyek}}').setFontWeight('bold');
 
   sheet.getRange('E7').setValue('Tipe Pembayaran:').setFontWeight('bold').setHorizontalAlignment('right');
   sheet.getRange('F7').setValue('{{TipePembayaran}}');
 
-  // Items Table Header
-  var itemHeaders = ['No', 'Deskripsi Item', 'Qty', 'Harga Satuan', 'Total'];
-  sheet.getRange('B9:F9').setValues([itemHeaders]).setFontWeight('bold').setBackground('#2a52be').setFontColor('white');
+  // Baris Info Termin (Dinamic)
+  sheet.getRange('E8').setValue('Keterangan:').setHorizontalAlignment('right');
+  sheet.getRange('F8').setValue('{{KetTermin}}');
 
-  sheet.getRange('B10:F20').setBorder(true, true, true, true, true, true);
+  // Items Table Header
+  var itemHeaders = ['No', 'Rincian Penagihan', 'Qty', 'Harga Satuan', 'Total'];
+  sheet.getRange('B10:F10').setValues([itemHeaders]).setFontWeight('bold').setBackground('#2a52be').setFontColor('white');
+
+  sheet.getRange('B11:F21').setBorder(true, true, true, true, true, true);
 
   // Summary
-  sheet.getRange('E22').setValue('Subtotal:').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F22').setValue('{{Subtotal}}');
+  sheet.getRange('E23').setValue('Subtotal Invoice:').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('F23').setValue('{{Subtotal}}');
 
-  sheet.getRange('E23').setValue('Pajak ({{PajakPersen}}%):').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F23').setValue('{{NominalPajak}}');
+  sheet.getRange('E24').setValue('Pajak ({{PajakPersen}}%):').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('F24').setValue('{{NominalPajak}}');
 
-  sheet.getRange('E24').setValue('Diskon:').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F24').setValue('{{Diskon}}');
+  sheet.getRange('E25').setValue('Diskon:').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('F25').setValue('{{Diskon}}');
 
-  sheet.getRange('E25').setValue('Total Tagihan:').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F25').setValue('{{TotalTagihan}}').setFontWeight('bold').setBackground('#fff2cc');
+  sheet.getRange('E26').setValue('Total Tagihan Ini:').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('F26').setValue('{{TotalTagihan}}').setFontWeight('bold').setBackground('#fff2cc');
 
-  sheet.getRange('E26').setValue('Sudah Dibayar:').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F26').setValue('{{Dibayar}}');
+  sheet.getRange('E27').setValue('Sudah Dibayar:').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('F27').setValue('{{Dibayar}}');
 
-  sheet.getRange('E27').setValue('Sisa Tagihan:').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F27').setValue('{{Sisa}}').setFontWeight('bold');
+  sheet.getRange('E28').setValue('Sisa Tagihan Ini:').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('F28').setValue('{{Sisa}}').setFontWeight('bold').setFontColor('red');
 
   // Informasi Dana
-  sheet.getRange('B29').setValue('Informasi Pembayaran / Transfer:').setFontWeight('bold');
-  sheet.getRange('B30').setValue('Bank: [Nama Bank Anda]');
-  sheet.getRange('B31').setValue('No. Rekening: [Nomor Rekening Anda]');
-  sheet.getRange('B32').setValue('Atas Nama: [Nama Anda/Perusahaan]');
+  sheet.getRange('B30').setValue('Informasi Pembayaran / Transfer:').setFontWeight('bold');
+  sheet.getRange('B31').setValue('Bank: [Nama Bank Anda]');
+  sheet.getRange('B32').setValue('No. Rekening: [Nomor Rekening Anda]');
+  sheet.getRange('B33').setValue('Atas Nama: [Nama Anda/Perusahaan]');
 
   // Formats
-  sheet.getRangeList(['E10:F20', 'F22:F27']).setNumberFormat('"Rp" #,##0');
+  sheet.getRangeList(['F6', 'E11:F21', 'F23:F28']).setNumberFormat('"Rp" #,##0');
 }
 
 function generateInvoiceNumber() {
@@ -179,6 +187,16 @@ function submitInvoiceData(data) {
       ]);
     }
 
+    var nilaiProyek = parseFloat(data.nilaiProyek) || 0;
+    // Format KetTermin untuk Data Sheet dan PDF
+    var infoTermin = "";
+    if (data.tipePembayaran === 'DP' || data.tipePembayaran === 'Termin') {
+      var persen = parseFloat(data.persentaseTagihan) || 0;
+      infoTermin = (data.keteranganTermin ? data.keteranganTermin + ' ' : '') + '(' + persen + '%)';
+    } else {
+      infoTermin = "-";
+    }
+
     var pajakPersen = parseFloat(data.pajak) || 0;
     var nominalPajak = subtotal * (pajakPersen / 100);
     var diskon = parseFloat(data.diskon) || 0;
@@ -190,11 +208,12 @@ function submitInvoiceData(data) {
       sheetDetail.getRange(sheetDetail.getLastRow() + 1, 1, detailRows.length, detailRows[0].length).setValues(detailRows);
     }
 
-    var pdfUrl = createPdfFromTemplate(invNumber, tanggal, data.klien, data.proyek, data.tipePembayaran, data.status, items, subtotal, pajakPersen, nominalPajak, diskon, totalTagihan, dibayar, sisa);
+    var pdfUrl = createPdfFromTemplate(invNumber, tanggal, data.klien, data.proyek, data.tipePembayaran, nilaiProyek, infoTermin, items, subtotal, pajakPersen, nominalPajak, diskon, totalTagihan, dibayar, sisa);
 
+    // Default status: 'Belum Dibayar'
     var invoiceRow = [
-      invNumber, tanggal, data.klien, data.proyek, data.tipePembayaran, data.status,
-      subtotal, pajakPersen, nominalPajak, diskon, totalTagihan, dibayar, sisa, pdfUrl
+      invNumber, tanggal, data.klien, data.proyek, data.tipePembayaran, 'Belum Dibayar',
+      nilaiProyek, infoTermin, subtotal, pajakPersen, nominalPajak, diskon, totalTagihan, dibayar, sisa, pdfUrl
     ];
     sheetData.appendRow(invoiceRow);
 
@@ -205,7 +224,7 @@ function submitInvoiceData(data) {
   }
 }
 
-function createPdfFromTemplate(invNumber, tanggal, klien, proyek, tipePembayaran, status, items, subtotal, pajakPersen, nominalPajak, diskon, totalTagihan, dibayar, sisa) {
+function createPdfFromTemplate(invNumber, tanggal, klien, proyek, tipePembayaran, nilaiProyek, infoTermin, items, subtotal, pajakPersen, nominalPajak, diskon, totalTagihan, dibayar, sisa) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheetTemplate = ss.getSheetByName('Template Invoice');
 
@@ -221,8 +240,9 @@ function createPdfFromTemplate(invNumber, tanggal, klien, proyek, tipePembayaran
     '{{Proyek}}': proyek,
     '{{NoInvoice}}': invNumber,
     '{{Tanggal}}': tanggal,
-    '{{Status}}': status,
+    '{{NilaiProyek}}': nilaiProyek,
     '{{TipePembayaran}}': tipePembayaran,
+    '{{KetTermin}}': infoTermin,
     '{{Subtotal}}': subtotal,
     '{{PajakPersen}}': pajakPersen,
     '{{NominalPajak}}': nominalPajak,
@@ -236,10 +256,10 @@ function createPdfFromTemplate(invNumber, tanggal, klien, proyek, tipePembayaran
     tempSheet.createTextFinder(key).replaceAllWith(dataMap[key].toString());
   }
 
-  var startRow = 10;
+  var startRow = 11;
   for (var i = 0; i < items.length; i++) {
     var itemRow = startRow + i;
-    if (itemRow <= 20) {
+    if (itemRow <= 21) {
       tempSheet.getRange('B' + itemRow).setValue(i + 1);
       tempSheet.getRange('C' + itemRow).setValue(items[i].nama + (items[i].deskripsi ? ' - ' + items[i].deskripsi : ''));
       tempSheet.getRange('D' + itemRow).setValue(items[i].qty);
