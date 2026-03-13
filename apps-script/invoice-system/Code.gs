@@ -199,70 +199,74 @@ function setupTemplateDesign(sheet) {
 
   sheet.setColumnWidth(1, 15);  // A
   sheet.setColumnWidth(2, 35);  // B (No)
-  sheet.setColumnWidth(3, 280); // C (Deskripsi)
-  sheet.setColumnWidth(4, 45);  // D (Qty)
-  sheet.setColumnWidth(5, 110); // E (Harga)
-  sheet.setColumnWidth(6, 140); // F (Total)
-  sheet.setColumnWidth(7, 15);  // G
+  sheet.setColumnWidth(3, 140); // C (Deskripsi)
+  sheet.setColumnWidth(4, 140); // D (Deskripsi merged)
+  sheet.setColumnWidth(5, 45);  // E (Qty)
+  sheet.setColumnWidth(6, 110); // F (Harga)
+  sheet.setColumnWidth(7, 140); // G (Total)
 
   // Header
   sheet.getRange('B2').setValue('INVOICE').setFontSize(22).setFontWeight('bold').setFontColor('#2a52be');
-  sheet.getRange('F2').setFormula('=IMAGE("' + LOGO_URL + '")');
+  sheet.getRange('G2').setFormula('=IMAGE("' + LOGO_URL + '")');
   sheet.setRowHeight(2, 50);
 
   sheet.getRange('B4').setValue('Kepada:').setFontWeight('bold');
   sheet.getRange('B5').setValue('{{Klien}}').setFontWeight('bold');
   sheet.getRange('B6').setValue('Proyek: {{Proyek}}');
 
-  sheet.getRange('E4').setValue('No Invoice:').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F4').setValue('{{NoInvoice}}').setFontWeight('bold');
+  sheet.getRange('F4').setValue('No Invoice:').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('G4').setValue('{{NoInvoice}}').setFontWeight('bold');
 
-  sheet.getRange('E5').setValue('Tanggal:').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F5').setValue('{{Tanggal}}');
+  sheet.getRange('F5').setValue('Tanggal:').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('G5').setValue('{{Tanggal}}');
 
-  sheet.getRange('E6').setValue('Nilai Proyek:').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F6').setValue('{{NilaiProyek}}').setFontWeight('bold');
+  sheet.getRange('F6').setValue('Nilai Proyek:').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('G6').setValue('{{NilaiProyek}}').setFontWeight('bold');
 
-  sheet.getRange('E7').setValue('Tipe Pembayaran:').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F7').setValue('{{TipePembayaran}}');
+  sheet.getRange('F7').setValue('Tipe Pembayaran:').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('G7').setValue('{{TipePembayaran}}');
 
   // Baris Info Termin (Dinamic)
-  sheet.getRange('E8').setValue('Keterangan:').setHorizontalAlignment('right');
-  sheet.getRange('F8').setValue('{{KetTermin}}');
+  sheet.getRange('F8').setValue('Keterangan:').setHorizontalAlignment('right');
+  sheet.getRange('G8').setValue('{{KetTermin}}');
 
   // Items Table Header (Mulai Baris 10, Isi Item B11-B20 = 10 Baris Max)
-  var itemHeaders = ['No', 'Rincian Penagihan', 'Qty', 'Harga Satuan', 'Total'];
-  sheet.getRange('B10:F10').setValues([itemHeaders]).setFontWeight('bold').setBackground('#2a52be').setFontColor('white');
+  var itemHeaders = ['No', 'Rincian Penagihan', '', 'Qty', 'Harga Satuan', 'Total'];
+  sheet.getRange('B10:G10').setValues([itemHeaders]).setFontWeight('bold').setBackground('#2a52be').setFontColor('white');
+  sheet.getRange('C10:D10').mergeAcross();
 
-  sheet.getRange('B11:F20').setBorder(true, true, true, true, true, true);
+  sheet.getRange('B11:G20').setBorder(true, true, true, true, true, true);
+  for (var i = 11; i <= 20; i++) {
+    sheet.getRange('C' + i + ':D' + i).mergeAcross();
+  }
 
   // Summary (Mulai Baris 21 agar padat)
-  sheet.getRange('E21').setValue('Subtotal Invoice:').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F21').setValue('{{Subtotal}}');
+  sheet.getRange('F21').setValue('Subtotal Invoice:').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('G21').setValue('{{Subtotal}}');
 
-  sheet.getRange('E22').setValue('Pajak ({{PajakPersen}}%):').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F22').setValue('{{NominalPajak}}');
+  sheet.getRange('F22').setValue('Pajak ({{PajakPersen}}%):').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('G22').setValue('{{NominalPajak}}');
 
-  sheet.getRange('E23').setValue('Diskon:').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F23').setValue('{{Diskon}}');
+  sheet.getRange('F23').setValue('Diskon:').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('G23').setValue('{{Diskon}}');
 
-  sheet.getRange('E24').setValue('Total Tagihan Ini:').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F24').setValue('{{TotalTagihan}}').setFontWeight('bold').setBackground('#fff2cc');
+  sheet.getRange('F24').setValue('Total Tagihan Ini:').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('G24').setValue('{{TotalTagihan}}').setFontWeight('bold').setBackground('#fff2cc');
 
-  sheet.getRange('E25').setValue('Sudah Dibayar:').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F25').setValue('{{Dibayar}}');
+  sheet.getRange('F25').setValue('Sudah Dibayar:').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('G25').setValue('{{Dibayar}}');
 
-  sheet.getRange('E26').setValue('Sisa Tagihan Ini:').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F26').setValue('{{Sisa}}').setFontWeight('bold').setFontColor('red');
+  sheet.getRange('F26').setValue('Sisa Tagihan Ini:').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('G26').setValue('{{Sisa}}').setFontWeight('bold').setFontColor('red');
 
   // Informasi Dana (Pas Berakhir di Baris 30)
   sheet.getRange('B27').setValue('Informasi Pembayaran / Transfer:').setFontWeight('bold');
-  sheet.getRange('B28').setValue('Bank: [Nama Bank Anda]');
+  sheet.getRange('B28').setValue('Bank: Bank Syariah Indonesia');
   sheet.getRange('B29').setValue('No. Rekening: [Nomor Rekening Anda]');
   sheet.getRange('B30').setValue('Atas Nama: [Nama Anda/Perusahaan]');
 
   // Formats
-  sheet.getRangeList(['F6', 'E11:F20', 'F21:F26']).setNumberFormat('"Rp" #,##0');
+  sheet.getRangeList(['G6', 'F11:G20', 'G21:G26']).setNumberFormat('"Rp" #,##0');
 }
 
 function generateInvoiceNumber() {
@@ -422,15 +426,15 @@ function createPdfFromTemplate(invNumber, tanggal, klien, proyek, tipePembayaran
       var itemRow = startRow + i;
       copiedSheet.getRange('B' + itemRow).setValue(i + 1);
       copiedSheet.getRange('C' + itemRow).setValue(items[i].nama + (items[i].deskripsi ? ' - ' + items[i].deskripsi : ''));
-      copiedSheet.getRange('D' + itemRow).setValue(items[i].qty);
-      copiedSheet.getRange('E' + itemRow).setValue(items[i].harga);
-      copiedSheet.getRange('F' + itemRow).setValue(items[i].qty * items[i].harga);
+      copiedSheet.getRange('E' + itemRow).setValue(items[i].qty);
+      copiedSheet.getRange('F' + itemRow).setValue(items[i].harga);
+      copiedSheet.getRange('G' + itemRow).setValue(items[i].qty * items[i].harga);
     }
 
     // Bersihkan baris sisa jika item kurang dari 10
     for (var j = maxItems; j < 10; j++) {
        var emptyRow = startRow + j;
-       copiedSheet.getRange('B' + emptyRow + ':F' + emptyRow).clearContent();
+       copiedSheet.getRange('B' + emptyRow + ':G' + emptyRow).clearContent();
     }
 
     // PAKSA UKURAN A1:G30
