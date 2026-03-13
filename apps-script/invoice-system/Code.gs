@@ -87,7 +87,14 @@ function processPdfGeneration(invNumber) {
     }
 
     // Ekstrak data utama
-    var tanggal = invData[1];
+    var rawTanggal = invData[1];
+    var tanggal = rawTanggal;
+    // Paksa format tanggal menjadi teks Indonesia jika itu adalah object Date
+    if (Object.prototype.toString.call(rawTanggal) === '[object Date]') {
+      var blnIndo = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+      tanggal = rawTanggal.getDate() + ' ' + blnIndo[rawTanggal.getMonth()] + ' ' + rawTanggal.getFullYear();
+    }
+
     var klien = invData[2];
     var proyek = invData[3];
     var tipePembayaran = invData[4];
@@ -103,16 +110,18 @@ function processPdfGeneration(invNumber) {
 
     // Cari rincian item di Sheet 'Detail Item'
     var lastRowDetail = sheetDetail.getLastRow();
+    // Ambil semua data Detail Item (6 kolom: No Invoice, Nama, Deskripsi, Qty, Harga, Total)
     var detailValues = sheetDetail.getRange(2, 1, lastRowDetail - 1, 6).getValues();
     var items = [];
 
     for (var j = 0; j < detailValues.length; j++) {
       if (detailValues[j][0] === invNumber) {
+        // Index 1: Nama, Index 2: Deskripsi, Index 3: Qty, Index 4: Harga Satuan, Index 5: Total Harga
         items.push({
           nama: detailValues[j][1],
           deskripsi: detailValues[j][2],
-          qty: detailValues[j][3],
-          harga: detailValues[j][4]
+          qty: parseFloat(detailValues[j][3]) || 0,
+          harga: parseFloat(detailValues[j][4]) || 0
         });
       }
     }
