@@ -110,18 +110,34 @@ function processPdfGeneration(invNumber) {
 
     // Cari rincian item di Sheet 'Detail Item'
     var lastRowDetail = sheetDetail.getLastRow();
-    // Ambil semua data Detail Item (6 kolom: No Invoice, Nama, Deskripsi, Qty, Harga, Total)
-    var detailValues = sheetDetail.getRange(2, 1, lastRowDetail - 1, 6).getValues();
+    // Ambil SEMUA data baris agar tahan terhadap pergeseran kolom (misal ada kolom kosong terselip)
+    // Asumsi default struktur: A(0): No, B(1): Nama, C(2): Deskripsi, D(3): Qty, E(4): Harga, F(5): Total
+    // TAPI jika pengguna menyisipkan kolom, maka index bergeser.
+    // Untuk amannya, kita baca header-nya (baris 1) untuk menemukan index kolom yang benar.
+    var headerDetail = sheetDetail.getRange(1, 1, 1, sheetDetail.getLastColumn()).getValues()[0];
+    var colIdx = { nama: 1, deskripsi: 2, qty: 3, harga: 4 }; // Default
+
+    for (var c = 0; c < headerDetail.length; c++) {
+      var hd = headerDetail[c].toString().toLowerCase();
+      if (hd.indexOf('nama') !== -1) colIdx.nama = c;
+      else if (hd.indexOf('desk') !== -1) colIdx.deskripsi = c;
+      else if (hd.indexOf('qty') !== -1 || hd === 'kuantitas') colIdx.qty = c;
+      else if (hd.indexOf('harga satuan') !== -1) colIdx.harga = c;
+    }
+
+    var detailValues = sheetDetail.getRange(2, 1, lastRowDetail - 1, sheetDetail.getLastColumn()).getValues();
     var items = [];
 
     for (var j = 0; j < detailValues.length; j++) {
       if (detailValues[j][0] === invNumber) {
-        // Index 1: Nama, Index 2: Deskripsi, Index 3: Qty, Index 4: Harga Satuan, Index 5: Total Harga
+        var qtyVal = parseFloat(detailValues[j][colIdx.qty]);
+        var hargaVal = parseFloat(detailValues[j][colIdx.harga]);
+
         items.push({
-          nama: detailValues[j][1],
-          deskripsi: detailValues[j][2],
-          qty: parseFloat(detailValues[j][3]) || 0,
-          harga: parseFloat(detailValues[j][4]) || 0
+          nama: detailValues[j][colIdx.nama],
+          deskripsi: detailValues[j][colIdx.deskripsi],
+          qty: isNaN(qtyVal) ? 0 : qtyVal,
+          harga: isNaN(hargaVal) ? 0 : hargaVal
         });
       }
     }
