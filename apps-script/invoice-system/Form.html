@@ -219,7 +219,7 @@
       <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
 
       <div>
-        <button type="submit" class="btn" id="submitBtn">Simpan & Buat PDF</button>
+        <button type="submit" class="btn" id="submitBtn">Simpan Data Invoice</button>
         <div id="loader" class="loader"></div>
         <button type="button" class="btn btn-danger" style="float: right;" onclick="google.script.host.close()">Tutup</button>
       </div>
@@ -343,7 +343,7 @@
 
             if (response.success) {
               statusMsg.className = 'success';
-              statusMsg.innerHTML = 'Berhasil! ' + response.message + '<br><a href="' + response.url + '" target="_blank">Lihat PDF di Drive</a>';
+              statusMsg.innerHTML = 'Berhasil! ' + response.message + '<br>Gunakan menu "Proses PDF Invoice" untuk mencetaknya nanti.';
               document.getElementById('invoiceForm').reset();
               toggleTerminGroup(); // Reset tampilan
             } else {

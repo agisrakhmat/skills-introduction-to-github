@@ -12,13 +12,21 @@ Berikut adalah panduan lengkap bahasa Indonesia langkah-demi-langkah untuk menga
 3. Buka file `Code.gs` dari folder yang saya berikan, salin (**copy**) seluruh isi teks di dalamnya, lalu tempel (**paste**) ke dalam file `Code.gs` di Apps Script Anda.
 4. Jangan lupa simpan dengan mengklik icon Disket (Save project) atau menekan `Ctrl + S`.
 
-## Langkah 3: Membuat File Form (`Form.html`)
+## Langkah 3: Membuat File Antarmuka HTML (`Form.html` & `PdfForm.html`)
+Anda perlu membuat 2 file HTML.
+**File Pertama (Form Input):**
 1. Di layar Apps Script, pada panel sebelah kiri di bagian **Files** (File), klik tombol `+` (Add a file).
 2. Pilih **HTML**.
 3. Beri nama file baru tersebut dengan nama persis: **Form** (huruf F besar, tanpa tanda kutip, dan sistem akan otomatis menambahkan akhiran `.html`).
 4. Hapus teks bawaan yang ada di dalam kotak kode tersebut.
 5. Buka file `Form.html` dari folder yang saya berikan, salin (**copy**) seluruh isinya, lalu tempel (**paste**) ke dalam file `Form.html` di Apps Script Anda.
-6. Simpan kembali proyeknya (`Ctrl + S`).
+
+**File Kedua (Form Pemrosesan PDF):**
+1. Klik lagi tombol `+` (Add a file) dan pilih **HTML**.
+2. Beri nama file baru tersebut dengan nama: **PdfForm** (P dan F besar).
+3. Hapus teks bawaan yang ada.
+4. Buka file `PdfForm.html` yang saya berikan, salin seluruh isinya, dan tempel ke dalam file `PdfForm.html` di Apps Script Anda.
+5. Simpan proyeknya (`Ctrl + S`).
 
 ## Langkah 4: Menjalankan "Setup Awal"
 1. Kembali ke tab **Google Spreadsheet** Anda (tutup saja tab Apps Script jika sudah tersimpan).
@@ -35,17 +43,25 @@ Berikut adalah panduan lengkap bahasa Indonesia langkah-demi-langkah untuk menga
 7. Script akan mulai bekerja secara otomatis. Jika berhasil, akan muncul notifikasi "Setup Selesai!", dan Anda akan melihat 3 tab sheet baru muncul di bagian bawah:
    - **Data Invoice:** Tempat menyimpan semua ringkasan tagihan.
    - **Detail Item:** Tempat menyimpan rincian barang/layanan setiap invoice.
-   - **Template Invoice:** Template desain invoice Anda yang bisa Anda atur sedikit desainnya jika perlu (jangan ubah kata-kata yang di dalam tanda kurung kurawal `{{seperti_ini}}`).
+   - **Template Invoice:** Template desain invoice. Karena "Setup Awal" hanya perlu dijalankan sekali, Anda bisa bebas merombak/kustomisasi desain di Sheet "Template Invoice" ini (mengganti font, warna, menambah border, dll) selama Anda **TIDAK menghapus** kata-kata di dalam tanda kurung kurawal seperti `{{Klien}}` atau `{{NoInvoice}}`.
 
-## Langkah 5: Cara Menggunakan Sistem
-1. Untuk membuat tagihan baru, cukup klik menu **Sistem Invoice** > **Buat Invoice Baru**.
-2. Sebuah form popup akan muncul. Isi nama klien, proyek, rincian item layanan (bisa tambah banyak baris), pajak (isi angka saja tanpa tanda %), diskon, dll.
-3. Klik **Simpan & Buat PDF**.
+## Langkah 5: Cara Menggunakan Sistem (Alur 2 Tahap)
+Sistem ini memisahkan penginputan data dengan pembuatan PDF agar Anda lebih fleksibel.
+
+**Tahap 1: Memasukkan Data Invoice**
+1. Klik menu **Sistem Invoice** > **Buat Invoice Baru**.
+2. Isi form lengkap (klien, proyek, nilai proyek, tipe pembayaran/Termin/DP, rincian item layanan, pajak, diskon).
+3. Klik **Simpan Data Invoice**. Data akan tersimpan di Sheet `Data Invoice` dan rinciannya di `Detail Item`.
+4. Anda dapat memperbarui status pembayaran kapan saja langsung dari Sheet `Data Invoice` di kolom **Status** menggunakan Dropdown (Belum Dibayar, Sebagian, Lunas).
+
+**Tahap 2: Memproses Data Menjadi PDF (A4)**
+1. Setelah data tersimpan dan Template sudah Anda pastikan desainnya sesuai, klik menu **Sistem Invoice** > **Proses PDF Invoice**.
+2. Sebuah popup akan muncul menampilkan daftar nomor invoice yang **belum memiliki link PDF** di Sheet `Data Invoice`.
+3. Pilih nomor invoice tersebut lalu klik **Proses Jadi PDF (A4)**.
 4. Sistem akan otomatis:
-   - Menyimpan datanya di tab 'Data Invoice' dan 'Detail Item'.
-   - Memberi nomor tagihan berurutan (contoh: INV-202310-001).
-   - Memasukkan data ke template, menghitung total, diskon, dan pajak.
-   - Menghasilkan file PDF dan menyimpannya ke folder Google Drive khusus Anda.
-   - Menampilkan tautan/link PDF tersebut di popup form dan juga menempelkan link tersebut di Sheet 'Data Invoice'.
+   - Menyalin desain dari 'Template Invoice' yang sudah Anda kustomisasi.
+   - Mengisinya dengan data dari sheet.
+   - Mengubahnya menjadi file PDF ukuran A4 dan menyimpannya ke folder Google Drive Anda.
+   - Menempelkan Link PDF kembali ke baris invoice tersebut di kolom ujung kanan Sheet `Data Invoice`.
 
-Selesai! Sistem Anda siap digunakan.
+Selesai! Sistem Anda siap digunakan dan Template bebas Anda ubah-ubah tanpa khawatir.

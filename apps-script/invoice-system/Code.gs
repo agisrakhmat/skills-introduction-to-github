@@ -8,6 +8,7 @@ function onOpen() {
   ui.createMenu('Sistem Invoice')
       .addItem('Setup Awal (Buat Sheet)', 'setupSheets')
       .addItem('Buat Invoice Baru', 'showInvoiceForm')
+      .addItem('Proses PDF Invoice', 'showPdfForm')
       .addToUi();
 }
 
@@ -16,6 +17,121 @@ function showInvoiceForm() {
       .setWidth(800)
       .setHeight(850);
   SpreadsheetApp.getUi().showModalDialog(html, 'Buat Invoice Baru');
+}
+
+function showPdfForm() {
+  var html = HtmlService.createHtmlOutputFromFile('PdfForm')
+      .setWidth(400)
+      .setHeight(300);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Proses PDF Invoice');
+}
+
+function getPendingPdfInvoices() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetData = ss.getSheetByName('Data Invoice');
+  if (!sheetData) return [];
+
+  var lastRow = sheetData.getLastRow();
+  if (lastRow < 2) return [];
+
+  var data = sheetData.getRange(2, 1, lastRow - 1, 16).getValues();
+  var pending = [];
+
+  for (var i = 0; i < data.length; i++) {
+    // Index 0 adalah No Invoice, Index 2 adalah Klien, Index 15 adalah Link PDF
+    var noInvoice = data[i][0];
+    var klien = data[i][2];
+    var linkPdf = data[i][15];
+
+    // Jika tidak ada nomor invoice, lewati
+    if (!noInvoice) continue;
+
+    // Jika Link PDF kosong, masukkan ke daftar antrean
+    if (!linkPdf || linkPdf.toString().trim() === '') {
+      pending.push({
+        noInvoice: noInvoice,
+        klien: klien
+      });
+    }
+  }
+
+  return pending;
+}
+
+function processPdfGeneration(invNumber) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheetData = ss.getSheetByName('Data Invoice');
+    var sheetDetail = ss.getSheetByName('Detail Item');
+
+    if (!sheetData || !sheetDetail) {
+      return {success: false, message: 'Sheet belum dibuat.'};
+    }
+
+    // Cari data di Sheet 'Data Invoice'
+    var lastRowData = sheetData.getLastRow();
+    var dataValues = sheetData.getRange(2, 1, lastRowData - 1, 16).getValues();
+    var targetRowIndex = -1;
+    var invData = null;
+
+    for (var i = 0; i < dataValues.length; i++) {
+      if (dataValues[i][0] === invNumber) {
+        targetRowIndex = i + 2; // +2 karena mulai baris 2
+        invData = dataValues[i];
+        break;
+      }
+    }
+
+    if (!invData) {
+      return {success: false, message: 'Data Invoice tidak ditemukan.'};
+    }
+
+    // Ekstrak data utama
+    var tanggal = invData[1];
+    var klien = invData[2];
+    var proyek = invData[3];
+    var tipePembayaran = invData[4];
+    var nilaiProyek = invData[6];
+    var infoTermin = invData[7];
+    var subtotal = invData[8];
+    var pajakPersen = invData[9];
+    var nominalPajak = invData[10];
+    var diskon = invData[11];
+    var totalTagihan = invData[12];
+    var dibayar = invData[13];
+    var sisa = invData[14];
+
+    // Cari rincian item di Sheet 'Detail Item'
+    var lastRowDetail = sheetDetail.getLastRow();
+    var detailValues = sheetDetail.getRange(2, 1, lastRowDetail - 1, 6).getValues();
+    var items = [];
+
+    for (var j = 0; j < detailValues.length; j++) {
+      if (detailValues[j][0] === invNumber) {
+        items.push({
+          nama: detailValues[j][1],
+          deskripsi: detailValues[j][2],
+          qty: detailValues[j][3],
+          harga: detailValues[j][4]
+        });
+      }
+    }
+
+    // Buat PDF
+    var pdfUrl = createPdfFromTemplate(invNumber, tanggal, klien, proyek, tipePembayaran, nilaiProyek, infoTermin, items, subtotal, pajakPersen, nominalPajak, diskon, totalTagihan, dibayar, sisa);
+
+    if (pdfUrl.indexOf('Gagal') !== -1) {
+      return {success: false, message: pdfUrl};
+    }
+
+    // Update sel 'Link PDF' di 'Data Invoice' (Kolom P = 16)
+    sheetData.getRange(targetRowIndex, 16).setValue(pdfUrl);
+
+    return {success: true, url: pdfUrl};
+
+  } catch(e) {
+    return {success: false, message: e.toString()};
+  }
 }
 
 function setupSheets() {
@@ -208,16 +324,14 @@ function submitInvoiceData(data) {
       sheetDetail.getRange(sheetDetail.getLastRow() + 1, 1, detailRows.length, detailRows[0].length).setValues(detailRows);
     }
 
-    var pdfUrl = createPdfFromTemplate(invNumber, tanggal, data.klien, data.proyek, data.tipePembayaran, nilaiProyek, infoTermin, items, subtotal, pajakPersen, nominalPajak, diskon, totalTagihan, dibayar, sisa);
-
-    // Default status: 'Belum Dibayar'
+    // Alur PDF dipisahkan, cukup simpan data ke tabel. Link PDF (index 15) dibiarkan kosong.
     var invoiceRow = [
       invNumber, tanggal, data.klien, data.proyek, data.tipePembayaran, 'Belum Dibayar',
-      nilaiProyek, infoTermin, subtotal, pajakPersen, nominalPajak, diskon, totalTagihan, dibayar, sisa, pdfUrl
+      nilaiProyek, infoTermin, subtotal, pajakPersen, nominalPajak, diskon, totalTagihan, dibayar, sisa, ''
     ];
     sheetData.appendRow(invoiceRow);
 
-    return {success: true, message: 'Invoice berhasil dibuat!', url: pdfUrl};
+    return {success: true, message: 'Data Invoice berhasil disimpan! (Tanpa membuat PDF)'};
 
   } catch (e) {
     return {success: false, message: 'Terjadi kesalahan: ' + e.toString()};
