@@ -172,17 +172,18 @@ function setupSheets() {
 function setupTemplateDesign(sheet) {
   sheet.clear();
 
-  sheet.setColumnWidth(1, 30);
-  sheet.setColumnWidth(2, 50);  // No
-  sheet.setColumnWidth(3, 300); // Deskripsi
-  sheet.setColumnWidth(4, 50);  // Qty
-  sheet.setColumnWidth(5, 120); // Harga
-  sheet.setColumnWidth(6, 150); // Total
+  sheet.setColumnWidth(1, 15);  // A
+  sheet.setColumnWidth(2, 35);  // B (No)
+  sheet.setColumnWidth(3, 280); // C (Deskripsi)
+  sheet.setColumnWidth(4, 45);  // D (Qty)
+  sheet.setColumnWidth(5, 110); // E (Harga)
+  sheet.setColumnWidth(6, 140); // F (Total)
+  sheet.setColumnWidth(7, 15);  // G
 
   // Header
-  sheet.getRange('B2').setValue('INVOICE').setFontSize(24).setFontWeight('bold').setFontColor('#2a52be');
+  sheet.getRange('B2').setValue('INVOICE').setFontSize(22).setFontWeight('bold').setFontColor('#2a52be');
   sheet.getRange('F2').setFormula('=IMAGE("' + LOGO_URL + '")');
-  sheet.setRowHeight(2, 60);
+  sheet.setRowHeight(2, 50);
 
   sheet.getRange('B4').setValue('Kepada:').setFontWeight('bold');
   sheet.getRange('B5').setValue('{{Klien}}').setFontWeight('bold');
@@ -204,39 +205,39 @@ function setupTemplateDesign(sheet) {
   sheet.getRange('E8').setValue('Keterangan:').setHorizontalAlignment('right');
   sheet.getRange('F8').setValue('{{KetTermin}}');
 
-  // Items Table Header
+  // Items Table Header (Mulai Baris 10, Isi Item B11-B20 = 10 Baris Max)
   var itemHeaders = ['No', 'Rincian Penagihan', 'Qty', 'Harga Satuan', 'Total'];
   sheet.getRange('B10:F10').setValues([itemHeaders]).setFontWeight('bold').setBackground('#2a52be').setFontColor('white');
 
-  sheet.getRange('B11:F21').setBorder(true, true, true, true, true, true);
+  sheet.getRange('B11:F20').setBorder(true, true, true, true, true, true);
 
-  // Summary
-  sheet.getRange('E23').setValue('Subtotal Invoice:').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F23').setValue('{{Subtotal}}');
+  // Summary (Mulai Baris 21 agar padat)
+  sheet.getRange('E21').setValue('Subtotal Invoice:').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('F21').setValue('{{Subtotal}}');
 
-  sheet.getRange('E24').setValue('Pajak ({{PajakPersen}}%):').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F24').setValue('{{NominalPajak}}');
+  sheet.getRange('E22').setValue('Pajak ({{PajakPersen}}%):').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('F22').setValue('{{NominalPajak}}');
 
-  sheet.getRange('E25').setValue('Diskon:').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F25').setValue('{{Diskon}}');
+  sheet.getRange('E23').setValue('Diskon:').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('F23').setValue('{{Diskon}}');
 
-  sheet.getRange('E26').setValue('Total Tagihan Ini:').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F26').setValue('{{TotalTagihan}}').setFontWeight('bold').setBackground('#fff2cc');
+  sheet.getRange('E24').setValue('Total Tagihan Ini:').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('F24').setValue('{{TotalTagihan}}').setFontWeight('bold').setBackground('#fff2cc');
 
-  sheet.getRange('E27').setValue('Sudah Dibayar:').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F27').setValue('{{Dibayar}}');
+  sheet.getRange('E25').setValue('Sudah Dibayar:').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('F25').setValue('{{Dibayar}}');
 
-  sheet.getRange('E28').setValue('Sisa Tagihan Ini:').setFontWeight('bold').setHorizontalAlignment('right');
-  sheet.getRange('F28').setValue('{{Sisa}}').setFontWeight('bold').setFontColor('red');
+  sheet.getRange('E26').setValue('Sisa Tagihan Ini:').setFontWeight('bold').setHorizontalAlignment('right');
+  sheet.getRange('F26').setValue('{{Sisa}}').setFontWeight('bold').setFontColor('red');
 
-  // Informasi Dana
-  sheet.getRange('B30').setValue('Informasi Pembayaran / Transfer:').setFontWeight('bold');
-  sheet.getRange('B31').setValue('Bank: [Nama Bank Anda]');
-  sheet.getRange('B32').setValue('No. Rekening: [Nomor Rekening Anda]');
-  sheet.getRange('B33').setValue('Atas Nama: [Nama Anda/Perusahaan]');
+  // Informasi Dana (Pas Berakhir di Baris 30)
+  sheet.getRange('B27').setValue('Informasi Pembayaran / Transfer:').setFontWeight('bold');
+  sheet.getRange('B28').setValue('Bank: [Nama Bank Anda]');
+  sheet.getRange('B29').setValue('No. Rekening: [Nomor Rekening Anda]');
+  sheet.getRange('B30').setValue('Atas Nama: [Nama Anda/Perusahaan]');
 
   // Formats
-  sheet.getRangeList(['F6', 'E11:F21', 'F23:F28']).setNumberFormat('"Rp" #,##0');
+  sheet.getRangeList(['F6', 'E11:F20', 'F21:F26']).setNumberFormat('"Rp" #,##0');
 }
 
 function generateInvoiceNumber() {
@@ -280,7 +281,10 @@ function submitInvoiceData(data) {
     }
 
     var invNumber = generateInvoiceNumber();
-    var tanggal = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM/yyyy");
+
+    var tglDate = new Date();
+    var blnIndo = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    var tanggal = tglDate.getDate() + ' ' + blnIndo[tglDate.getMonth()] + ' ' + tglDate.getFullYear();
 
     var subtotal = 0;
     var items = data.items;
@@ -386,27 +390,35 @@ function createPdfFromTemplate(invNumber, tanggal, klien, proyek, tipePembayaran
     }
 
     var startRow = 11;
-    for (var i = 0; i < items.length; i++) {
+    // Maksimal item diset ke 10 agar format tidak melewati A1:G30
+    var maxItems = Math.min(items.length, 10);
+
+    for (var i = 0; i < maxItems; i++) {
       var itemRow = startRow + i;
-      if (itemRow <= 21) {
-        copiedSheet.getRange('B' + itemRow).setValue(i + 1);
-        copiedSheet.getRange('C' + itemRow).setValue(items[i].nama + (items[i].deskripsi ? ' - ' + items[i].deskripsi : ''));
-        copiedSheet.getRange('D' + itemRow).setValue(items[i].qty);
-        copiedSheet.getRange('E' + itemRow).setValue(items[i].harga);
-        copiedSheet.getRange('F' + itemRow).setValue(items[i].qty * items[i].harga);
-      } else {
-        copiedSheet.insertRowBefore(itemRow);
-        copiedSheet.getRange('B' + itemRow).setValue(i + 1);
-        copiedSheet.getRange('C' + itemRow).setValue(items[i].nama + (items[i].deskripsi ? ' - ' + items[i].deskripsi : ''));
-        copiedSheet.getRange('D' + itemRow).setValue(items[i].qty);
-        copiedSheet.getRange('E' + itemRow).setValue(items[i].harga);
-        copiedSheet.getRange('F' + itemRow).setValue(items[i].qty * items[i].harga);
-      }
+      copiedSheet.getRange('B' + itemRow).setValue(i + 1);
+      copiedSheet.getRange('C' + itemRow).setValue(items[i].nama + (items[i].deskripsi ? ' - ' + items[i].deskripsi : ''));
+      copiedSheet.getRange('D' + itemRow).setValue(items[i].qty);
+      copiedSheet.getRange('E' + itemRow).setValue(items[i].harga);
+      copiedSheet.getRange('F' + itemRow).setValue(items[i].qty * items[i].harga);
     }
 
-    for (var j = items.length; j < 11; j++) {
+    // Bersihkan baris sisa jika item kurang dari 10
+    for (var j = maxItems; j < 10; j++) {
        var emptyRow = startRow + j;
        copiedSheet.getRange('B' + emptyRow + ':F' + emptyRow).clearContent();
+    }
+
+    // PAKSA UKURAN A1:G30
+    // Hapus baris sisa ke bawah (mulai dari baris 31)
+    var maxRows = copiedSheet.getMaxRows();
+    if (maxRows > 30) {
+      copiedSheet.deleteRows(31, maxRows - 30);
+    }
+
+    // Hapus kolom sisa ke samping (mulai dari kolom H/Index 8)
+    var maxCols = copiedSheet.getMaxColumns();
+    if (maxCols > 7) {
+      copiedSheet.deleteColumns(8, maxCols - 7);
     }
 
     SpreadsheetApp.flush();
@@ -414,13 +426,17 @@ function createPdfFromTemplate(invNumber, tanggal, klien, proyek, tipePembayaran
     // 5. Buat PDF dari Spreadsheet Sementara
     var pdfName = 'Invoice_' + invNumber + '_' + klien + '.pdf';
     var url = tempSs.getUrl();
+
+    // &scale=4 (Fit to Page) - Memaksa agar A1:G30 diprint 1 lembar utuh
     var exportUrl = url.replace(/\/edit.*$/, '') + '/export?exportFormat=pdf&format=pdf' +
       '&size=A4' +
       '&portrait=true' +
       '&fitw=true' +
+      '&scale=4' +
       '&sheetnames=false&printtitle=false&pagenumbers=false' +
       '&gridlines=false' +
       '&fzr=false' +
+      '&top_margin=0.5&bottom_margin=0.5&left_margin=0.5&right_margin=0.5' +
       '&gid=' + copiedSheet.getSheetId();
 
     var token = ScriptApp.getOAuthToken();
