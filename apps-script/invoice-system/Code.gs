@@ -341,97 +341,123 @@ function submitInvoiceData(data) {
 function createPdfFromTemplate(invNumber, tanggal, klien, proyek, tipePembayaran, nilaiProyek, infoTermin, items, subtotal, pajakPersen, nominalPajak, diskon, totalTagihan, dibayar, sisa) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheetTemplate = ss.getSheetByName('Template Invoice');
+  var tempSs = null;
 
   if (!sheetTemplate) {
       throw new Error("Sheet Template Invoice tidak ditemukan.");
   }
 
-  var tempSheet = sheetTemplate.copyTo(ss);
-  tempSheet.setName('Temp_' + invNumber);
-
-  var dataMap = {
-    '{{Klien}}': klien,
-    '{{Proyek}}': proyek,
-    '{{NoInvoice}}': invNumber,
-    '{{Tanggal}}': tanggal,
-    '{{NilaiProyek}}': nilaiProyek,
-    '{{TipePembayaran}}': tipePembayaran,
-    '{{KetTermin}}': infoTermin,
-    '{{Subtotal}}': subtotal,
-    '{{PajakPersen}}': pajakPersen,
-    '{{NominalPajak}}': nominalPajak,
-    '{{Diskon}}': diskon,
-    '{{TotalTagihan}}': totalTagihan,
-    '{{Dibayar}}': dibayar,
-    '{{Sisa}}': sisa
-  };
-
-  for (var key in dataMap) {
-    tempSheet.createTextFinder(key).replaceAllWith(dataMap[key].toString());
-  }
-
-  var startRow = 11;
-  for (var i = 0; i < items.length; i++) {
-    var itemRow = startRow + i;
-    if (itemRow <= 21) {
-      tempSheet.getRange('B' + itemRow).setValue(i + 1);
-      tempSheet.getRange('C' + itemRow).setValue(items[i].nama + (items[i].deskripsi ? ' - ' + items[i].deskripsi : ''));
-      tempSheet.getRange('D' + itemRow).setValue(items[i].qty);
-      tempSheet.getRange('E' + itemRow).setValue(items[i].harga);
-      tempSheet.getRange('F' + itemRow).setValue(items[i].qty * items[i].harga);
-    } else {
-      tempSheet.insertRowBefore(itemRow);
-      tempSheet.getRange('B' + itemRow).setValue(i + 1);
-      tempSheet.getRange('C' + itemRow).setValue(items[i].nama + (items[i].deskripsi ? ' - ' + items[i].deskripsi : ''));
-      tempSheet.getRange('D' + itemRow).setValue(items[i].qty);
-      tempSheet.getRange('E' + itemRow).setValue(items[i].harga);
-      tempSheet.getRange('F' + itemRow).setValue(items[i].qty * items[i].harga);
-    }
-  }
-
-  for (var j = items.length; j < 11; j++) {
-     var emptyRow = startRow + j;
-     tempSheet.getRange('B' + emptyRow + ':F' + emptyRow).clearContent();
-  }
-
-  SpreadsheetApp.flush();
-
-  var folder = DriveApp.getFolderById(FOLDER_ID);
-  var pdfName = 'Invoice_' + invNumber + '_' + klien + '.pdf';
-
-  var url = ss.getUrl();
-  var exportUrl = url.replace(/\/edit.*$/, '') + '/export?exportFormat=pdf&format=pdf' +
-    '&size=A4' +
-    '&portrait=true' +
-    '&fitw=true' +
-    '&sheetnames=false&printtitle=false&pagenumbers=false' +
-    '&gridlines=false' +
-    '&fzr=false' +
-    '&gid=' + tempSheet.getSheetId();
-
-  var token = ScriptApp.getOAuthToken();
-  var options = {
-    headers: {
-      'Authorization': 'Bearer ' + token
-    },
-    muteHttpExceptions: true
-  };
-
   try {
-    var response = UrlFetchApp.fetch(exportUrl, options);
-    if (response.getResponseCode() === 200) {
-      var blob = response.getBlob().setName(pdfName);
-      var file = folder.createFile(blob);
-      return file.getUrl();
-    } else {
-      return 'Gagal_Membuat_PDF';
+    // 1. Buat Spreadsheet sementara BARU (kosong dan terpisah dari utama untuk hindari error Bandwidth)
+    var folder = DriveApp.getFolderById(FOLDER_ID);
+    tempSs = SpreadsheetApp.create('Temp_Invoice_' + invNumber);
+    var tempFile = DriveApp.getFileById(tempSs.getId());
+
+    // 2. Copy template dari Spreadsheet utama ke Spreadsheet sementara
+    var copiedSheet = sheetTemplate.copyTo(tempSs);
+    copiedSheet.setName('Invoice');
+
+    // 3. Hapus "Sheet1" bawaan dari Spreadsheet sementara
+    var defaultSheet = tempSs.getSheetByName('Sheet1');
+    if (defaultSheet) {
+      tempSs.deleteSheet(defaultSheet);
     }
+
+    // 4. Masukkan data ke Spreadsheet sementara
+    var dataMap = {
+      '{{Klien}}': klien,
+      '{{Proyek}}': proyek,
+      '{{NoInvoice}}': invNumber,
+      '{{Tanggal}}': tanggal,
+      '{{NilaiProyek}}': nilaiProyek,
+      '{{TipePembayaran}}': tipePembayaran,
+      '{{KetTermin}}': infoTermin,
+      '{{Subtotal}}': subtotal,
+      '{{PajakPersen}}': pajakPersen,
+      '{{NominalPajak}}': nominalPajak,
+      '{{Diskon}}': diskon,
+      '{{TotalTagihan}}': totalTagihan,
+      '{{Dibayar}}': dibayar,
+      '{{Sisa}}': sisa
+    };
+
+    for (var key in dataMap) {
+      copiedSheet.createTextFinder(key).replaceAllWith(dataMap[key].toString());
+    }
+
+    var startRow = 11;
+    for (var i = 0; i < items.length; i++) {
+      var itemRow = startRow + i;
+      if (itemRow <= 21) {
+        copiedSheet.getRange('B' + itemRow).setValue(i + 1);
+        copiedSheet.getRange('C' + itemRow).setValue(items[i].nama + (items[i].deskripsi ? ' - ' + items[i].deskripsi : ''));
+        copiedSheet.getRange('D' + itemRow).setValue(items[i].qty);
+        copiedSheet.getRange('E' + itemRow).setValue(items[i].harga);
+        copiedSheet.getRange('F' + itemRow).setValue(items[i].qty * items[i].harga);
+      } else {
+        copiedSheet.insertRowBefore(itemRow);
+        copiedSheet.getRange('B' + itemRow).setValue(i + 1);
+        copiedSheet.getRange('C' + itemRow).setValue(items[i].nama + (items[i].deskripsi ? ' - ' + items[i].deskripsi : ''));
+        copiedSheet.getRange('D' + itemRow).setValue(items[i].qty);
+        copiedSheet.getRange('E' + itemRow).setValue(items[i].harga);
+        copiedSheet.getRange('F' + itemRow).setValue(items[i].qty * items[i].harga);
+      }
+    }
+
+    for (var j = items.length; j < 11; j++) {
+       var emptyRow = startRow + j;
+       copiedSheet.getRange('B' + emptyRow + ':F' + emptyRow).clearContent();
+    }
+
+    SpreadsheetApp.flush();
+
+    // 5. Buat PDF dari Spreadsheet Sementara
+    var pdfName = 'Invoice_' + invNumber + '_' + klien + '.pdf';
+    var url = tempSs.getUrl();
+    var exportUrl = url.replace(/\/edit.*$/, '') + '/export?exportFormat=pdf&format=pdf' +
+      '&size=A4' +
+      '&portrait=true' +
+      '&fitw=true' +
+      '&sheetnames=false&printtitle=false&pagenumbers=false' +
+      '&gridlines=false' +
+      '&fzr=false' +
+      '&gid=' + copiedSheet.getSheetId();
+
+    var token = ScriptApp.getOAuthToken();
+    var options = {
+      headers: {
+        'Authorization': 'Bearer ' + token
+      },
+      muteHttpExceptions: true
+    };
+
+    var response = UrlFetchApp.fetch(exportUrl, options);
+    var blob;
+
+    // Cek sukses, jika limit bandwidth URLFetch kena lagi, gunakan metode Fallback 'getAs'
+    if (response.getResponseCode() === 200) {
+      blob = response.getBlob().setName(pdfName);
+    } else {
+      // Fallback: Gunakan Drive API langsung (tidak peduli ukuran file, selalu anti limit)
+      // Ini akan mengambil SELURUH spreadsheet, tapi karena hanya ada 1 sheet maka hasilnya sempurna.
+      blob = tempFile.getAs('application/pdf').setName(pdfName);
+    }
+
+    var file = folder.createFile(blob);
+    return file.getUrl();
+
   } catch (e) {
     return 'Gagal_Membuat_PDF: ' + e.toString();
   } finally {
-    // Pastikan sheet temporary selalu dihapus, bahkan jika terjadi error
-    if (tempSheet) {
-      ss.deleteSheet(tempSheet);
+    // 6. Pastikan file Spreadsheet sementara selalu dihapus dari Drive root Anda,
+    // agar Google Drive tidak penuh dengan file sampah
+    if (tempSs) {
+      try {
+        var fileToDelete = DriveApp.getFileById(tempSs.getId());
+        fileToDelete.setTrashed(true);
+      } catch(delErr) {
+        // Abaikan jika sudah terhapus
+      }
     }
   }
 }
