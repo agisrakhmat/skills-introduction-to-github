@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background-color: #f4f7f6;
+      }
+      h2 {
+        color: #333;
+        border-bottom: 2px solid #2a52be;
+        padding-bottom: 10px;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #555;
+      }
+      input[type="text"], input[type="number"], select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      .row {
+        display: flex;
+        gap: 15px;
+      }
+      .col {
+        flex: 1;
+      }
+      .item-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        align-items: center;
+        background-color: #fff;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+      }
+      .item-row input[type="text"], .item-row input[type="number"] {
+        width: 100%;
+      }
+      .btn {
+        background-color: #2a52be;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+      }
+      .btn:hover {
+        background-color: #1a367d;
+      }
+      .btn-danger {
+        background-color: #dc3545;
+      }
+      .btn-danger:hover {
+        background-color: #c82333;
+      }
+      .btn-add {
+        background-color: #28a745;
+        margin-bottom: 15px;
+      }
+      .btn-add:hover {
+        background-color: #218838;
+      }
+      #items-container {
+        margin-top: 10px;
+        margin-bottom: 20px;
+      }
+      .section-title {
+        margin-top: 25px;
+        margin-bottom: 15px;
+        font-weight: bold;
+        color: #333;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 5px;
+      }
+      #status-message {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 4px;
+        display: none;
+      }
+      .success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+      .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #2a52be;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        vertical-align: middle;
+        margin-left: 10px;
+        display: none;
+      }
+      #termin-group {
+        display: none;
+        background-color: #e9ecef;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Buat Invoice Baru</h2>
+    <form id="invoiceForm" onsubmit="submitForm(event)">
+
+      <div class="row">
+        <div class="form-group col">
+          <label for="klien">Nama Klien / Perusahaan</label>
+          <input type="text" id="klien" name="klien" required>
+        </div>
+        <div class="form-group col">
+          <label for="proyek">Nama Proyek</label>
+          <input type="text" id="proyek" name="proyek" required>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="form-group col">
+          <label for="tipePembayaran">Tipe Pembayaran (Lunas/DP/Termin)</label>
+          <select id="tipePembayaran" name="tipePembayaran" onchange="toggleTerminGroup()">
+            <option value="Lunas">Lunas (100%)</option>
+            <option value="DP">Down Payment (DP)</option>
+            <option value="Termin">Termin (Cicilan)</option>
+            <option value="Bulanan">Bulanan / Retainer</option>
+          </select>
+        </div>
+        <div class="form-group col">
+          <label for="nilaiProyek">Nilai Keseluruhan Proyek (Rp)</label>
+          <input type="number" id="nilaiProyek" name="nilaiProyek" min="0" required>
+        </div>
+      </div>
+
+      <!-- Grup input khusus DP/Termin -->
+      <div id="termin-group">
+        <div class="row">
+          <div class="form-group col" id="keteranganTerminDiv">
+            <label for="keteranganTermin">Keterangan (Misal: Termin 1 / DP 50%)</label>
+            <input type="text" id="keteranganTermin" name="keteranganTermin" placeholder="Contoh: Pembayaran DP 50%">
+          </div>
+          <div class="form-group col">
+            <label for="persentaseTagihan">Persentase Tagihan Ini (%)</label>
+            <input type="number" id="persentaseTagihan" name="persentaseTagihan" value="0" min="0" max="100" step="0.1" oninput="hitungOtomatisTagihan()">
+          </div>
+          <div class="form-group col">
+            <label for="nominalTargetTagihan">Target Tagihan (Rp)</label>
+            <input type="number" id="nominalTargetTagihan" name="nominalTargetTagihan" value="0" readonly style="background-color: #f0f0f0;">
+          </div>
+        </div>
+        <small style="color: #666;"><i>* Target Tagihan akan dihitung otomatis dari (Nilai Proyek × Persentase). Pastikan Total Rincian Item di bawah ini sesuai dengan Target Tagihan.</i></small>
+      </div>
+
+      <div class="section-title">Rincian Item Penagihan (Sesuai Termin/DP saat ini)</div>
+      <div id="items-container">
+        <div class="item-row">
+          <div style="flex: 2;">
+            <input type="text" class="item-nama" placeholder="Nama Item / Pekerjaan" required>
+          </div>
+          <div style="flex: 2;">
+            <input type="text" class="item-deskripsi" placeholder="Deskripsi (Opsional)">
+          </div>
+          <div style="flex: 1;">
+            <input type="number" class="item-qty" placeholder="Qty" value="1" min="1" step="0.01" required>
+          </div>
+          <div style="flex: 2;">
+            <input type="number" class="item-harga" placeholder="Harga Satuan" min="0" required>
+          </div>
+          <div>
+            <button type="button" class="btn btn-danger" onclick="removeItem(this)">Hapus</button>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="btn btn-add" onclick="addItem()">+ Tambah Item Lain</button>
+
+      <div class="section-title">Tambahan & Potongan</div>
+      <div class="row">
+        <div class="form-group col">
+          <label for="pajak">Pajak PPN (%)</label>
+          <input type="number" id="pajak" name="pajak" value="0" min="0" max="100" step="0.1">
+        </div>
+        <div class="form-group col">
+          <label for="diskon">Diskon (Nominal Rp)</label>
+          <input type="number" id="diskon" name="diskon" value="0" min="0">
+        </div>
+        <div class="form-group col">
+          <label for="dibayar">Sudah Dibayar (Rp)</label>
+          <input type="number" id="dibayar" name="dibayar" value="0" min="0">
+        </div>
+      </div>
+
+      <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
+
+      <div>
+        <button type="submit" class="btn" id="submitBtn">Simpan Data Invoice</button>
+        <div id="loader" class="loader"></div>
+        <button type="button" class="btn btn-danger" style="float: right;" onclick="google.script.host.close()">Tutup</button>
+      </div>
+    </form>
+
+    <div id="status-message"></div>
+
+    <script>
+      function toggleTerminGroup() {
+        var tipe = document.getElementById('tipePembayaran').value;
+        var group = document.getElementById('termin-group');
+        var ketTermin = document.getElementById('keteranganTermin');
+
+        if (tipe === 'DP' || tipe === 'Termin') {
+          group.style.display = 'block';
+          if (tipe === 'DP') {
+             ketTermin.placeholder = "Contoh: Pembayaran DP 50%";
+          } else {
+             ketTermin.placeholder = "Contoh: Termin 1 / Termin Ke-2";
+          }
+        } else {
+          group.style.display = 'none';
+          document.getElementById('persentaseTagihan').value = 0;
+          document.getElementById('nominalTargetTagihan').value = 0;
+          document.getElementById('keteranganTermin').value = "";
+        }
+      }
+
+      function hitungOtomatisTagihan() {
+        var nilaiProyek = parseFloat(document.getElementById('nilaiProyek').value) || 0;
+        var persen = parseFloat(document.getElementById('persentaseTagihan').value) || 0;
+        var target = nilaiProyek * (persen / 100);
+        document.getElementById('nominalTargetTagihan').value = target;
+      }
+
+      document.getElementById('nilaiProyek').addEventListener('input', hitungOtomatisTagihan);
+
+      function addItem() {
+        var container = document.getElementById('items-container');
+        var row = document.createElement('div');
+        row.className = 'item-row';
+        row.innerHTML = `
+          <div style="flex: 2;">
+            <input type="text" class="item-nama" placeholder="Nama Item / Pekerjaan" required>
+          </div>
+          <div style="flex: 2;">
+            <input type="text" class="item-deskripsi" placeholder="Deskripsi (Opsional)">
+          </div>
+          <div style="flex: 1;">
+            <input type="number" class="item-qty" placeholder="Qty" value="1" min="1" step="0.01" required>
+          </div>
+          <div style="flex: 2;">
+            <input type="number" class="item-harga" placeholder="Harga Satuan" min="0" required>
+          </div>
+          <div>
+            <button type="button" class="btn btn-danger" onclick="removeItem(this)">Hapus</button>
+          </div>
+        `;
+        container.appendChild(row);
+      }
+
+      function removeItem(button) {
+        var row = button.parentNode.parentNode;
+        var container = document.getElementById('items-container');
+        if (container.children.length > 1) {
+          container.removeChild(row);
+        } else {
+          alert('Minimal harus ada satu rincian item penagihan.');
+        }
+      }
+
+      function submitForm(event) {
+        event.preventDefault();
+
+        var submitBtn = document.getElementById('submitBtn');
+        var loader = document.getElementById('loader');
+        var statusMsg = document.getElementById('status-message');
+
+        submitBtn.disabled = true;
+        loader.style.display = 'inline-block';
+        statusMsg.style.display = 'none';
+        statusMsg.className = '';
+
+        // Kumpulkan data items
+        var items = [];
+        var itemRows = document.getElementsByClassName('item-row');
+        for (var i = 0; i < itemRows.length; i++) {
+          var nama = itemRows[i].querySelector('.item-nama').value;
+          var deskripsi = itemRows[i].querySelector('.item-deskripsi').value;
+          var qty = itemRows[i].querySelector('.item-qty').value;
+          var harga = itemRows[i].querySelector('.item-harga').value;
+
+          if (nama && qty && harga) {
+            items.push({
+              nama: nama,
+              deskripsi: deskripsi,
+              qty: parseFloat(qty),
+              harga: parseFloat(harga)
+            });
+          }
+        }
+
+        var formData = {
+          klien: document.getElementById('klien').value,
+          proyek: document.getElementById('proyek').value,
+          tipePembayaran: document.getElementById('tipePembayaran').value,
+          nilaiProyek: parseFloat(document.getElementById('nilaiProyek').value) || 0,
+          keteranganTermin: document.getElementById('keteranganTermin').value,
+          persentaseTagihan: parseFloat(document.getElementById('persentaseTagihan').value) || 0,
+          pajak: parseFloat(document.getElementById('pajak').value) || 0,
+          diskon: parseFloat(document.getElementById('diskon').value) || 0,
+          dibayar: parseFloat(document.getElementById('dibayar').value) || 0,
+          items: items
+        };
+
+        google.script.run
+          .withSuccessHandler(function(response) {
+            submitBtn.disabled = false;
+            loader.style.display = 'none';
+            statusMsg.style.display = 'block';
+
+            if (response.success) {
+              statusMsg.className = 'success';
+              statusMsg.innerHTML = 'Berhasil! ' + response.message + '<br>Gunakan menu "Proses PDF Invoice" untuk mencetaknya nanti.';
+              document.getElementById('invoiceForm').reset();
+              toggleTerminGroup(); // Reset tampilan
+            } else {
+              statusMsg.className = 'error';
+              statusMsg.textContent = 'Gagal: ' + response.message;
+            }
+          })
+          .withFailureHandler(function(error) {
+            submitBtn.disabled = false;
+            loader.style.display = 'none';
+            statusMsg.style.display = 'block';
+            statusMsg.className = 'error';
+            statusMsg.textContent = 'Terjadi kesalahan sistem: ' + error.message;
+          })
+          .submitInvoiceData(formData);
+      }
+    </script>
+  </body>
+</html>
