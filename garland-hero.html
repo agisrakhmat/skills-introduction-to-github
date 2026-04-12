@@ -1,6 +1,6 @@
 <!--
   ============================================
-  GARLAND BARNVILLE — Widget Hero (Fixed v4 - Stable Grid)
+  GARLAND BARNVILLE — Widget Hero (Fixed v5 - Padding, Left Align, Text Animation)
   ============================================
 -->
 <style>
@@ -111,6 +111,39 @@
   text-shadow: none;
 }
 
+/* ── ANIMASI KATA "Ketenangan", "Keseruan", "Kenangan", "Mood" ── */
+.gb-hero__title-dynamic {
+  display: inline-flex;
+  flex-direction: column;
+  height: 1.2em; /* Sesuaikan dengan line-height dari title */
+  overflow: hidden;
+  vertical-align: bottom;
+  text-align: left;
+}
+
+.gb-hero__title-dynamic-inner {
+  display: flex;
+  flex-direction: column;
+  animation: gb-rollWords 8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.gb-hero__title-dynamic-inner span {
+  display: block;
+  height: 1.2em;
+  line-height: 1.2em;
+  padding: 0 0.1em;
+}
+
+/* 4 kata + 1 duplikat kata pertama untuk loop halus (Total 5 elemen)
+   Ketenangan -> Keseruan -> Kenangan -> Mood -> Ketenangan */
+@keyframes gb-rollWords {
+  0%, 15%   { transform: translateY(0); }             /* Ketenangan */
+  25%, 40%  { transform: translateY(-1.2em); }        /* Keseruan */
+  50%, 65%  { transform: translateY(-2.4em); }        /* Kenangan */
+  75%, 90%  { transform: translateY(-3.6em); }        /* Mood */
+  100%      { transform: translateY(-4.8em); }        /* Ketenangan (loop back) */
+}
+
 .gb-hero__subtitle {
   font-family: 'Poppins', sans-serif;
   font-size: clamp(0.9rem, 1.8vw, 1.1rem);
@@ -160,7 +193,7 @@
   justify-content: center;
   gap: 0.75rem;
   flex-wrap: wrap;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
   opacity: 0;
   animation: gb-fadeInUp 0.8s ease-out 0.7s forwards;
 }
@@ -192,7 +225,7 @@
   border: 1px solid rgba(255,255,255,0.18);
   border-top-color: rgba(255,255,255,0.28);
   border-radius: 16px;
-  padding: 1.25rem 1.5rem 1.5rem;
+  padding: 2rem; /* Ditambah agar lebih lega */
   box-shadow: 0 24px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1);
   opacity: 0;
   animation: gb-fadeInUp 0.8s ease-out 0.8s forwards;
@@ -201,17 +234,18 @@
 .gb-search__header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1.25rem;
-  padding-bottom: 1rem;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
   border-bottom: 1px solid rgba(255,255,255,0.1);
+  text-align: left; /* Rata Kiri */
 }
 .gb-search__header-icon {
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
   background: #C47A2D;
-  border-radius: 8px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -220,14 +254,19 @@
   overflow: hidden;
 }
 .gb-search__header-icon svg {
-  width: 18px !important;
-  height: 18px !important;
+  width: 20px !important;
+  height: 20px !important;
   color: #fff;
   flex-shrink: 0;
   display: block;
 }
+.gb-search__header-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
 .gb-search__header-text {
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: rgba(255,253,249,0.95);
   letter-spacing: 0.6px;
@@ -235,10 +274,10 @@
   text-shadow: 0 1px 4px rgba(0,0,0,0.4);
 }
 .gb-search__header-sub {
-  font-size: 0.7rem;
-  color: rgba(255,253,249,0.5);
+  font-size: 0.75rem;
+  color: rgba(255,253,249,0.6);
   font-weight: 400;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -256,7 +295,7 @@
 .gb-search form.mphb_sc_search-form {
   display: grid !important;
   grid-template-columns: repeat(4, 1fr) !important;
-  column-gap: 1rem !important;
+  column-gap: 1.5rem !important; /* Diperlebar agar tidak mepet */
   row-gap: 0 !important;
   align-items: end !important;
   margin: 0 !important;
@@ -288,12 +327,12 @@
   grid-row: 1 !important;
   flex-direction: row !important;
   align-self: start !important;
-  padding: 0 0 0.5rem 0.1rem !important;
+  padding: 0 0 1rem 0.1rem !important; /* Tambah padding bawah untuk hint */
   font-family: 'Poppins', sans-serif !important;
-  font-size: 0.6rem !important;
+  font-size: 0.65rem !important;
   font-style: italic !important;
   font-weight: 400 !important;
-  color: rgba(255,253,249,0.42) !important;
+  color: rgba(255,253,249,0.45) !important;
   text-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
   line-height: 1.4 !important;
   background: transparent !important;
@@ -301,10 +340,10 @@
 .gb-search form.mphb_sc_search-form p.mphb-required-fields-hint *,
 .gb-search form.mphb_sc_search-form p:first-child:not([class*="mphb_sc_search-"]) * {
   background: transparent !important;
-  color: rgba(255,253,249,0.42) !important;
+  color: rgba(255,253,249,0.45) !important;
   text-decoration: none !important;
   box-shadow: none !important;
-  font-size: 0.6rem !important;
+  font-size: 0.65rem !important;
   font-style: italic !important;
 }
 
@@ -325,14 +364,14 @@
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
-  padding-top: 1rem !important;
+  padding-top: 1.75rem !important; /* Jarak antara kolom input dan tombol diperbesar */
   margin: 0 !important;
 }
 
 /* ── Label tiap field ── */
 .gb-search form.mphb_sc_search-form label {
   font-family: 'Poppins', sans-serif !important;
-  font-size: 0.66rem !important;
+  font-size: 0.7rem !important;
   font-weight: 700 !important;
   color: rgba(255,253,249,0.9) !important;
   text-transform: uppercase !important;
@@ -340,7 +379,7 @@
   text-shadow: 0 1px 3px rgba(0,0,0,0.55), 0 0 10px rgba(0,0,0,0.3) !important;
   display: block !important;
   text-align: left !important;
-  padding: 0 0.2rem 0.45rem 0.2rem !important;
+  padding: 0 0.2rem 0.6rem 0.2rem !important; /* Jarak antara label dan input */
   margin: 0 !important;
   width: 100% !important;
 }
@@ -350,15 +389,15 @@
 .gb-search form.mphb_sc_search-form input[type="date"],
 .gb-search form.mphb_sc_search-form select {
   width: 100% !important;
-  height: 46px !important;
+  height: 50px !important; /* Diperbesar sedikit agar lega */
   padding: 0 1rem !important;
   font-family: 'Poppins', sans-serif !important;
-  font-size: 0.88rem !important;
+  font-size: 0.9rem !important;
   font-weight: 500 !important;
   color: #1A1410 !important;
   background: rgba(255,255,255,0.92) !important;
   border: 1.5px solid rgba(255,255,255,0.45) !important;
-  border-radius: 10px !important;
+  border-radius: 12px !important;
   outline: none !important;
   box-shadow: none !important;
   -webkit-appearance: none !important;
@@ -389,15 +428,15 @@
 /* ── Tombol Search ── */
 .gb-search form.mphb_sc_search-form input[type="submit"],
 .gb-search form.mphb_sc_search-form button[type="submit"] {
-  height: 46px !important;
-  padding: 0 3rem !important;
+  height: 50px !important;
+  padding: 0 3.5rem !important;
   width: auto !important;
   background: #C47A2D !important;
   color: #fff !important;
   border: none !important;
-  border-radius: 10px !important;
+  border-radius: 12px !important;
   font-family: 'Poppins', sans-serif !important;
-  font-size: 0.92rem !important;
+  font-size: 0.95rem !important;
   font-weight: 700 !important;
   cursor: pointer !important;
   letter-spacing: 0.5px !important;
@@ -454,6 +493,7 @@
 @media (max-width: 900px) {
   .gb-search form.mphb_sc_search-form {
     grid-template-columns: repeat(2, 1fr) !important;
+    row-gap: 1rem !important; /* Beri gap vertikal antar field di tablet */
   }
   .gb-search form.mphb_sc_search-form p.mphb_sc_search-check-in-date,
   .gb-search form.mphb_sc_search-form p.mphb_sc_search-check-out-date { grid-row: 2 !important; }
@@ -471,9 +511,10 @@
   .gb-hero__content { padding: 2rem 1rem 1.5rem; }
   .gb-hero__info { gap: 0.5rem; }
   .gb-hero__info-item { font-size: 0.7rem; padding: 0.4rem 0.7rem; }
-  .gb-search { padding: 1rem 1rem 1.2rem; }
+  .gb-search { padding: 1.5rem 1.25rem; }
   .gb-search form.mphb_sc_search-form {
     grid-template-columns: 1fr !important;
+    row-gap: 1rem !important;
   }
   .gb-search form.mphb_sc_search-form p.mphb_sc_search-check-in-date,
   .gb-search form.mphb_sc_search-form p.mphb_sc_search-check-out-date,
@@ -508,7 +549,17 @@
     </div>
 
     <h1 class="gb-hero__title">
-      Temukan Ketenangan di<br>
+      Temukan
+      <span class="gb-hero__title-dynamic">
+        <span class="gb-hero__title-dynamic-inner">
+          <span>Ketenangan</span>
+          <span>Keseruan</span>
+          <span>Kenangan</span>
+          <span>Mood</span>
+          <span aria-hidden="true">Ketenangan</span>
+        </span>
+      </span>
+      di<br>
       <span class="gb-title-highlight">Garland Barnville</span>
     </h1>
 
@@ -541,14 +592,14 @@
                stroke-width="2"
                stroke-linecap="round"
                stroke-linejoin="round"
-               style="width:18px;height:18px;display:block;flex-shrink:0;">
+               style="width:20px;height:20px;display:block;flex-shrink:0;">
             <rect x="3" y="4" width="18" height="18" rx="2"/>
             <line x1="16" y1="2" x2="16" y2="6"/>
             <line x1="8"  y1="2" x2="8"  y2="6"/>
             <line x1="3"  y1="10" x2="21" y2="10"/>
           </svg>
         </div>
-        <div>
+        <div class="gb-search__header-content">
           <div class="gb-search__header-text">Pesan Penginapan</div>
           <div class="gb-search__header-sub">Atur tanggal untuk melihat ketersediaan</div>
         </div>
