@@ -1,0 +1,435 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&family=Dancing+Script:wght@400;500;600&display=swap');
+
+.gb-testimonials {
+  padding: 6rem 1.5rem;
+  background: #FFFDF9;
+  font-family: 'Poppins', sans-serif;
+  overflow: hidden;
+}
+
+.gb-testimonials__inner {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.gb-testimonials__header {
+  text-align: center;
+  margin-bottom: 3.5rem;
+}
+
+.gb-testimonials__label {
+  font-family: 'Dancing Script', cursive;
+  font-size: 1.3rem;
+  color: #C47A2D;
+  margin-bottom: 0.5rem;
+}
+
+.gb-testimonials__title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 700;
+  color: #3D2B1F;
+  margin: 0 0 1rem 0;
+}
+
+.gb-testimonials__divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.gb-testimonials__divider-line {
+  width: 50px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #C47A2D, transparent);
+}
+
+.gb-testimonials__divider-icon {
+  color: #C47A2D;
+  font-size: 0.7rem;
+}
+
+/* ===== SLIDER ===== */
+.gb-testi-slider {
+  position: relative;
+}
+
+.gb-testi-slider__track {
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.gb-testi-slider__slides {
+  display: flex;
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.gb-testi-slide {
+  min-width: 100%;
+  padding: 3rem;
+  background: #FDF6EC;
+  border: 1px solid #F5E6D0;
+  border-radius: 16px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* Quote Icon */
+.gb-testi-slide__quote-icon {
+  color: #C47A2D;
+  opacity: 0.3;
+  margin-bottom: 1.5rem;
+}
+
+.gb-testi-slide__quote-icon svg {
+  width: 48px;
+  height: 48px;
+}
+
+/* Quote Text */
+.gb-testi-slide__text {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+  font-weight: 400;
+  font-style: italic;
+  color: #3D2B1F;
+  line-height: 1.8;
+  margin: 0 0 2rem 0;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Author */
+.gb-testi-slide__author {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gb-testi-slide__avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #C47A2D, #D4944A);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFDF9;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  border: 3px solid #FFFDF9;
+  box-shadow: 0 4px 15px rgba(196, 122, 45, 0.2);
+}
+
+.gb-testi-slide__name {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #3D2B1F;
+  margin: 0;
+}
+
+.gb-testi-slide__origin {
+  font-size: 0.8rem;
+  color: #8B7E72;
+  margin: 0;
+}
+
+/* Stars */
+.gb-testi-slide__stars {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  margin-bottom: 1.5rem;
+}
+
+.gb-testi-slide__stars svg {
+  width: 18px;
+  height: 18px;
+  fill: #C47A2D;
+}
+
+/* ===== CONTROLS ===== */
+.gb-testi-slider__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.gb-testi-slider__btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid #E8C49A;
+  background: transparent;
+  color: #C47A2D;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.gb-testi-slider__btn:hover {
+  background: #C47A2D;
+  color: #FFFDF9;
+  border-color: #C47A2D;
+}
+
+.gb-testi-slider__btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Dots */
+.gb-testi-slider__dots {
+  display: flex;
+  gap: 8px;
+}
+
+.gb-testi-slider__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #E8C49A;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.gb-testi-slider__dot.gb-active {
+  background: #C47A2D;
+  width: 24px;
+  border-radius: 4px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 640px) {
+  .gb-testimonials {
+    padding: 4rem 1rem;
+  }
+
+  .gb-testi-slide {
+    padding: 2rem 1.5rem;
+  }
+
+  .gb-testi-slide__quote-icon svg {
+    width: 36px;
+    height: 36px;
+  }
+}
+</style>
+
+<section class="gb-testimonials" id="testimonials">
+  <div class="gb-testimonials__inner">
+
+    <div class="gb-testimonials__header">
+      <p class="gb-testimonials__label">Testimoni</p>
+      <h2 class="gb-testimonials__title">Apa Kata Tamu Kami</h2>
+      <div class="gb-testimonials__divider">
+        <span class="gb-testimonials__divider-line"></span>
+        <span class="gb-testimonials__divider-icon">◆</span>
+        <span class="gb-testimonials__divider-line"></span>
+      </div>
+    </div>
+
+    <div class="gb-testi-slider" id="testiSlider">
+      <div class="gb-testi-slider__track">
+        <div class="gb-testi-slider__slides" id="testiSlides">
+
+          <!-- Slide 1 -->
+          <div class="gb-testi-slide">
+            <div class="gb-testi-slide__quote-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+            </div>
+            <div class="gb-testi-slide__stars">
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <p class="gb-testi-slide__text">
+              "Tempatnya luar biasa indah! Cottage nya bersih, nyaman, dan pemandangan pegunungannya bikin betah. Kami pasti akan kembali lagi ke Garland Barnville."
+            </p>
+            <div class="gb-testi-slide__author">
+              <div class="gb-testi-slide__avatar">R</div>
+              <p class="gb-testi-slide__name">Rina Pratiwi</p>
+              <p class="gb-testi-slide__origin">Jakarta • Desember 2025</p>
+            </div>
+          </div>
+
+          <!-- Slide 2 -->
+          <div class="gb-testi-slide">
+            <div class="gb-testi-slide__quote-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+            </div>
+            <div class="gb-testi-slide__stars">
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <p class="gb-testi-slide__text">
+              "Liburan keluarga yang sempurna! Anak-anak senang main di taman, suami nikmati BBQ area, dan saya bisa relaksasi di teras cottage. Recommended banget!"
+            </p>
+            <div class="gb-testi-slide__author">
+              <div class="gb-testi-slide__avatar">D</div>
+              <p class="gb-testi-slide__name">Diana Kusuma</p>
+              <p class="gb-testi-slide__origin">Bandung • Januari 2026</p>
+            </div>
+          </div>
+
+          <!-- Slide 3 -->
+          <div class="gb-testi-slide">
+            <div class="gb-testi-slide__quote-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+            </div>
+            <div class="gb-testi-slide__stars">
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <p class="gb-testi-slide__text">
+              "Suasananya tenang, cocok untuk healing dari rutinitas kota. Sarapannya enak dan stafnya ramah. Terima kasih Garland Barnville untuk pengalaman yang luar biasa!"
+            </p>
+            <div class="gb-testi-slide__author">
+              <div class="gb-testi-slide__avatar">A</div>
+              <p class="gb-testi-slide__name">Ahmad Fauzi</p>
+              <p class="gb-testi-slide__origin">Surabaya • Februari 2026</p>
+            </div>
+          </div>
+
+          <!-- Slide 4 -->
+          <div class="gb-testi-slide">
+            <div class="gb-testi-slide__quote-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+            </div>
+            <div class="gb-testi-slide__stars">
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <p class="gb-testi-slide__text">
+              "Spot foto yang instagrammable banget! Cottage nya aesthetic, view nya juara. Perfect untuk honeymoon kami. Five stars tanpa ragu!"
+            </p>
+            <div class="gb-testi-slide__author">
+              <div class="gb-testi-slide__avatar">S</div>
+              <p class="gb-testi-slide__name">Sarah & Budi</p>
+              <p class="gb-testi-slide__origin">Yogyakarta • Maret 2026</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="gb-testi-slider__controls">
+        <button class="gb-testi-slider__btn" id="testiPrev" aria-label="Previous testimonial">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <div class="gb-testi-slider__dots" id="testiDots"></div>
+        <button class="gb-testi-slider__btn" id="testiNext" aria-label="Next testimonial">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+(function() {
+  'use strict';
+
+  const slides = document.getElementById('testiSlides');
+  const dotsContainer = document.getElementById('testiDots');
+  const prevBtn = document.getElementById('testiPrev');
+  const nextBtn = document.getElementById('testiNext');
+
+  if (!slides || !dotsContainer) return;
+
+  const slideEls = slides.querySelectorAll('.gb-testi-slide');
+  const total = slideEls.length;
+  let current = 0;
+  let autoPlayTimer = null;
+
+  // Create dots
+  for (let i = 0; i < total; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'gb-testi-slider__dot' + (i === 0 ? ' gb-active' : '');
+    dot.setAttribute('aria-label', 'Go to testimonial ' + (i + 1));
+    dot.addEventListener('click', () => goTo(i));
+    dotsContainer.appendChild(dot);
+  }
+
+  function goTo(index) {
+    current = index;
+    slides.style.transform = `translateX(-${current * 100}%)`;
+
+    // Update dots
+    dotsContainer.querySelectorAll('.gb-testi-slider__dot').forEach((d, i) => {
+      d.classList.toggle('gb-active', i === current);
+    });
+
+    resetAutoPlay();
+  }
+
+  function next() {
+    goTo((current + 1) % total);
+  }
+
+  function prev() {
+    goTo((current - 1 + total) % total);
+  }
+
+  prevBtn.addEventListener('click', prev);
+  nextBtn.addEventListener('click', next);
+
+  // Auto-play
+  function startAutoPlay() {
+    autoPlayTimer = setInterval(next, 5000);
+  }
+
+  function resetAutoPlay() {
+    clearInterval(autoPlayTimer);
+    startAutoPlay();
+  }
+
+  startAutoPlay();
+
+  // Pause on hover
+  const slider = document.getElementById('testiSlider');
+  slider.addEventListener('mouseenter', () => clearInterval(autoPlayTimer));
+  slider.addEventListener('mouseleave', startAutoPlay);
+
+  // Touch support
+  let touchStartX = 0;
+  let touchEndX = 0;
+
+  slides.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+  }, { passive: true });
+
+  slides.addEventListener('touchend', (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    const diff = touchStartX - touchEndX;
+    if (Math.abs(diff) > 50) {
+      diff > 0 ? next() : prev();
+    }
+  }, { passive: true });
+})();
+</script>
