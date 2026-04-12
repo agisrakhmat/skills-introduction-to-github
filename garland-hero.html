@@ -1,0 +1,620 @@
+<!--
+  ============================================
+  GARLAND BARNVILLE — Widget Hero (Fixed v4 - Stable Grid)
+  ============================================
+-->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* ── Reset box-sizing ── */
+.gb-hero *, .gb-hero *::before, .gb-hero *::after { box-sizing: border-box; }
+
+.gb-hero {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: 'Poppins', sans-serif;
+}
+
+.gb-hero__bg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-image: url('https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=1920&q=80');
+  background-size: cover;
+  background-position: center;
+  z-index: 1;
+  will-change: transform;
+}
+
+.gb-hero__overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: linear-gradient(180deg, rgba(26,20,16,0.45) 0%, rgba(26,20,16,0.25) 40%, rgba(26,20,16,0.65) 100%);
+  z-index: 2;
+}
+
+.gb-hero__grain {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  opacity: 0.03;
+  z-index: 3;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.gb-hero__content {
+  position: relative;
+  z-index: 4;
+  text-align: center;
+  padding: 3rem 1.5rem 2rem;
+  max-width: 960px;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.gb-hero__logo {
+  width: clamp(130px, 20vw, 210px);
+  height: auto;
+  margin: 0 auto 1.5rem;
+  display: block;
+  filter: drop-shadow(0 4px 25px rgba(196,122,45,0.4)) drop-shadow(0 2px 10px rgba(0,0,0,0.3));
+  opacity: 0;
+  animation: gb-fadeInUp 0.8s ease-out 0.15s forwards, gb-logoFloat 4s ease-in-out 1.5s infinite;
+}
+@keyframes gb-logoFloat {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+
+.gb-hero__divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: gb-fadeInUp 0.8s ease-out 0.3s forwards;
+}
+.gb-hero__divider-line   { width: 60px; height: 1px; background: linear-gradient(90deg, transparent, #E8C49A, transparent); }
+.gb-hero__divider-diamond { width: 8px; height: 8px; background: #C47A2D; transform: rotate(45deg); flex-shrink: 0; }
+
+.gb-hero__title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.2rem, 5.5vw, 4.2rem);
+  font-weight: 700;
+  color: #FFFDF9;
+  line-height: 1.2;
+  margin: 0 0 0.85rem 0;
+  text-shadow: 0 2px 20px rgba(26,20,16,0.3);
+  opacity: 0;
+  animation: gb-fadeInUp 0.8s ease-out 0.4s forwards;
+}
+.gb-hero__title .gb-title-highlight {
+  color: #FFFDF9;
+  background: #C47A2D;
+  padding: 0.05em 0.25em;
+  border-radius: 4px;
+  display: inline-block;
+  line-height: 1.25;
+  text-shadow: none;
+}
+
+.gb-hero__subtitle {
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+  font-weight: 300;
+  color: rgba(255,253,249,0.85);
+  line-height: 1.7;
+  margin: 0 auto 1.75rem;
+  max-width: 580px;
+  letter-spacing: 0.3px;
+  opacity: 0;
+  animation: gb-fadeInUp 0.8s ease-out 0.5s forwards;
+}
+
+.gb-hero__subtitle .gb-typing-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: rgba(255,253,249,0.7);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: gb-blink 0.75s step-end infinite;
+}
+@keyframes gb-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.gb-hero__est {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #E8C49A;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 1.75rem;
+  opacity: 0;
+  animation: gb-fadeInUp 0.8s ease-out 0.6s forwards;
+}
+.gb-hero__est::before,
+.gb-hero__est::after { content: ''; width: 28px; height: 1px; background: #E8C49A; }
+
+.gb-hero__info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: gb-fadeInUp 0.8s ease-out 0.7s forwards;
+}
+.gb-hero__info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  background: rgba(255,253,249,0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,253,249,0.15);
+  border-radius: 8px;
+  color: #FFFDF9;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+.gb-hero__info-item svg { width: 15px; height: 15px; color: #C47A2D; flex-shrink: 0; }
+
+/* ══════════════════════════════════════════════
+   SEARCH FORM — GLASSMORPHISM + HORIZONTAL GRID
+   ══════════════════════════════════════════════ */
+.gb-search {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  background: rgba(20, 14, 10, 0.48);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-top-color: rgba(255,255,255,0.28);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem 1.5rem;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1);
+  opacity: 0;
+  animation: gb-fadeInUp 0.8s ease-out 0.8s forwards;
+}
+
+.gb-search__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.gb-search__header-icon {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  background: #C47A2D;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(196,122,45,0.4);
+  overflow: hidden;
+}
+.gb-search__header-icon svg {
+  width: 18px !important;
+  height: 18px !important;
+  color: #fff;
+  flex-shrink: 0;
+  display: block;
+}
+.gb-search__header-text {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: rgba(255,253,249,0.95);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+.gb-search__header-sub {
+  font-size: 0.7rem;
+  color: rgba(255,253,249,0.5);
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FORM HORIZONTAL — MENGGUNAKAN CLASS SPESIFIK
+   MotoPress sering menyisipkan elemen tersembunyi.
+   Menggunakan class spesifik menjamin tidak tertumpuk/berantakan.
+   Grid 4 kolom:
+     Row 1 → hint   (span 1/-1)
+     Row 2 → 4 field (1fr each)
+     Row 3 → Search button (span 1/-1, centered)
+   ══════════════════════════════════════════════════════════════ */
+
+/* Container form */
+.gb-search .mphb_sc_search-form,
+.gb-search form.mphb_sc_search-form {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  column-gap: 1rem !important;
+  row-gap: 0 !important;
+  align-items: end !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+/* Sembunyikan elemen tidak terduga/hidden input dari aliran grid */
+.gb-search form.mphb_sc_search-form > input,
+.gb-search form.mphb_sc_search-form > div[style*="display: none"],
+.gb-search form.mphb_sc_search-form > span {
+  display: none !important;
+}
+
+/* Base semua <p> field */
+.gb-search form.mphb_sc_search-form p {
+  display: flex !important;
+  flex-direction: column !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  float: none !important;
+  width: auto !important;
+}
+
+/* ── Hint "Required fields..." ── */
+.gb-search form.mphb_sc_search-form p.mphb-required-fields-hint,
+.gb-search form.mphb_sc_search-form p:first-child:not([class*="mphb_sc_search-"]) {
+  grid-column: 1 / -1 !important;
+  grid-row: 1 !important;
+  flex-direction: row !important;
+  align-self: start !important;
+  padding: 0 0 0.5rem 0.1rem !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 0.6rem !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
+  color: rgba(255,253,249,0.42) !important;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
+  line-height: 1.4 !important;
+  background: transparent !important;
+}
+.gb-search form.mphb_sc_search-form p.mphb-required-fields-hint *,
+.gb-search form.mphb_sc_search-form p:first-child:not([class*="mphb_sc_search-"]) * {
+  background: transparent !important;
+  color: rgba(255,253,249,0.42) !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+  font-size: 0.6rem !important;
+  font-style: italic !important;
+}
+
+/* ── Field wrappers (check-in, check-out, adults, children) ── */
+.gb-search form.mphb_sc_search-form p.mphb_sc_search-check-in-date,
+.gb-search form.mphb_sc_search-form p.mphb_sc_search-check-out-date,
+.gb-search form.mphb_sc_search-form p.mphb_sc_search-adults,
+.gb-search form.mphb_sc_search-form p.mphb_sc_search-children {
+  grid-row: 2 !important;
+  gap: 0 !important;
+  padding: 0.1rem 0 0 0 !important;
+}
+
+/* ── Submit wrapper ── */
+.gb-search form.mphb_sc_search-form p.mphb_sc_search-submit-button-wrapper {
+  grid-column: 1 / -1 !important;
+  grid-row: 3 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding-top: 1rem !important;
+  margin: 0 !important;
+}
+
+/* ── Label tiap field ── */
+.gb-search form.mphb_sc_search-form label {
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 0.66rem !important;
+  font-weight: 700 !important;
+  color: rgba(255,253,249,0.9) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.8px !important;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.55), 0 0 10px rgba(0,0,0,0.3) !important;
+  display: block !important;
+  text-align: left !important;
+  padding: 0 0.2rem 0.45rem 0.2rem !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+/* ── Input & Select ── */
+.gb-search form.mphb_sc_search-form input[type="text"],
+.gb-search form.mphb_sc_search-form input[type="date"],
+.gb-search form.mphb_sc_search-form select {
+  width: 100% !important;
+  height: 46px !important;
+  padding: 0 1rem !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 0.88rem !important;
+  font-weight: 500 !important;
+  color: #1A1410 !important;
+  background: rgba(255,255,255,0.92) !important;
+  border: 1.5px solid rgba(255,255,255,0.45) !important;
+  border-radius: 10px !important;
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  cursor: pointer !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+  margin: 0 !important;
+  float: none !important;
+  display: block !important;
+  box-sizing: border-box !important;
+}
+.gb-search form.mphb_sc_search-form input:focus,
+.gb-search form.mphb_sc_search-form select:focus {
+  border-color: #C47A2D !important;
+  box-shadow: 0 0 0 3px rgba(196,122,45,0.22) !important;
+  background: #fff !important;
+}
+
+/* Custom dropdown arrow */
+.gb-search form.mphb_sc_search-form select {
+  padding-right: 2.2rem !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234A3E35' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.7rem center !important;
+  background-size: 13px !important;
+}
+
+/* ── Tombol Search ── */
+.gb-search form.mphb_sc_search-form input[type="submit"],
+.gb-search form.mphb_sc_search-form button[type="submit"] {
+  height: 46px !important;
+  padding: 0 3rem !important;
+  width: auto !important;
+  background: #C47A2D !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 0.92rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  letter-spacing: 0.5px !important;
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease !important;
+  box-shadow: 0 4px 16px rgba(196,122,45,0.4) !important;
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+}
+.gb-search form.mphb_sc_search-form input[type="submit"]:hover,
+.gb-search form.mphb_sc_search-form button[type="submit"]:hover {
+  background: #A36525 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 22px rgba(196,122,45,0.5) !important;
+}
+
+.gb-hero__scroll {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem 0 1.5rem;
+  opacity: 0;
+  animation: gb-fadeInUp 0.8s ease-out 1s forwards;
+}
+.gb-hero__scroll-text {
+  font-size: 0.6rem;
+  font-weight: 500;
+  color: rgba(255,253,249,0.45);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+.gb-hero__scroll-line {
+  width: 1px; height: 38px;
+  background: linear-gradient(180deg, #C47A2D, transparent);
+  animation: gb-scrollPulse 2s ease-in-out infinite;
+}
+
+/* ── Keyframes ── */
+@keyframes gb-fadeInUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes gb-scrollPulse {
+  0%, 100% { opacity: 0.25; transform: scaleY(0.55); }
+  50%       { opacity: 1;   transform: scaleY(1); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .gb-search form.mphb_sc_search-form {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .gb-search form.mphb_sc_search-form p.mphb_sc_search-check-in-date,
+  .gb-search form.mphb_sc_search-form p.mphb_sc_search-check-out-date { grid-row: 2 !important; }
+
+  .gb-search form.mphb_sc_search-form p.mphb_sc_search-adults,
+  .gb-search form.mphb_sc_search-form p.mphb_sc_search-children { grid-row: 3 !important; }
+
+  .gb-search form.mphb_sc_search-form p.mphb_sc_search-submit-button-wrapper {
+    grid-row: 4 !important;
+    grid-column: 1 / -1 !important;
+  }
+}
+@media (max-width: 600px) {
+  .gb-hero { min-height: 100svh; }
+  .gb-hero__content { padding: 2rem 1rem 1.5rem; }
+  .gb-hero__info { gap: 0.5rem; }
+  .gb-hero__info-item { font-size: 0.7rem; padding: 0.4rem 0.7rem; }
+  .gb-search { padding: 1rem 1rem 1.2rem; }
+  .gb-search form.mphb_sc_search-form {
+    grid-template-columns: 1fr !important;
+  }
+  .gb-search form.mphb_sc_search-form p.mphb_sc_search-check-in-date,
+  .gb-search form.mphb_sc_search-form p.mphb_sc_search-check-out-date,
+  .gb-search form.mphb_sc_search-form p.mphb_sc_search-adults,
+  .gb-search form.mphb_sc_search-form p.mphb_sc_search-children {
+    grid-row: auto !important;
+  }
+  .gb-search form.mphb_sc_search-form p.mphb_sc_search-submit-button-wrapper {
+    grid-row: auto !important;
+    grid-column: 1 / -1 !important;
+  }
+}
+</style>
+
+<section class="gb-hero" id="hero-section">
+  <div class="gb-hero__bg" id="heroBg"></div>
+  <div class="gb-hero__overlay"></div>
+  <div class="gb-hero__grain"></div>
+
+  <div class="gb-hero__content">
+
+    <img src="https://garlandbarnville.com/wp-content/uploads/2026/04/CAP-GARLAND.png"
+         alt="Garland Barnville Logo"
+         class="gb-hero__logo"
+         width="210" height="auto"
+         loading="eager">
+
+    <div class="gb-hero__divider">
+      <span class="gb-hero__divider-line"></span>
+      <span class="gb-hero__divider-diamond"></span>
+      <span class="gb-hero__divider-line"></span>
+    </div>
+
+    <h1 class="gb-hero__title">
+      Temukan Ketenangan di<br>
+      <span class="gb-title-highlight">Garland Barnville</span>
+    </h1>
+
+    <p class="gb-hero__subtitle" id="gb-subtitle" aria-label="Nikmati pengalaman menginap yang tenang dan menyatu dengan alam. Didesain khusus untuk kenyamanan Anda, cocok untuk staycation atau liburan singkat dari hiruk-pikuk kota."></p>
+
+    <div class="gb-hero__est">EST. 2023</div>
+
+    <div class="gb-hero__info">
+      <span class="gb-hero__info-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Garut, Jawa Barat
+      </span>
+      <span class="gb-hero__info-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20"/><rect x="2" y="8" width="20" height="12" rx="2"/></svg>
+        Mulai Rp 812.500 / malam
+      </span>
+      <span class="gb-hero__info-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>
+        Free Breakfast 2 Pax
+      </span>
+    </div>
+
+    <div class="gb-search">
+      <div class="gb-search__header">
+        <div class="gb-search__header-icon">
+          <svg xmlns="http://www.w3.org/2000/svg"
+               viewBox="0 0 24 24"
+               fill="none"
+               stroke="currentColor"
+               stroke-width="2"
+               stroke-linecap="round"
+               stroke-linejoin="round"
+               style="width:18px;height:18px;display:block;flex-shrink:0;">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8"  y1="2" x2="8"  y2="6"/>
+            <line x1="3"  y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <div>
+          <div class="gb-search__header-text">Pesan Penginapan</div>
+          <div class="gb-search__header-sub">Atur tanggal untuk melihat ketersediaan</div>
+        </div>
+      </div>
+
+      [mphb_availability_search]
+    </div>
+
+  </div>
+
+  <div class="gb-hero__scroll">
+    <span class="gb-hero__scroll-text">Scroll</span>
+    <span class="gb-hero__scroll-line"></span>
+  </div>
+
+</section>
+
+<script>
+(function () {
+  'use strict';
+
+  var heroBg = document.getElementById('heroBg');
+  if (heroBg) {
+    var ticking = false;
+    window.addEventListener('scroll', function () {
+      if (!ticking) {
+        window.requestAnimationFrame(function () {
+          heroBg.style.transform = 'translateY(' + (window.pageYOffset * 0.28) + 'px)';
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }, { passive: true });
+  }
+
+  var subtitleEl  = document.getElementById('gb-subtitle');
+  var fullText    = 'Nikmati pengalaman menginap yang tenang dan menyatu dengan alam. Didesain khusus untuk kenyamanan Anda, cocok untuk staycation atau liburan singkat dari hiruk-pikuk kota.';
+  var typingSpeed = 28;
+  var startDelay  = 1400;
+
+  if (subtitleEl) {
+    var cursor = document.createElement('span');
+    cursor.className = 'gb-typing-cursor';
+    cursor.setAttribute('aria-hidden', 'true');
+
+    var i = 0;
+    function typeNext () {
+      if (i < fullText.length) {
+        subtitleEl.textContent = fullText.slice(0, ++i);
+        subtitleEl.appendChild(cursor);
+        setTimeout(typeNext, typingSpeed);
+      } else {
+        setTimeout(function () {
+          cursor.style.animation = 'none';
+          cursor.style.opacity   = '0';
+        }, 2500);
+      }
+    }
+
+    setTimeout(function () {
+      subtitleEl.style.opacity = '1';
+      subtitleEl.style.transform = 'translateY(0)';
+      subtitleEl.style.animation = 'none';
+      typeNext();
+    }, startDelay);
+  }
+
+})();
+</script>
