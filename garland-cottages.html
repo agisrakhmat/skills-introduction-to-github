@@ -1,0 +1,397 @@
+<!--
+  =====================================================
+  GARLAND BARNVILLE — Widget 1.2: Featured Cottages
+  =====================================================
+  DATA REAL: Cottage Biru & Cottage Hijau
+  Paste ke Elementor HTML Widget.
+
+  ATAU: Skip widget ini, langsung pakai MotoPress
+  "Accommodation Types" widget (sudah auto-tampil
+  dari data cottage MotoPress).
+-->
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600;700&family=Dancing+Script:wght@400;500;600;700&display=swap');
+
+.gb-cottages {
+  padding: 6rem 1.5rem;
+  background: #FFFDF9;
+  font-family: 'Poppins', sans-serif;
+}
+
+.gb-cottages__inner {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.gb-cottages__header {
+  text-align: center;
+  margin-bottom: 3.5rem;
+}
+
+.gb-cottages__label {
+  font-family: 'Dancing Script', cursive;
+  font-size: 1.3rem;
+  color: #C47A2D;
+  margin-bottom: 0.5rem;
+}
+
+.gb-cottages__title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 700;
+  color: #3D2B1F;
+  margin: 0 0 1rem 0;
+}
+
+.gb-cottages__divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.gb-cottages__divider-line {
+  width: 50px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #C47A2D, transparent);
+}
+
+.gb-cottages__divider-icon { color: #C47A2D; font-size: 0.7rem; }
+
+.gb-cottages__desc {
+  font-size: 1.05rem;
+  font-weight: 300;
+  color: #8B7E72;
+  line-height: 1.7;
+  max-width: 550px;
+  margin: 0 auto;
+}
+
+/* Grid — 2 kartu */
+.gb-cottages__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+}
+
+/* Card */
+.gb-cottage-card {
+  background: #FFFDF9;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #F5E6D0;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.gb-cottage-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 60px rgba(61, 43, 31, 0.12);
+  border-color: #E8C49A;
+}
+
+.gb-cottage-card__img-wrap {
+  position: relative;
+  height: 280px;
+  overflow: hidden;
+}
+
+.gb-cottage-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.gb-cottage-card:hover .gb-cottage-card__img {
+  transform: scale(1.06);
+}
+
+.gb-cottage-card__badge {
+  position: absolute;
+  top: 0.85rem;
+  left: 0.85rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #FFFDF9;
+}
+
+.gb-cottage-card__badge--biru {
+  background: linear-gradient(135deg, #4A8CB8, #2E6D99);
+}
+
+.gb-cottage-card__badge--hijau {
+  background: linear-gradient(135deg, #5A8F3C, #3D6B22);
+}
+
+.gb-cottage-card__capacity {
+  position: absolute;
+  bottom: 0.85rem;
+  right: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.7rem;
+  background: rgba(26, 20, 16, 0.65);
+  backdrop-filter: blur(6px);
+  color: #FFFDF9;
+  font-size: 0.72rem;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+.gb-cottage-card__capacity svg {
+  width: 13px;
+  height: 13px;
+}
+
+.gb-cottage-card__free-bf {
+  position: absolute;
+  bottom: 0.85rem;
+  left: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.7rem;
+  background: rgba(196, 122, 45, 0.9);
+  color: #FFFDF9;
+  font-size: 0.65rem;
+  font-weight: 600;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+}
+
+.gb-cottage-card__body {
+  padding: 1.5rem;
+}
+
+.gb-cottage-card__name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #3D2B1F;
+  margin: 0 0 0.5rem 0;
+}
+
+.gb-cottage-card__specs {
+  font-size: 0.8rem;
+  color: #8B7E72;
+  margin: 0 0 0.75rem 0;
+}
+
+/* Amenities */
+.gb-cottage-card__amenities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+}
+
+.gb-cottage-card__amenity {
+  font-size: 0.7rem;
+  color: #5C3D2E;
+  background: #FDF6EC;
+  padding: 0.25rem 0.6rem;
+  border-radius: 5px;
+  font-weight: 500;
+}
+
+/* Price row */
+.gb-cottage-card__price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid #F5E6D0;
+}
+
+.gb-cottage-card__prices {}
+
+.gb-cottage-card__price-label {
+  font-size: 0.6rem;
+  color: #8B7E72;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.15rem;
+}
+
+.gb-cottage-card__price-weekday {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #C47A2D;
+}
+
+.gb-cottage-card__price-weekend {
+  font-size: 0.72rem;
+  color: #8B7E72;
+  margin-top: 0.1rem;
+}
+
+.gb-cottage-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.65rem 1.25rem;
+  background: #C47A2D;
+  color: #FFFDF9;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.gb-cottage-card__cta:hover {
+  background: #A66525;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(196, 122, 45, 0.3);
+}
+
+.gb-cottage-card__cta svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Scroll reveal */
+.gb-cottages__grid > * {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.gb-cottages__grid > *.gb-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .gb-cottages { padding: 4rem 1rem; }
+  .gb-cottages__grid { grid-template-columns: 1fr; gap: 1.5rem; }
+  .gb-cottage-card__img-wrap { height: 240px; }
+}
+</style>
+
+<section class="gb-cottages" id="featured-cottages">
+  <div class="gb-cottages__inner">
+
+    <div class="gb-cottages__header">
+      <p class="gb-cottages__label">Akomodasi Kami</p>
+      <h2 class="gb-cottages__title">Pilihan Cottage Kami</h2>
+      <div class="gb-cottages__divider">
+        <span class="gb-cottages__divider-line"></span>
+        <span class="gb-cottages__divider-icon">◆</span>
+        <span class="gb-cottages__divider-line"></span>
+      </div>
+      <p class="gb-cottages__desc">
+        Dua unit cottage ekslusif dengan suasana asri dan fasilitas modern, siap menemani liburan Anda bersama orang tersayang.
+      </p>
+    </div>
+
+    <div class="gb-cottages__grid">
+
+      <!-- COTTAGE BIRU -->
+      <div class="gb-cottage-card">
+        <div class="gb-cottage-card__img-wrap">
+          <!-- GANTI dengan foto Cottage Biru -->
+          <img src="https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=600&q=80" alt="Cottage Biru - Garland Barnville" class="gb-cottage-card__img" loading="lazy">
+          <span class="gb-cottage-card__badge gb-cottage-card__badge--biru">Cottage Biru</span>
+          <span class="gb-cottage-card__free-bf">☕ Free Breakfast 2 Pax</span>
+          <span class="gb-cottage-card__capacity">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Maks. 5 Tamu
+          </span>
+        </div>
+        <div class="gb-cottage-card__body">
+          <h3 class="gb-cottage-card__name">Cottage Biru</h3>
+          <p class="gb-cottage-card__specs">25 m² • Standar 2 Dewasa • Extra Bed tersedia</p>
+          <div class="gb-cottage-card__amenities">
+            <span class="gb-cottage-card__amenity">AC</span>
+            <span class="gb-cottage-card__amenity">Free Wi-Fi</span>
+            <span class="gb-cottage-card__amenity">Smart TV</span>
+            <span class="gb-cottage-card__amenity">Water Heater</span>
+            <span class="gb-cottage-card__amenity">Perlengkapan Mandi</span>
+          </div>
+          <div class="gb-cottage-card__price-row">
+            <div class="gb-cottage-card__prices">
+              <div class="gb-cottage-card__price-label">Weekday (Min–Kam)</div>
+              <div class="gb-cottage-card__price-weekday">Rp 812.500 <span style="font-family:Poppins;font-size:0.7rem;font-weight:400;color:#8B7E72">/ malam</span></div>
+              <div class="gb-cottage-card__price-weekend">Weekend (Jum–Sab): Rp 994.500</div>
+            </div>
+            <!-- GANTI href dengan slug halaman cottage Biru di MotoPress -->
+            <a href="/accommodation/cottage-biru/" class="gb-cottage-card__cta">
+              Lihat Detail
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- COTTAGE HIJAU -->
+      <div class="gb-cottage-card">
+        <div class="gb-cottage-card__img-wrap">
+          <!-- GANTI dengan foto Cottage Hijau -->
+          <img src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=600&q=80" alt="Cottage Hijau - Garland Barnville" class="gb-cottage-card__img" loading="lazy">
+          <span class="gb-cottage-card__badge gb-cottage-card__badge--hijau">Cottage Hijau</span>
+          <span class="gb-cottage-card__free-bf">☕ Free Breakfast 2 Pax</span>
+          <span class="gb-cottage-card__capacity">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Maks. 5 Tamu
+          </span>
+        </div>
+        <div class="gb-cottage-card__body">
+          <h3 class="gb-cottage-card__name">Cottage Hijau</h3>
+          <p class="gb-cottage-card__specs">25 m² • Standar 2 Dewasa • Extra Bed tersedia</p>
+          <div class="gb-cottage-card__amenities">
+            <span class="gb-cottage-card__amenity">AC</span>
+            <span class="gb-cottage-card__amenity">Free Wi-Fi</span>
+            <span class="gb-cottage-card__amenity">Smart TV</span>
+            <span class="gb-cottage-card__amenity">Water Heater</span>
+            <span class="gb-cottage-card__amenity">Perlengkapan Mandi</span>
+          </div>
+          <div class="gb-cottage-card__price-row">
+            <div class="gb-cottage-card__prices">
+              <div class="gb-cottage-card__price-label">Weekday (Min–Kam)</div>
+              <div class="gb-cottage-card__price-weekday">Rp 812.500 <span style="font-family:Poppins;font-size:0.7rem;font-weight:400;color:#8B7E72">/ malam</span></div>
+              <div class="gb-cottage-card__price-weekend">Weekend (Jum–Sab): Rp 994.500</div>
+            </div>
+            <!-- GANTI href dengan slug halaman cottage Hijau di MotoPress -->
+            <a href="/accommodation/cottage-hijau/" class="gb-cottage-card__cta">
+              Lihat Detail
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+(function() {
+  'use strict';
+  var cards = document.querySelectorAll('.gb-cottages__grid > *');
+  if (!cards.length) return;
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('gb-visible');
+      }
+    });
+  }, { threshold: 0.1 });
+  cards.forEach(function(card, i) {
+    card.style.transitionDelay = (i * 0.15) + 's';
+    observer.observe(card);
+  });
+})();
+</script>
