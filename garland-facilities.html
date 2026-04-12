@@ -1,0 +1,282 @@
+<!--
+  ==============================================
+  GARLAND BARNVILLE — Widget 1.3: Fasilitas Ringkas
+  ==============================================
+  Icon grid (6 item) fasilitas cottage.
+  Paste ke Elementor HTML Widget.
+-->
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&family=Dancing+Script:wght@400;500;600&display=swap');
+
+.gb-facilities {
+  padding: 6rem 1.5rem;
+  background: #FDF6EC;
+  font-family: 'Poppins', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle texture */
+.gb-facilities::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233D2B1F' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.gb-facilities__inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.gb-facilities__header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.gb-facilities__label {
+  font-family: 'Dancing Script', cursive;
+  font-size: 1.3rem;
+  color: #C47A2D;
+  margin-bottom: 0.5rem;
+}
+
+.gb-facilities__title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 700;
+  color: #3D2B1F;
+  margin: 0 0 1rem 0;
+}
+
+.gb-facilities__divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.gb-facilities__divider-line {
+  width: 50px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #C47A2D, transparent);
+}
+
+.gb-facilities__divider-icon {
+  color: #C47A2D;
+  font-size: 0.7rem;
+}
+
+.gb-facilities__desc {
+  font-size: 1.05rem;
+  font-weight: 300;
+  color: #8B7E72;
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+/* ===== ICON GRID ===== */
+.gb-facilities__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.gb-facility-item {
+  background: #FFFDF9;
+  border: 1px solid #F5E6D0;
+  border-radius: 12px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  cursor: default;
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.gb-facility-item.gb-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.gb-facility-item:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 15px 40px rgba(61, 43, 31, 0.08);
+  border-color: #E8C49A;
+}
+
+.gb-facility-item__icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #FDF6EC, #F5E6D0);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.gb-facility-item:hover .gb-facility-item__icon {
+  background: linear-gradient(135deg, #C47A2D, #A66525);
+  transform: scale(1.1);
+}
+
+.gb-facility-item__icon svg {
+  width: 28px;
+  height: 28px;
+  color: #C47A2D;
+  transition: color 0.3s ease;
+}
+
+.gb-facility-item:hover .gb-facility-item__icon svg {
+  color: #FFFDF9;
+}
+
+.gb-facility-item__name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #3D2B1F;
+  margin: 0 0 0.5rem 0;
+}
+
+.gb-facility-item__desc {
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: #8B7E72;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .gb-facilities__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+
+  .gb-facilities {
+    padding: 4rem 1rem;
+  }
+
+  .gb-facility-item {
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .gb-facilities__grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+<section class="gb-facilities" id="facilities-overview">
+  <div class="gb-facilities__inner">
+
+    <div class="gb-facilities__header">
+      <p class="gb-facilities__label">Fasilitas</p>
+      <h2 class="gb-facilities__title">Fasilitas Lengkap untuk Kenyamanan Anda</h2>
+      <div class="gb-facilities__divider">
+        <span class="gb-facilities__divider-line"></span>
+        <span class="gb-facilities__divider-icon">◆</span>
+        <span class="gb-facilities__divider-line"></span>
+      </div>
+      <p class="gb-facilities__desc">
+        Setiap cottage dilengkapi fasilitas terbaik untuk memastikan pengalaman menginap yang tak terlupakan.
+      </p>
+    </div>
+
+    <div class="gb-facilities__grid">
+
+      <!-- AC -->
+      <div class="gb-facility-item" data-gb-fac-reveal>
+        <div class="gb-facility-item__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+        </div>
+        <h3 class="gb-facility-item__name">AC</h3>
+        <p class="gb-facility-item__desc">Pendingin ruangan untuk kenyamanan menginap sepanjang hari.</p>
+      </div>
+
+      <!-- WiFi -->
+      <div class="gb-facility-item" data-gb-fac-reveal>
+        <div class="gb-facility-item__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+        </div>
+        <h3 class="gb-facility-item__name">Free Wi-Fi</h3>
+        <p class="gb-facility-item__desc">Koneksi internet cepat tersedia di seluruh area cottage.</p>
+      </div>
+
+      <!-- Smart TV -->
+      <div class="gb-facility-item" data-gb-fac-reveal>
+        <div class="gb-facility-item__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
+        </div>
+        <h3 class="gb-facility-item__name">Smart TV</h3>
+        <p class="gb-facility-item__desc">Hiburan lengkap dengan Smart TV untuk streaming favorit Anda.</p>
+      </div>
+
+      <!-- Water Heater -->
+      <div class="gb-facility-item" data-gb-fac-reveal>
+        <div class="gb-facility-item__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </div>
+        <h3 class="gb-facility-item__name">Water Heater</h3>
+        <p class="gb-facility-item__desc">Air hangat tersedia 24 jam untuk mandi yang nyaman.</p>
+      </div>
+
+      <!-- Perlengkapan Mandi -->
+      <div class="gb-facility-item" data-gb-fac-reveal>
+        <div class="gb-facility-item__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v18"/><path d="M4 12h16"/><path d="M10 6h4"/></svg>
+        </div>
+        <h3 class="gb-facility-item__name">Perlengkapan Mandi</h3>
+        <p class="gb-facility-item__desc">Handuk, sabun, shampoo, dan perlengkapan mandi lengkap tersedia.</p>
+      </div>
+
+      <!-- Free Breakfast -->
+      <div class="gb-facility-item" data-gb-fac-reveal>
+        <div class="gb-facility-item__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        </div>
+        <h3 class="gb-facility-item__name">Free Breakfast</h3>
+        <p class="gb-facility-item__desc">Sudah termasuk sarapan gratis untuk 2 orang (Indonesian / American / English).</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+(function() {
+  'use strict';
+  const revealEls = document.querySelectorAll('[data-gb-fac-reveal]');
+  if ('IntersectionObserver' in window) {
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const allItems = Array.from(revealEls);
+          const idx = allItems.indexOf(entry.target);
+          setTimeout(() => {
+            entry.target.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            entry.target.classList.add('gb-visible');
+          }, idx * 100);
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    revealEls.forEach(el => obs.observe(el));
+  } else {
+    revealEls.forEach(el => el.classList.add('gb-visible'));
+  }
+})();
+</script>
