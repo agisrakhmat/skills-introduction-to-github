@@ -225,7 +225,7 @@
   border: 1px solid rgba(255,255,255,0.18);
   border-top-color: rgba(255,255,255,0.28);
   border-radius: 16px;
-  padding: 2rem; /* Ditambah agar lebih lega */
+  padding: 2.5rem 2rem 2.5rem; /* Ditambah agar lebih lega */
   box-shadow: 0 24px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1);
   opacity: 0;
   animation: gb-fadeInUp 0.8s ease-out 0.8s forwards;
@@ -323,29 +323,9 @@
 /* ── Hint "Required fields..." ── */
 .gb-search form.mphb_sc_search-form p.mphb-required-fields-hint,
 .gb-search form.mphb_sc_search-form p:first-child:not([class*="mphb_sc_search-"]) {
-  grid-column: 1 / -1 !important;
-  grid-row: 1 !important;
-  flex-direction: row !important;
-  align-self: start !important;
-  padding: 0 0 1rem 0.1rem !important; /* Tambah padding bawah untuk hint */
-  font-family: 'Poppins', sans-serif !important;
-  font-size: 0.65rem !important;
-  font-style: italic !important;
-  font-weight: 400 !important;
-  color: rgba(255,253,249,0.45) !important;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
-  line-height: 1.4 !important;
-  background: transparent !important;
+  display: none !important;
 }
-.gb-search form.mphb_sc_search-form p.mphb-required-fields-hint *,
-.gb-search form.mphb_sc_search-form p:first-child:not([class*="mphb_sc_search-"]) * {
-  background: transparent !important;
-  color: rgba(255,253,249,0.45) !important;
-  text-decoration: none !important;
-  box-shadow: none !important;
-  font-size: 0.65rem !important;
-  font-style: italic !important;
-}
+
 
 /* ── Field wrappers (check-in, check-out, adults, children) ── */
 .gb-search form.mphb_sc_search-form p.mphb_sc_search-check-in-date,
@@ -364,8 +344,14 @@
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
-  padding-top: 1.75rem !important; /* Jarak antara kolom input dan tombol diperbesar */
+  padding-top: 2.5rem !important; /* Jarak antara kolom input dan tombol diperbesar */
   margin: 0 !important;
+}
+
+
+/* ── Sembunyikan angka 14 di label Children ── */
+.gb-search form.mphb_sc_search-form label span.mphb-age {
+  display: none !important;
 }
 
 /* ── Label tiap field ── */
@@ -379,7 +365,7 @@
   text-shadow: 0 1px 3px rgba(0,0,0,0.55), 0 0 10px rgba(0,0,0,0.3) !important;
   display: block !important;
   text-align: left !important;
-  padding: 0 0.2rem 0.6rem 0.2rem !important; /* Jarak antara label dan input */
+  padding: 0 0.2rem 1rem 0.2rem !important; /* Jarak antara label dan input */
   margin: 0 !important;
   width: 100% !important;
 }
@@ -511,7 +497,7 @@
   .gb-hero__content { padding: 2rem 1rem 1.5rem; }
   .gb-hero__info { gap: 0.5rem; }
   .gb-hero__info-item { font-size: 0.7rem; padding: 0.4rem 0.7rem; }
-  .gb-search { padding: 1.5rem 1.25rem; }
+  .gb-search { padding: 2rem 1.5rem; }
   .gb-search form.mphb_sc_search-form {
     grid-template-columns: 1fr !important;
     row-gap: 1rem !important;
@@ -563,7 +549,7 @@
       <span class="gb-title-highlight">Garland Barnville</span>
     </h1>
 
-    <p class="gb-hero__subtitle" id="gb-subtitle" aria-label="Nikmati pengalaman menginap yang tenang dan menyatu dengan alam. Didesain khusus untuk kenyamanan Anda, cocok untuk staycation atau liburan singkat dari hiruk-pikuk kota."></p>
+    <p class="gb-hero__subtitle" id="gb-subtitle">Nikmati pengalaman menginap yang tenang dan menyatu dengan alam. Didesain khusus untuk kenyamanan Anda, cocok untuk staycation atau liburan singkat dari hiruk-pikuk kota.</p>
 
     <div class="gb-hero__est">EST. 2023</div>
 
@@ -621,7 +607,16 @@
 (function () {
   'use strict';
 
-  var heroBg = document.getElementById('heroBg');
+
+  /* ── FIX: Hapus teks "14" di label Children ── */
+  var childrenLabels = document.querySelectorAll('.mphb_sc_search-children label');
+  childrenLabels.forEach(function(label) {
+    if (label.innerHTML.includes('14')) {
+      label.innerHTML = label.innerHTML.replace(/14/g, '').trim();
+    }
+  });
+
+var heroBg = document.getElementById('heroBg');
   if (heroBg) {
     var ticking = false;
     window.addEventListener('scroll', function () {
@@ -633,38 +628,6 @@
         ticking = true;
       }
     }, { passive: true });
-  }
-
-  var subtitleEl  = document.getElementById('gb-subtitle');
-  var fullText    = 'Nikmati pengalaman menginap yang tenang dan menyatu dengan alam. Didesain khusus untuk kenyamanan Anda, cocok untuk staycation atau liburan singkat dari hiruk-pikuk kota.';
-  var typingSpeed = 28;
-  var startDelay  = 1400;
-
-  if (subtitleEl) {
-    var cursor = document.createElement('span');
-    cursor.className = 'gb-typing-cursor';
-    cursor.setAttribute('aria-hidden', 'true');
-
-    var i = 0;
-    function typeNext () {
-      if (i < fullText.length) {
-        subtitleEl.textContent = fullText.slice(0, ++i);
-        subtitleEl.appendChild(cursor);
-        setTimeout(typeNext, typingSpeed);
-      } else {
-        setTimeout(function () {
-          cursor.style.animation = 'none';
-          cursor.style.opacity   = '0';
-        }, 2500);
-      }
-    }
-
-    setTimeout(function () {
-      subtitleEl.style.opacity = '1';
-      subtitleEl.style.transform = 'translateY(0)';
-      subtitleEl.style.animation = 'none';
-      typeNext();
-    }, startDelay);
   }
 
 })();
